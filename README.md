@@ -10,7 +10,7 @@ A Qoder-style UI layer for DeepSeek Harness: palette skin, single-card model and
 | --- | --- |
 | 配色皮肤 | 四套 Qoder 配色（Forest 默认 / Mint / Bee / Parchment），每套都有明暗两版；同时覆盖圆角、正文/代码字体（Inter 子集内置）。General 设置里可切换，也可选 “No skin” 回到官方外观。 |
 | 外框与侧栏 | 中栏 5px 外边距、16px 圆角；侧栏行高 30px 起、8px 圆角；选中行使用 `interactive-bg-active`；顶部品牌行与 New Session 按钮保留官方设计；工作区/会话行按 Qoder 的几何收紧。 |
-| 侧栏字号 | 侧栏文字（工作区、会话、Plugins/Automation、账号行）跟随 `--dsh-content-font-size`，与快捷菜单 Text size、设置里的正文大小同一个值；行高与行距按同一变量推导，整组一起缩放。 |
+| 侧栏字号 | 侧栏全部文字（New Session、工作区标题、会话、Plugins/Automation、账号行）跟随 `--dsh-content-font-size`，与快捷菜单 Text size、设置里的正文大小同一个值；快捷菜单的小/中/大三档为 12/14/16px；行高与行距按同一变量推导，整组一起缩放（New Session 只缩放文字，保持官方按钮尺寸）。 |
 | 侧栏底部分区 | Plugins 与 Automation tasks 固定在滚动区域之后、账号行正上方，上缘一条 `border-l2` 浅色虚线（跟随皮肤配色）与工作区隔离。 |
 | 发送按钮 | 编辑器的发送键改为 Qoder 的圆角方形（跟随 `--dsw-radius-sm`），不再使用圆形。 |
 | 首屏角标 | 隐藏 hero 上的预览/版本角标（`.previewBadge`）。 |
@@ -74,7 +74,7 @@ pnpm check        # 构建 + node --check
 ## 实测范围
 
 - Web（基于 rc.2 的私有 fork，Chromium）：四套配色与 No skin 切换、暗色 Mint、模型菜单空状态、配置密钥后真实模型列表、模型切换、强度切换、单卡布局。
-- Desktop（官方 0.2.1-rc.2 安装版）：从 Plugins 页本地路径安装、单卡模型/强度菜单与三组模型来源、账号行与右侧齿轮快捷座位、顶部品牌行与 New Session 保持官方设计（悬停 ⌘N 键帽淡入）、Plugins/Automation tasks 紧邻账号行上方并带浅色虚线分隔、侧栏字号随 Text size 设置整体缩放（13/16/22px 实测行高 30/32/38px 同步变化）。
+- Desktop（官方 0.2.1-rc.2 安装版）：从 Plugins 页本地路径安装、单卡模型/强度菜单与三组模型来源、账号行与右侧齿轮快捷座位、顶部品牌行与 New Session 保持官方设计（悬停 ⌘N 键帽淡入）、Plugins/Automation tasks 紧邻账号行上方并带浅色虚线分隔、侧栏全部文字随 Text size 小/中/大（12/14/16px）统一缩放且与 Plugins 行一致（实测 12/14/16px 时工作区标题、会话标题、New Session、Plugins、账号行同值，行高 30/30/32px；New Session 悬停 ⌘N 键帽同步缩放）。
 - Desktop（开发版 Electron，隔离 `DSH_HOME`）：账号菜单、快捷设置子菜单与 ✓ 标记、明暗切换、快捷座位改写与持久化、登录弹窗进入 “Waiting for sign in”。
 - 未实测：需要真实账号的成功登录、退出登录确认（登录弹窗已打开并取消；未使用账号凭据）。
 - 测试环境本身是自带部分同款改动的 fork，因此 General 设置里会同时出现 fork 自带的快捷座位行与本插件的行；在未改动的官方版本上只会出现本插件的行。

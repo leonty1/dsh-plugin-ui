@@ -5,7 +5,7 @@ import {
 } from '@deepseek-ai/dsh-client-ui-primitives'
 
 /** Pixel sizes the quick menu offers, each with its dictionary key. */
-export const SIZE_CHOICES = [[13, 'account.sizeSmall'], [14, 'account.sizeMedium'], [16, 'account.sizeLarge']]
+export const SIZE_CHOICES = [[12, 'account.sizeSmall'], [14, 'account.sizeMedium'], [16, 'account.sizeLarge']]
 
 /** The current value of each group. */
 export function quickSettingsView(ctx) {

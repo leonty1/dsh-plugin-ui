@@ -582,7 +582,7 @@ var import_dsh_client_ui_primitives4 = require("@deepseek-ai/dsh-client-ui-primi
 // src/client/quick-settings.jsx
 var import_dsh_client_ui_primitives3 = require("@deepseek-ai/dsh-client-ui-primitives");
 var import_jsx_runtime2 = require("react/jsx-runtime");
-var SIZE_CHOICES = [[13, "account.sizeSmall"], [14, "account.sizeMedium"], [16, "account.sizeLarge"]];
+var SIZE_CHOICES = [[12, "account.sizeSmall"], [14, "account.sizeMedium"], [16, "account.sizeLarge"]];
 function quickSettingsView(ctx) {
   const theme = ctx.theme.getTheme();
   return {
@@ -1231,7 +1231,13 @@ html:not([data-platform='darwin']) [class*="_frame"] { background: var(--dsw-spe
 [class*="_sidebarCol"] [class*="_sectionHeader"] { height: var(--dpui-sidebar-row-height) !important; margin-bottom: 2px !important; font-size: calc(var(--dpui-sidebar-font-size) - 1px) !important; }
 [class*="_sidebarCol"] [class*="_projectRow"] { height: var(--dpui-sidebar-row-height) !important; min-height: var(--dpui-sidebar-row-height) !important; font-size: var(--dpui-sidebar-font-size) !important; }
 [class*="_sidebarCol"] [class*="_sessionRow"] { height: var(--dpui-sidebar-row-height) !important; min-height: var(--dpui-sidebar-row-height) !important; font-size: var(--dpui-sidebar-font-size) !important; border-radius: 8px !important; }
-[class*="_sidebarCol"] [class*="_sessionRow"] [class*="_title"] { font-size: var(--dpui-sidebar-font-size) !important; }
+/* Titles carry their own official 14px rule; both the workspace label and
+   its session rows follow the same setting as every other sidebar row. */
+[class*="_sidebarCol"] [class*="_projectRow"] [class*="_title"],
+[class*="_sidebarCol"] [class*="_sessionRow"] [class*="_title"] { font-size: var(--dpui-sidebar-font-size) !important; line-height: var(--dpui-sidebar-line-height) !important; }
+/* The official New Session button keeps its geometry; only its type scales,
+   including the \u2318N keycaps that inherit the button's font size. */
+[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] { font-size: var(--dpui-sidebar-font-size) !important; }
 [class*="_centerCol"] header[class*="_header"] { padding-left: 24px !important; padding-right: 24px !important; border-bottom: none !important; }
 [class*="_composerStack"] [class*="_card"] { background: var(--dsw-alias-bg-layer-1) !important; border-radius: 16px !important; }
 
