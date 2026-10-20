@@ -1221,14 +1221,6 @@ html:not([data-platform='darwin']) [class*="_frame"] { background: var(--dsw-spe
   --dsh-sidebar-inline-padding: 8px;
   padding-top: 0 !important;
 }
-/* Qoder's expanded top row carries no brand; the collapsed rail keeps the
-   official logo slot (and, on Windows, the caption toggle inside it). */
-[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) [class*="_logoRow"] { display: none !important; }
-/* Scope New Session to the button itself: matching every descendant by the
-   local-name suffix inflated the label mask and misaligned its text. */
-[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] { height: var(--dpui-sidebar-row-height) !important; min-height: var(--dpui-sidebar-row-height) !important; margin: 0 0 8px !important; padding: 4px 8px !important; border: none !important; background: transparent !important; border-radius: 8px !important; font-size: var(--dpui-sidebar-font-size) !important; line-height: calc(var(--dpui-sidebar-font-size) + 8px) !important; font-weight: 400 !important; justify-content: flex-start !important; }
-[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"]:hover { background: var(--dsw-alias-interactive-bg-hover) !important; }
-[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] [class*="_newSessionContent"] { justify-content: flex-start !important; }
 /* The panel list sits after the scrollable region so Plugins and Automation
    tasks rest directly above the account footer, under a dashed separator.
    Expanded-only: the collapsed rail keeps the official order and 12px icon
