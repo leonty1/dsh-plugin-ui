@@ -4,6 +4,14 @@
 
 A Qoder-style UI layer for DeepSeek Harness: palette skin, single-card model and reasoning-effort selector, and account quick settings. Everything ships as a client plugin; core files are untouched.
 
+## 展示 / Showcase
+
+| 浅色 Light | 深色 Dark |
+| --- | --- |
+| ![Qoder UI light](docs/images/showcase-light.png) | ![Qoder UI dark](docs/images/showcase-dark.png) |
+
+![Palette previews under Appearance](docs/images/showcase-settings.png)
+
 ## 包含的内容
 
 | 区域 | 行为 |
@@ -61,6 +69,39 @@ pnpm dsh web   # 或启动你的 Web 实例
 - 浏览器存储键：
   - `dsh-plugin-ui.palette`：当前配色，缺省为 `forest`；`none` 表示关闭皮肤。
   - `dsh-plugin-ui.quick-actions.v1`：账号行两个座位，默认 `[null, "settings"]`。
+
+## 其他插件接入快捷动作
+
+账号行两个座位是对外开放的 list 座位 `pluginUi.quickAction`。其他客户端插件注册一个座位组件后，动作会自动出现在 Settings → General 的 “Quick action slot 1/2” → “插件提供的动作” 分组；用户选中后账号行直接渲染该组件，插件卸载后座位变空、保存的 id 保留。
+
+```jsx
+export const inject = ['slots']
+
+function ExportSeat({ size = 14 }) {
+  return <button type="button" aria-label="Export session"
+    style={{ width: '100%', height: '100%', border: 0, background: 'transparent', color: 'inherit', cursor: 'pointer' }}
+    onClick={() => { /* 执行插件自己的动作 */ }}>
+    <YourIcon size={size} />
+  </button>
+}
+
+export function apply(ctx) {
+  ctx.slots.inject('pluginUi.quickAction', () => ctx.slots.register({
+    name: 'pluginUi.quickAction',
+    id: 'my-plugin/export-session',
+    order: 50,
+    label: 'Export session',
+  }, ExportSeat))
+}
+```
+
+- `id` 全局唯一，建议 `插件名/动作名`；内置 id（`settings`、`new-session`、`plugins`、`schedules`、`theme`、`sidebar`、`all-settings`）保留。
+- `label` 可以是字符串或返回字符串的函数；`order` 控制外部动作之间的顺序。
+- 座位组件收到 `{ size: 14 }`，由本插件提供 30px 宽、整行高的单元格；组件应渲染充满单元格的透明按钮和 14–16px 单色图标。
+- 扩展点只在 Desktop 渲染器、本插件接管账号行时存在；Web 不挂载。
+- 完整约定（生命周期、样式、验证清单）见 [docs/quick-actions.md](docs/quick-actions.md)。
+
+English: other client plugins register a seat into the `pluginUi.quickAction` list slot declared under `settings.launcher`; the settings dropdown picks it up automatically. See [docs/quick-actions.md](docs/quick-actions.md) for the contract.
 
 ## 本地构建
 
