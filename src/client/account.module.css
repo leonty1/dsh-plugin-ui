@@ -28,7 +28,7 @@
   background: transparent;
   color: var(--dsw-alias-label-primary);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--dsh-content-font-size, 13px);
   cursor: pointer;
 }
 
