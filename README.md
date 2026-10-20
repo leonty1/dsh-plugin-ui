@@ -124,6 +124,8 @@ pnpm check        # 构建 + node --check
 
 ## 仓库
 
-`git@github.com:leonty1/dsh-plugin-ui.git`（私有）。
+`git@github.com:leonty1/dsh-plugin-ui.git`。
 
-License: UNLICENSED — 内部使用。
+## License
+
+MIT © 2026 Tongyi Liang. 见 [LICENSE](LICENSE)。

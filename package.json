@@ -4,7 +4,7 @@
   "description": "Qoder-style UI for DeepSeek Harness: palette skin, single-card model selector, and account quick settings / 为 DeepSeek Harness 提供 Qoder 风格界面：配色皮肤、单卡模型选择器、账号快捷设置",
   "type": "module",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "main": "./dist/index.js",
   "exports": {
     ".": "./dist/index.js",
