@@ -1,0 +1,79 @@
+/** Quick-settings rows shared by the account menu and the settings seat. */
+import {
+  IconDarkOutlineMedium, IconFollowsystemOutlineMedium, IconGlobeOutlineMedium,
+  IconLightOutlineMedium, IconSlidersTwoOutlineMedium,
+} from '@deepseek-ai/dsh-client-ui-primitives'
+
+/** Pixel sizes the quick menu offers, each with its dictionary key. */
+export const SIZE_CHOICES = [[13, 'account.sizeSmall'], [14, 'account.sizeMedium'], [16, 'account.sizeLarge']]
+
+/** The current value of each group. */
+export function quickSettingsView(ctx) {
+  const theme = ctx.theme.getTheme()
+  return {
+    locale: ctx.locale.getSnapshot(),
+    preference: theme.preference,
+    textSize: theme.fontSizes.text,
+  }
+}
+
+/** A row label with the current choice marked; the official Menu has no per-row check slot in submenus. */
+function marked(label, selected) {
+  return selected ? `✓ ${label}` : label
+}
+
+/**
+ * Build the quick-settings rows. Each group is one top-level row carrying its
+ * options as a one-level submenu, the deepest cascade the shared Menu renders.
+ * @param view - values each group marks.
+ * @param t - plugin dictionary copy.
+ * @returns the group rows plus the entry into the full dialog.
+ */
+export function quickSettingsItems(view, t) {
+  const language = view.locale.locales.map(item => ({
+    id: `locale:${item.id}`,
+    label: marked(item.label, item.id === view.locale.active),
+  }))
+  const modes = [
+    { id: 'mode:light', label: marked(t('account.themeLight'), view.preference === 'light'), icon: <IconLightOutlineMedium size={16} /> },
+    { id: 'mode:dark', label: marked(t('account.themeDark'), view.preference === 'dark'), icon: <IconDarkOutlineMedium size={16} /> },
+    { id: 'mode:system', label: marked(t('account.themeSystem'), view.preference === 'system'), icon: <IconFollowsystemOutlineMedium size={16} /> },
+  ]
+  const sizes = SIZE_CHOICES.map(([px, key]) => ({
+    id: `size:${px}`,
+    label: marked(t(key), px === view.textSize),
+  }))
+  return [
+    { id: 'language', label: t('account.language'), icon: <IconGlobeOutlineMedium size={16} />, submenu: language },
+    { id: 'mode', label: t('account.appearanceMode'), icon: <IconDarkOutlineMedium size={16} />, submenu: modes },
+    { id: 'text-size', label: t('account.textSize'), icon: <IconSlidersTwoOutlineMedium size={16} />, submenu: sizes },
+    {
+      id: 'all-settings',
+      label: t('account.allSettings'),
+      icon: <IconSlidersTwoOutlineMedium size={16} />,
+    },
+  ]
+}
+
+/**
+ * Apply one quick-settings row.
+ * @param ctx - client context carrying theme and locale.
+ * @param id - row id in the group's `kind:value` form.
+ * @returns whether the row named a quick setting; unowned ids stay the caller's.
+ */
+export function applyQuickSetting(ctx, id) {
+  if (id.startsWith('mode:')) {
+    ctx.theme.setTheme(id.slice('mode:'.length))
+    return true
+  }
+  const size = /^size:(\d+)$/.exec(id)
+  if (size !== null) {
+    ctx.theme.setFontSize('text', Number(size[1]))
+    return true
+  }
+  if (id.startsWith('locale:')) {
+    ctx.locale.setLocale(id.slice('locale:'.length))
+    return true
+  }
+  return false
+}

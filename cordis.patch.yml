@@ -1,0 +1,5 @@
+# Mounts the Qoder-style UI bundle. The Host entry carries no behavior; every
+# contribution is browser-side (skin, model selector, account launcher).
+- insert:
+    - id: plugin-ui
+      name: dsh-plugin-ui

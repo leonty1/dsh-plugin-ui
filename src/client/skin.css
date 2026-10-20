@@ -1,0 +1,35 @@
+/* Qoder shell geometry. Selectors use the stable CSS-module local-name suffix:
+   the hashed prefix changes per build, the suffix is the source class name. */
+[class*="_frame"] > [class*="_centerCol"] { margin: 5px !important; border: none !important; border-radius: 16px !important; overflow: hidden; background: var(--dsw-alias-bg-base) !important; }
+html:not([data-platform='darwin']) [class*="_frame"] { background: var(--dsw-specific-sidebar-fill) !important; }
+[class*="_frame"] > [class*="_rightbarCol"] { background: transparent !important; }
+[class*="_sidebarCol"] [class*="_root"][class*="_quietBars"] { --dsh-sidebar-inline-padding: 8px; padding-top: 0 !important; }
+[class*="_sidebarCol"] [class*="_logoRow"] { display: none !important; }
+/* Scope New Session to the button itself: matching every descendant by the
+   local-name suffix inflated the label mask and misaligned its text. */
+[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] { height: 30px !important; min-height: 30px !important; margin: 0 0 8px !important; padding: 4px 8px !important; border: none !important; background: transparent !important; border-radius: 8px !important; font-size: 13px !important; font-weight: 400 !important; justify-content: flex-start !important; }
+[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"]:hover { background: var(--dsw-alias-interactive-bg-hover) !important; }
+[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] [class*="_newSessionContent"] { justify-content: flex-start !important; }
+[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] [class*="_newSessionShortcut"] { display: none !important; }
+/* The panel list sits after the scrollable region so Plugins and Automation
+   tasks rest directly above the account footer. */
+[class*="_sidebarCol"] [class*="_panelList"] { gap: 0 !important; margin-bottom: 4px !important; order: 1 !important; }
+[class*="_sidebarCol"] [class*="_footArea"] { order: 2 !important; }
+[class*="_sidebarCol"] [class*="_panelRow"] { min-height: 30px !important; height: 30px !important; margin: 0 !important; padding: 4px 8px !important; border-radius: 8px !important; font-size: 13px !important; line-height: 20px !important; }
+[class*="_sidebarCol"] [class*="_sectionHeader"] { height: 30px !important; margin-bottom: 2px !important; font-size: 12px !important; }
+[class*="_sidebarCol"] [class*="_projectRow"] { height: 30px !important; min-height: 30px !important; font-size: 13px !important; }
+[class*="_sidebarCol"] [class*="_sessionRow"] { height: 30px !important; min-height: 30px !important; font-size: 13px !important; border-radius: 8px !important; }
+[class*="_sidebarCol"] [class*="_sessionRow"] [class*="_title"] { font-size: 13px !important; }
+[class*="_centerCol"] header[class*="_header"] { padding-left: 24px !important; padding-right: 24px !important; border-bottom: none !important; }
+[class*="_composerStack"] [class*="_card"] { background: var(--dsw-alias-bg-layer-1) !important; border-radius: 16px !important; }
+
+/* A-list structural corrections: selected rows use the active fill, and the
+   hero's release-stage badge is removed. */
+[class*="_sidebarCol"] [class*="_sessionRow"][class*="_selected"],
+[class*="_sidebarCol"] [class*="_searchResultRow"][class*="_selected"],
+[class*="_sidebarCol"] [class*="_panelRow"][class*="_panelActive"] { background: var(--dsw-alias-interactive-bg-active) !important; }
+[class*="_previewBadge"] { display: none !important; }
+
+/* A-list composer controls: the send/stop control is a rounded square, not a
+   circle. The theme's own superellipse corner shape stays in effect. */
+[class*="_composerStack"] button[class$="_primary"] { border-radius: var(--dsw-radius-sm) !important; }
