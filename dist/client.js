@@ -73,6 +73,11 @@ function effortHintFor(t, id, fallback) {
   const key = knownEffort(id);
   return key === void 0 ? fallback : t(`effort.hint.${key}`);
 }
+var PLACE_MARGIN = 12;
+var PLACE_GAP = 8;
+function samePoint(current, left, top) {
+  return current !== null && Math.abs(current.left - left) < 0.5 && Math.abs(current.top - top) < 0.5;
+}
 var MEASURE_STYLE = { visibility: "hidden", left: 0, top: 0 };
 function ModelSelect({ locked, available, directory, load, select, t }) {
   const state = (0, import_react.useSyncExternalStore)(
@@ -180,8 +185,9 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
     if (viewport === null) return;
     return (0, import_dsh_client_ui_primitives.observeStickyMenuGroups)(viewport);
   }, [available, open, filteredGroups]);
+  const pointerPicked = (0, import_react.useRef)(false);
   (0, import_react.useLayoutEffect)(() => {
-    if (open && activeModelIndex >= 0) {
+    if (open && activeModelIndex >= 0 && !pointerPicked.current) {
       itemRefs.current[activeModelIndex]?.scrollIntoView({ block: "nearest" });
     }
   }, [open, activeModelIndex, visibleModels]);
@@ -194,23 +200,13 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
     const place = () => {
       const rect = triggerRef.current?.getBoundingClientRect();
       if (rect === void 0) return;
-      const MARGIN = 12;
-      const GAP = 8;
       const lw = menuRef.current?.offsetWidth ?? 0;
       const lh = menuRef.current?.offsetHeight ?? 0;
       let x = rect.right - lw;
-      let y = rect.top - 8 - lh;
-      if (lw > 0) x = Math.min(Math.max(x, MARGIN), window.innerWidth - lw - MARGIN);
-      if (lh > 0) y = Math.min(Math.max(y, MARGIN), window.innerHeight - lh - MARGIN);
-      setMenuPos({ left: x, top: y });
-      const dw = detailRef.current?.offsetWidth ?? 0;
-      const dh = detailRef.current?.offsetHeight ?? 0;
-      let dx = x - GAP - dw;
-      if (dx < MARGIN) dx = x + lw + GAP;
-      setDetailPos({
-        left: Math.min(Math.max(dx, MARGIN), window.innerWidth - dw - MARGIN),
-        top: Math.min(Math.max(y + lh - dh, MARGIN), window.innerHeight - dh - MARGIN)
-      });
+      let y = rect.top - PLACE_GAP - lh;
+      if (lw > 0) x = Math.min(Math.max(x, PLACE_MARGIN), window.innerWidth - lw - PLACE_MARGIN);
+      if (lh > 0) y = Math.min(Math.max(y, PLACE_MARGIN), window.innerHeight - lh - PLACE_MARGIN);
+      setMenuPos((current) => samePoint(current, x, y) ? current : { left: x, top: y });
     };
     place();
     window.addEventListener("scroll", place, true);
@@ -219,13 +215,38 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
       window.removeEventListener("scroll", place, true);
       window.removeEventListener("resize", place);
     };
-  }, [open, state, query, shownReasoning, shownChoice]);
+  }, [open, query, visibleModels.length]);
+  (0, import_react.useLayoutEffect)(() => {
+    if (!open || menuPos === null) {
+      setDetailPos(null);
+      return;
+    }
+    const place = () => {
+      const list = menuRef.current?.getBoundingClientRect();
+      if (list === void 0) return;
+      const dw = detailRef.current?.offsetWidth ?? 0;
+      const dh = detailRef.current?.offsetHeight ?? 0;
+      let dx = list.left - PLACE_GAP - dw;
+      if (dx < PLACE_MARGIN) dx = list.right + PLACE_GAP;
+      const x = Math.min(Math.max(dx, PLACE_MARGIN), window.innerWidth - dw - PLACE_MARGIN);
+      const y = Math.min(Math.max(list.bottom - dh, PLACE_MARGIN), window.innerHeight - dh - PLACE_MARGIN);
+      setDetailPos((current) => samePoint(current, x, y) ? current : { left: x, top: y });
+    };
+    place();
+    window.addEventListener("scroll", place, true);
+    window.addEventListener("resize", place);
+    return () => {
+      window.removeEventListener("scroll", place, true);
+      window.removeEventListener("resize", place);
+    };
+  }, [open, menuPos, shownChoice, shownReasoning]);
   if (!available) return null;
   const show = () => {
     setSelectionFocus(false);
     triggerRef.current?.focus();
     setQuery("");
     setHighlightedIndex(null);
+    pointerPicked.current = false;
     setPreview(null);
     if (currentChoice === void 0) focusIntent.current = "first";
     setOpen(true);
@@ -247,6 +268,7 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
     close(true);
   };
   const moveFocus = (offset) => {
+    pointerPicked.current = false;
     const items = [menuRef.current, detailRef.current].flatMap((root) => Array.from(root?.querySelectorAll("[data-ring]") ?? []));
     if (items.length === 0) return;
     const active = items.findIndex((item) => item === document.activeElement);
@@ -265,6 +287,7 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
     if (inSearch && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
       event.preventDefault();
       if (!busy && visibleModels.length > 0) {
+        pointerPicked.current = false;
         const direction = event.key === "ArrowDown" ? 1 : -1;
         setHighlightedIndex((activeModelIndex + direction + visibleModels.length) % visibleModels.length);
         searchRef.current?.focus();
@@ -457,7 +480,7 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
                     }
                   )
                 ] }),
-                state.status === "loading" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: ModelSelect_default.status, children: t("status.loading") }),
+                state.status === "loading" && filteredGroups.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: ModelSelect_default.status, children: t("status.loading") }),
                 state.error !== null && lastActionRef.current === "load" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: ModelSelect_default.error, children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: t("error.action", { message: state.error }) }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: ModelSelect_default.retry, onClick: reload, children: t("retry") })
@@ -493,6 +516,7 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
                               setHighlightedIndex(index);
                             },
                             onPointerEnter: () => {
+                              pointerPicked.current = true;
                               setPreview({ provider: group.id, model: model.id });
                             },
                             "data-highlighted": index === activeModelIndex ? "" : void 0,

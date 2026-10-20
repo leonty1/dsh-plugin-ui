@@ -69,6 +69,18 @@ function effortHintFor(t: PropsLocale<'model'>['t'], id: string | undefined, fal
   return key === undefined ? fallback : t(`effort.hint.${key}`)
 }
 
+/** Viewport clearance for both portaled cards. */
+const PLACE_MARGIN = 12
+
+/** Gap between the list card and the effort card, and above the trigger. */
+const PLACE_GAP = 8
+
+/** @returns whether a placement already lands on this point (sub-pixel noise aside). */
+function samePoint(current: CSSProperties | null, left: number, top: number): boolean {
+  return current !== null && Math.abs((current.left as number) - left) < 0.5
+    && Math.abs((current.top as number) - top) < 0.5
+}
+
 /** Unplaced portal card: hidden but laid out at a fixed origin so offsetWidth/offsetHeight are real (Menu primitive's measure pass). */
 const MEASURE_STYLE: CSSProperties = { visibility: 'hidden', left: 0, top: 0 }
 
@@ -224,16 +236,22 @@ export function ModelSelect(
     return observeStickyMenuGroups(viewport)
   }, [available, open, filteredGroups])
 
+  // True while the highlight was last moved by the pointer. A pointer pick
+  // never scrolls the list: the row under the cursor is already the active
+  // one, and scrolling would slide a different row into the next click.
+  const pointerPicked = useRef(false)
+
   useLayoutEffect(() => {
-    if (open && activeModelIndex >= 0) {
+    if (open && activeModelIndex >= 0 && !pointerPicked.current) {
       itemRefs.current[activeModelIndex]?.scrollIntoView({ block: 'nearest' })
     }
   }, [open, activeModelIndex, visibleModels])
 
   // Portaled placement (the Menu primitive's portal rules: fixed from the
   // anchor rect, measured before paint, clamped inside the viewport): above
-  // the trigger, right edges aligned. Depends on directory state and query
-  // because an async catalog load or a filtered list resizes the card.
+  // the trigger, right edges aligned. The list re-places only when its content
+  // changes size, the query filters it, or the window moves — a selection in
+  // flight must not move the card out from under the pointer.
   /* jscpd:ignore-start -- deliberate mirror of ui-primitives useAnchoredPosition:
      that hook only places from the anchor's LEFT edge, while this card aligns
      right edges (x = rect.right - width), so the measure-and-clamp plumbing repeats. */
@@ -243,27 +261,13 @@ export function ModelSelect(
       /* v8 ignore next 2 -- the trigger ref is attached whenever the menu is open. */
       const rect = triggerRef.current?.getBoundingClientRect()
       if (rect === undefined) return
-      const MARGIN = 12
-      const GAP = 8
       const lw = menuRef.current?.offsetWidth ?? 0
       const lh = menuRef.current?.offsetHeight ?? 0
       let x = rect.right - lw
-      let y = rect.top - 8 - lh
-      if (lw > 0) x = Math.min(Math.max(x, MARGIN), window.innerWidth - lw - MARGIN)
-      if (lh > 0) y = Math.min(Math.max(y, MARGIN), window.innerHeight - lh - MARGIN)
-      setMenuPos({ left: x, top: y })
-      // The effort card belongs to the model in use, so it rides beside the
-      // list rather than following the pointer. It opens leftward (the list
-      // sits against the composer's right edge) and flips right when the
-      // window leaves no room; both cards keep their bottoms level.
-      const dw = detailRef.current?.offsetWidth ?? 0
-      const dh = detailRef.current?.offsetHeight ?? 0
-      let dx = x - GAP - dw
-      if (dx < MARGIN) dx = x + lw + GAP
-      setDetailPos({
-        left: Math.min(Math.max(dx, MARGIN), window.innerWidth - dw - MARGIN),
-        top: Math.min(Math.max(y + lh - dh, MARGIN), window.innerHeight - dh - MARGIN),
-      })
+      let y = rect.top - PLACE_GAP - lh
+      if (lw > 0) x = Math.min(Math.max(x, PLACE_MARGIN), window.innerWidth - lw - PLACE_MARGIN)
+      if (lh > 0) y = Math.min(Math.max(y, PLACE_MARGIN), window.innerHeight - lh - PLACE_MARGIN)
+      setMenuPos(current => samePoint(current, x, y) ? current : { left: x, top: y })
     }
     // First run measures the hidden pre-render (same commit as `open`), so
     // the card lands placed before anything paints.
@@ -274,7 +278,35 @@ export function ModelSelect(
       window.removeEventListener('scroll', place, true)
       window.removeEventListener('resize', place)
     }
-  }, [open, state, query, shownReasoning, shownChoice])
+  }, [open, query, visibleModels.length])
+
+  // The effort card belongs to the model in use, so it rides beside the list
+  // rather than following the pointer: it opens leftward (the list sits against
+  // the composer's right edge), flips right when the window leaves no room, and
+  // keeps its bottom level with the list's. It measures against the list's live
+  // rect, so a card resize never moves the list.
+  useLayoutEffect(() => {
+    if (!open || menuPos === null) { setDetailPos(null); return }
+    const place = (): void => {
+      const list = menuRef.current?.getBoundingClientRect()
+      /* v8 ignore next 2 -- the list is mounted and placed before this runs. */
+      if (list === undefined) return
+      const dw = detailRef.current?.offsetWidth ?? 0
+      const dh = detailRef.current?.offsetHeight ?? 0
+      let dx = list.left - PLACE_GAP - dw
+      if (dx < PLACE_MARGIN) dx = list.right + PLACE_GAP
+      const x = Math.min(Math.max(dx, PLACE_MARGIN), window.innerWidth - dw - PLACE_MARGIN)
+      const y = Math.min(Math.max(list.bottom - dh, PLACE_MARGIN), window.innerHeight - dh - PLACE_MARGIN)
+      setDetailPos(current => samePoint(current, x, y) ? current : { left: x, top: y })
+    }
+    place()
+    window.addEventListener('scroll', place, true)
+    window.addEventListener('resize', place)
+    return () => {
+      window.removeEventListener('scroll', place, true)
+      window.removeEventListener('resize', place)
+    }
+  }, [open, menuPos, shownChoice, shownReasoning])
   /* jscpd:ignore-end */
 
   if (!available) return null
@@ -284,6 +316,7 @@ export function ModelSelect(
     triggerRef.current?.focus()
     setQuery('')
     setHighlightedIndex(null)
+    pointerPicked.current = false
     setPreview(null)
     if (currentChoice === undefined) focusIntent.current = 'first'
     setOpen(true)
@@ -310,6 +343,8 @@ export function ModelSelect(
   // change re-renders the rows, and a cache written by the previous commit can
   // hold nodes the browser has already dropped.
   const moveFocus = (offset: number): void => {
+    // Keyboard stepping must keep the ring in view; a pointer pick must not.
+    pointerPicked.current = false
     const items = [menuRef.current, detailRef.current].flatMap(root =>
       Array.from(root?.querySelectorAll<HTMLButtonElement>('[data-ring]') ?? []))
     if (items.length === 0) return
@@ -337,6 +372,7 @@ export function ModelSelect(
     if (inSearch && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {
       event.preventDefault()
       if (!busy && visibleModels.length > 0) {
+        pointerPicked.current = false
         const direction = event.key === 'ArrowDown' ? 1 : -1
         setHighlightedIndex((activeModelIndex + direction + visibleModels.length) % visibleModels.length)
         searchRef.current?.focus()
@@ -550,7 +586,10 @@ export function ModelSelect(
               </button>
             )}
           </div>}
-          {state.status === 'loading' && (
+          {/* The refresh strip only stands in for an empty card; once rows are
+              on screen it would push them down mid-selection, so the trigger's
+              own spinner carries the in-flight state instead. */}
+          {state.status === 'loading' && filteredGroups.length === 0 && (
             <div className={css.status}>{t('status.loading')}</div>
           )}
           {state.error !== null && lastActionRef.current === 'load' && (
@@ -589,7 +628,7 @@ export function ModelSelect(
                         id={`${id}-model-${index}`}
                         tabIndex={showSearch ? -1 : 0}
                         onFocus={() => { setHighlightedIndex(index) }}
-                        onPointerEnter={() => { setPreview({ provider: group.id, model: model.id }) }}
+                        onPointerEnter={() => { pointerPicked.current = true; setPreview({ provider: group.id, model: model.id }) }}
                         data-highlighted={index === activeModelIndex ? '' : undefined}
                         className={clsx(
                           css.option, css.modelOption, selected && css.selected, index === activeModelIndex && css.optionActive,
