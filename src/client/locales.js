@@ -2,7 +2,7 @@
 export const zh = {
   'account.menu': '账号菜单',
   'account.signedIn': '已登录 DeepSeek',
-  'account.signedOut': '尚未登录',
+  'account.more': '更多',
   'account.settings': '设置',
   'account.contact': '意见反馈',
   'account.changelog': '更新日志',
@@ -57,7 +57,7 @@ export const zh = {
 export const en = {
   'account.menu': 'Account menu',
   'account.signedIn': 'Signed in to DeepSeek',
-  'account.signedOut': 'Not signed in',
+  'account.more': 'More',
   'account.settings': 'Settings',
   'account.contact': 'Feedback',
   'account.changelog': 'Changelog',

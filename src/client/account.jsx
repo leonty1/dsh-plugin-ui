@@ -1,7 +1,7 @@
 /** Sidebar account launcher: identity row, quick-action seats, quick settings, and sign-in/out. */
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import {
-  Button, IconClockOutlineMedium, IconCloseOutlineRegular, IconLoadingOutlineRegular,
+  Button, IconClockOutlineMedium, IconCloseOutlineRegular, IconEllipsisOutlineMedium, IconLoadingOutlineRegular,
   IconPaperPlaneOutlineMedium, IconRightUpOutlineMedium, IconSettingsOutlineMedium,
   IconSlidersTwoOutlineMedium, IconUserOutlineMedium, Menu, Modal,
 } from '@deepseek-ai/dsh-client-ui-primitives'
@@ -101,14 +101,14 @@ function useQuickView(ctx) {
   return view
 }
 
-/** Account picture with a letter fallback; a broken remote image falls back too. */
-function Avatar({ url, letter }) {
+/** Account picture with the official icon fallback; a broken remote image falls back too. */
+function Avatar({ url }) {
   const [failed, setFailed] = useState(false)
   useEffect(() => { setFailed(false) }, [url])
   if (url !== undefined && url !== null && url !== '' && !failed) {
     return <img className={css.avatarImage} src={url} alt="" onError={() => { setFailed(true) }} />
   }
-  return <span className={css.avatarLetter}>{letter ?? <IconUserOutlineMedium size={16} />}</span>
+  return <IconUserOutlineMedium size={16} />
 }
 
 /**
@@ -254,8 +254,7 @@ export function AccountMenu({
   const signedIn = account.view?.status === 'credential-stored'
   const profile = account.profile
   const name = profile?.status === 'ready' ? profile.value.name ?? profile.value.contact ?? null : null
-  const letter = name !== null && name.length > 0 ? name.charAt(0).toUpperCase() : null
-  const label = signedIn ? name ?? t('account.signedIn') : t('account.signedOut')
+  const label = signedIn ? (profile === undefined ? null : name ?? t('account.signedIn')) : t('account.more')
   const settingsWasOpen = useRef(false)
   useEffect(() => {
     if (settingsOpen && !settingsWasOpen.current) void accountStore.refresh()
@@ -310,12 +309,14 @@ export function AccountMenu({
   return <div ref={anchor} className={css.root}>
     <Menu open={open} side="top" portal autoFocus listClassName={css.list} className={css.anchor}
       anchor={<div className={css.triggerRow}>
-        <button ref={trigger} type="button" className={css.trigger} data-collapsed={!wide}
+        <button ref={trigger} type="button" className={css.trigger} data-collapsed={!wide} data-signed-out={!signedIn}
           aria-label={t('account.menu')} aria-haspopup="menu" aria-expanded={open}
           onClick={() => { setOpen(value => !value) }}>
-          <span className={css.avatar}>
-            <Avatar url={signedIn && profile?.status === 'ready' ? profile.value.avatarUrl : null} letter={letter} />
-          </span>
+          {signedIn
+            ? <span className={css.avatar}>
+              <Avatar url={profile?.status === 'ready' ? profile.value.avatarUrl : null} />
+            </span>
+            : <IconEllipsisOutlineMedium size={14} />}
           {wide && <span className={css.label}>{label}</span>}
         </button>
         {wide && <QuickActionsRow t={t} seats={seats} view={view}
