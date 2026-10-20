@@ -1,8 +1,8 @@
 # dsh-plugin-ui
 
-为 DeepSeek Harness 注入 Qoder 风格界面：配色皮肤、单卡模型/推理强度选择器、账号快捷设置。客户端插件实现，不修改 core。
+**简体中文** | [English](README.en.md)
 
-A Qoder-style UI layer for DeepSeek Harness. Client plugin only; core files are untouched.
+为 DeepSeek Harness 注入 Qoder 风格界面：配色皮肤、单卡模型/推理强度选择器、账号快捷设置。客户端插件实现，不修改 core。
 
 ## 展示
 
