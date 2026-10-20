@@ -20,7 +20,7 @@ A Qoder-style UI layer for DeepSeek Harness: palette skin, a single-card model a
 
 - **Appearance**: four Qoder palettes (Forest / Mint / Bee / Parchment, each in light and dark), picked from preview cards under Appearance; “No skin” restores the official look.
 - **Sidebar**: 5px main margin and 16px radius; workspace/session rows tightened to 30px and up; official brand row and New Session button kept; Plugins/Automation pinned above the account row with a dashed divider.
-- **Text size**: sidebar text follows Text size (S/M/L = 12/14/16px) and New Session scales with it; the account row keeps the official 14px.
+- **Text size**: sidebar text, including the account name, follows Text size (S/M/L = 12/14/16px) and New Session scales with it; the account row keeps the official 44px / 32px rows and 24px avatar.
 - **Model & effort**: one card shows the model list and effort levels (Off / Low / High / Max) with search, retry, and empty states; the Chinese UI localizes effort names.
 - **Account row (desktop)**: official 24px avatar / 44px row; signed out it is ⋯ + “More”; two configurable quick seats sit on the right.
 - **Account menu**: matches the official items (Settings, Contact us, sign in/out); quick settings open from the gear seat.

@@ -38,7 +38,8 @@
   background: transparent;
   color: var(--dsw-alias-label-primary);
   font: inherit;
-  font-size: 14px;
+  font-size: var(--dsh-content-font-size, 14px);
+  line-height: calc(var(--dsh-content-font-size, 14px) + 7px);
   cursor: pointer;
 }
 
@@ -50,7 +51,7 @@
 .trigger[data-signed-out='true']:not([data-collapsed='true']) {
   height: 32px;
   padding: 6px 2px 6px 6px;
-  line-height: 20px;
+  line-height: calc(var(--dsh-content-font-size, 14px) + 6px);
 }
 
 .trigger[data-collapsed='true'] {
