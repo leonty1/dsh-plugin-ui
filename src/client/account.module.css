@@ -139,6 +139,33 @@
   min-width: 236px;
 }
 
+/* Signed-out launcher menu card and rows, matching the official menu. */
+.signedOutMenu[role='menu'] {
+  min-width: 124px;
+  max-width: 280px;
+  padding: 4px;
+}
+
+.signedOutMenu [role='menuitem'] {
+  min-height: 40px;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--dsw-radius-md);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.signedOutMenu [role='menuitem'] > span:first-child:not(:last-child) {
+  width: 16px;
+  height: 16px;
+  color: var(--dsw-alias-menu-icon);
+}
+
+.signedOutMenu [role='menuitem'] > span:first-child:not(:last-child) svg {
+  width: 16px;
+  height: 16px;
+}
+
 .dialog {
   width: min(420px, calc(100vw - 32px));
   padding: 0;

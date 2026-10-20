@@ -16,8 +16,8 @@ A Qoder-style UI layer for DeepSeek Harness: palette skin, single-card model and
 | 首屏角标 | 隐藏 hero 上的预览/版本角标（`.previewBadge`）。 |
 | 模型与强度 | 用单张卡片替换官方模型菜单：左侧强度卡（Off / Low / High / Max 与说明），右侧模型卡（按供应商分组）；选中模型后菜单保持打开，可继续调整强度；支持搜索、加载失败重试与空状态。触发键显示“模型 + 当前强度”。 |
 | 账号行（仅 Desktop） | 左下角账号行保持官方显示：登录后 24px 头像 + 名称（44px 行高、14px 字），未登录为官方 ⋯ + “更多”（32px 行高）；右侧仅追加快捷座位（设置 / 留空）。 |
-| 账号菜单（仅 Desktop） | 快捷设置（语言、明暗模式、正文字号）、全部设置、反馈、更新日志、移动端、关于、登录。 |
-| 快捷设置菜单 | 语言 / 明暗 / 字号各成一组。菜单刻意保持单层，当前值以 “✓” 标出，不依赖多级子菜单。 |
+| 账号菜单（仅 Desktop） | 与官方一致：设置（带设置快捷键）、联系我们、退出登录；未登录时为设置、联系我们、登录。 |
+| 快捷设置菜单 | 由账号行右侧齿轮座位打开，语言 / 明暗 / 字号各成一组。菜单刻意保持单层，当前值以 “✓” 标出，不依赖多级子菜单。 |
 | 快捷座位配置 | General 设置里的 “Quick action slot 1/2”，可把两个座位设为 Settings 或留空，修改立即反映到侧栏账号行。 |
 
 桌面端账号区只在渲染器检测到 `dshDesktop` 时接管官方 `settings.launcher` 座位；Web 端保留官方账号入口和浏览器登录流程，避免破坏 Web 登录。
@@ -56,7 +56,7 @@ pnpm dsh web   # 或启动你的 Web 实例
 
 - General → **Qoder palette**：Forest / Mint / Bee / Parchment / No skin。默认 Forest。
 - General → **Quick action slot 1/2**：配置账号行右侧两个座位（仅 Desktop）。
-- 账号菜单与齿轮座位共用同一套快捷设置。
+- 点头像打开官方项菜单；快捷设置由账号行齿轮座位提供。
 - 浏览器存储键：
   - `dsh-plugin-ui.palette`：当前配色，缺省为 `forest`；`none` 表示关闭皮肤。
   - `dsh-plugin-ui.quick-actions.v1`：账号行两个座位，默认 `[null, "settings"]`。
@@ -75,7 +75,7 @@ pnpm check        # 构建 + node --check
 
 - Web（基于 rc.2 的私有 fork，Chromium）：四套配色与 No skin 切换、暗色 Mint、模型菜单空状态、配置密钥后真实模型列表、模型切换、强度切换、单卡布局。
 - Desktop（官方 0.2.1-rc.2 安装版）：从 Plugins 页本地路径安装、单卡模型/强度菜单与三组模型来源、账号行与右侧齿轮快捷座位、顶部品牌行与 New Session 保持官方设计（悬停 ⌘N 键帽淡入）、Plugins/Automation tasks 紧邻账号行上方并带浅色虚线分隔、侧栏文字随 Text size 小/中/大（12/14/16px）统一缩放且与 Plugins 行一致（实测 12/14/16px 时工作区标题、会话标题、New Session、Plugins 同值，行高 30/30/32px；New Session 悬停 ⌘N 键帽同步缩放）、账号行保持官方 24px 头像 / 44px 行高（未登录为官方 ⋯ + “更多” 32px 行）。
-- Desktop（开发版 Electron，隔离 `DSH_HOME`）：账号菜单、快捷设置子菜单与 ✓ 标记、明暗切换、快捷座位改写与持久化、登录弹窗进入 “Waiting for sign in”。
+- Desktop（开发版 Electron，隔离 `DSH_HOME`）：账号菜单的官方项、齿轮快捷设置的子菜单与 ✓ 标记、明暗切换、快捷座位改写与持久化、登录弹窗进入 “Waiting for sign in”。
 - 未实测：需要真实账号的成功登录、退出登录确认（登录弹窗已打开并取消；未使用账号凭据）。
 - 测试环境本身是自带部分同款改动的 fork，因此 General 设置里会同时出现 fork 自带的快捷座位行与本插件的行；在未改动的官方版本上只会出现本插件的行。
 

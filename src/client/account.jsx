@@ -1,9 +1,8 @@
 /** Sidebar account launcher: identity row, quick-action seats, quick settings, and sign-in/out. */
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import {
-  Button, IconClockOutlineMedium, IconCloseOutlineRegular, IconEllipsisOutlineMedium, IconLoadingOutlineRegular,
-  IconPaperPlaneOutlineMedium, IconRightUpOutlineMedium, IconSettingsOutlineMedium,
-  IconSlidersTwoOutlineMedium, IconUserOutlineMedium, Menu, Modal,
+  Button, IconCloseOutlineRegular, IconEllipsisOutlineMedium, IconLoadingOutlineRegular,
+  IconPaperPlaneOutlineMedium, IconSettingsOutlineMedium, IconUserOutlineMedium, Menu, Modal,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import { applyQuickSetting, quickSettingsItems, quickSettingsView } from './quick-settings.jsx'
 import css from './account.module.css'
@@ -111,9 +110,20 @@ function Avatar({ url }) {
   return <IconUserOutlineMedium size={16} />
 }
 
+/** Official sign-out glyph: a door with an arrow leaving it. */
+function LogoutIcon() {
+  return <span style={{ width: 16, height: 16, position: 'relative' }} aria-hidden="true">
+    <svg style={{ position: 'absolute', left: 1.168, top: 1.214 }} width="13.664" height="13.571"
+      viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3.9961 1.40039C3.37842 1.40039 2.96028 1.40039 2.63867 1.42871C2.32631 1.45627 2.17171 1.50666 2.06641 1.56543C1.85606 1.68288 1.68189 1.85605 1.56446 2.06641C1.50569 2.17173 1.45625 2.32627 1.42871 2.63867C1.40036 2.9603 1.39942 3.37827 1.39942 3.9961L1.39942 9.5752C1.39942 10.193 1.40036 10.611 1.42871 10.9326C1.45625 11.245 1.50569 11.3996 1.56445 11.5049C1.68188 11.7153 1.85605 11.8884 2.06641 12.0059C2.17171 12.0646 2.32631 12.115 2.63867 12.1426C2.96028 12.1709 3.37842 12.1709 3.9961 12.1709V13.5713C3.4033 13.5713 2.91297 13.5721 2.51563 13.5371C2.10906 13.5013 1.73277 13.4233 1.38379 13.2285C0.946838 12.9845 0.585697 12.6235 0.341799 12.1865C0.14725 11.8377 0.0700118 11.4621 0.0341815 11.0557C-0.000847399 10.6583 1.58129e-06 10.1681 1.85029e-06 9.5752L2.09416e-06 3.9961C1.83027e-06 3.40325 -0.000846367 2.91297 0.0341818 2.51563C0.0700164 2.10924 0.147239 1.73362 0.341799 1.38477C0.585703 0.947758 0.946825 0.586744 1.38379 0.342775C1.73277 0.148001 2.10906 0.0700381 2.51563 0.0341813C2.91297 -0.000823893 3.40331 1.37805e-06 3.9961 1.71712e-06L3.9961 1.40039Z" fill="currentColor" />
+      <path d="M13.6426 6.51953C13.6705 6.6957 13.6705 6.8756 13.6426 7.05176C13.5902 7.38188 13.4302 7.64112 13.2539 7.86035C13.0857 8.06937 12.8546 8.29971 12.6006 8.55371L9.3086 11.8447L8.31836 10.8545L11.6104 7.56348C11.637 7.53681 11.6628 7.51104 11.6875 7.48633H3.74317V6.08594H11.6885C11.6635 6.06088 11.6374 6.03487 11.6104 6.00781L8.31836 2.7168L9.3086 1.72656L12.6006 5.01758C12.8547 5.27169 13.0857 5.50185 13.2539 5.71094C13.4303 5.93018 13.5902 6.18939 13.6426 6.51953Z" fill="currentColor" />
+    </svg>
+  </span>
+}
+
 /**
- * One of the two configurable seats. The settings seat opens the same quick
- * settings as the account menu; an empty seat keeps its column.
+ * One of the two configurable seats. The settings seat opens the quick
+ * settings menu; an empty seat keeps its column.
  */
 function QuickActionsRow({ t, seats, view, onQuickSelect, onAllSettings }) {
   const [open, setOpen] = useState(false)
@@ -236,8 +246,8 @@ function SignOutDialog({ t, running, busy, close, confirm }) {
 
 /**
  * The sidebar account launcher replacing the official one while this plugin is
- * active. Signed-out and signed-in states share one identity row; quick
- * settings are available from the account menu and the gear seat.
+ * active. Signed-out and signed-in states share one identity row; the avatar
+ * menu carries the official items, and quick settings live on the gear seat.
  */
 export function AccountMenu({
   t, ctx, useStore, actions, wide, settingsShortcut, openSettings, accountStore, settingsOpen,
@@ -261,7 +271,7 @@ export function AccountMenu({
     settingsWasOpen.current = settingsOpen
   }, [accountStore, settingsOpen])
   const quickSelect = id => { applyQuickSetting(ctx, id) }
-  const allSettings = () => {
+  const openSettingsPage = () => {
     setOpen(false)
     queueMicrotask(() => { trigger.current?.focus({ preventScroll: true }) })
     openSettings()
@@ -294,20 +304,21 @@ export function AccountMenu({
     }
   }
   const openLink = url => { window.open(url, '_blank', 'noopener,noreferrer') }
-  const quick = quickSettingsItems(view, t)
+  const contactUs = () => {
+    const config = globalThis.__DSH_CONTACT_CONFIG__
+    openLink(config?.contactFormUrl ?? 'https://github.com/deepseek-ai/deepseek-harness/issues/new/choose')
+  }
   const items = [
-    { type: 'label', id: 'quick-label', text: t('account.quickSettings') },
-    ...quick.map(item => item.id === 'all-settings'
-      ? { ...item, icon: <IconSlidersTwoOutlineMedium size={16} />, ...(settingsShortcut === undefined ? {} : { shortcut: settingsShortcut }) }
-      : item),
-    { type: 'separator', id: 'quick-end' },
+    { id: 'settings', label: t('account.settings'), icon: <IconSettingsOutlineMedium size={16} />,
+      ...(settingsShortcut === undefined ? {} : { shortcut: settingsShortcut }) },
     { id: 'contact', label: t('account.contact'), icon: <IconPaperPlaneOutlineMedium size={16} /> },
-    { id: 'changelog', label: t('account.changelog'), icon: <IconClockOutlineMedium size={16} /> },
-    { id: 'mobile', label: t('account.mobile'), icon: <IconRightUpOutlineMedium size={16} /> },
-    { id: 'about', label: t('account.about'), icon: <IconRightUpOutlineMedium size={16} /> },
+    ...(signedIn
+      ? [{ id: 'signout', label: t('account.signOut'), icon: <LogoutIcon />, disabled: busy }]
+      : [{ id: 'signin', label: t('account.signIn'), icon: <IconUserOutlineMedium size={16} /> }]),
   ]
   return <div ref={anchor} className={css.root}>
-    <Menu open={open} side="top" portal autoFocus listClassName={css.list} className={css.anchor}
+    <Menu open={open} side="top" portal autoFocus className={css.anchor}
+      listClassName={signedIn ? undefined : css.signedOutMenu}
       anchor={<div className={css.triggerRow}>
         <button ref={trigger} type="button" className={css.trigger} data-collapsed={!wide} data-signed-out={!signedIn}
           aria-label={t('account.menu')} aria-haspopup="menu" aria-expanded={open}
@@ -320,19 +331,13 @@ export function AccountMenu({
           {wide && <span className={css.label}>{label}</span>}
         </button>
         {wide && <QuickActionsRow t={t} seats={seats} view={view}
-          onQuickSelect={quickSelect} onAllSettings={allSettings} />}
+          onQuickSelect={quickSelect} onAllSettings={openSettingsPage} />}
       </div>}
       items={items}
-      footer={signedIn
-        ? [{ id: 'signout', label: t('account.signOut'), icon: <IconUserOutlineMedium size={16} />, danger: true, disabled: busy }]
-        : [{ id: 'signin', label: t('account.signIn'), icon: <IconUserOutlineMedium size={16} /> }]}
       onClose={() => { setOpen(false) }}
       onSelect={(id) => {
-        if (id === 'all-settings') allSettings()
-        else if (applyQuickSetting(ctx, id)) return
-        else if (id === 'contact') { setOpen(false); openLink('https://github.com/deepseek-ai/deepseek-harness/issues/new/choose') }
-        else if (id === 'changelog') { setOpen(false); openLink('https://deepseek-harness.github.io/deepseek-harness/changelog/') }
-        else if (id === 'mobile' || id === 'about') { setOpen(false); openLink('https://github.com/deepseek-ai/deepseek-harness') }
+        if (id === 'settings') openSettingsPage()
+        else if (id === 'contact') { setOpen(false); contactUs() }
         else if (id === 'signin') { setOpen(false); setLoginVisible(true); void accountStore.signIn().catch(() => undefined) }
         else if (id === 'signout') void requestSignOut()
       }} />

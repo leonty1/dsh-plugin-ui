@@ -641,7 +641,7 @@ var styleId2 = "dsh-plugin-ui-account";
 if (typeof document !== "undefined" && document.getElementById(styleId2) === null) {
   const style = document.createElement("style");
   style.id = styleId2;
-  style.textContent = ".dpui-account-root {\n  flex: 1;\n  min-width: 0;\n}\n\n/* Rail: the seat is the 36x36 avatar box. As a shrink-to-fit item in the\n   centered column the trigger overflows a max-content root and the avatar\n   lands half outside the rail; a fixed box keeps it on the official seat. */\n.dpui-account-root:has(.dpui-account-trigger[data-collapsed='true']) {\n  flex: none;\n  width: 36px;\n}\n\n.dpui-account-anchor {\n  width: 100%;\n}\n\n.dpui-account-triggerRow {\n  display: flex;\n  align-items: stretch;\n  gap: 8px;\n  min-width: 0;\n  width: 100%;\n}\n\n.dpui-account-trigger {\n  user-select: none;\n  display: flex;\n  align-items: center;\n  flex: 1;\n  box-sizing: border-box;\n  min-width: 0;\n  height: 44px;\n  gap: 8px;\n  padding: 6px;\n  border: 0;\n  border-radius: var(--dsw-radius-md);\n  background: transparent;\n  color: var(--dsw-alias-label-primary);\n  font: inherit;\n  font-size: 14px;\n  cursor: pointer;\n}\n\n.dpui-account-trigger:hover {\n  background: var(--dsw-alias-interactive-bg-hover);\n}\n\n/* Signed-out launcher keeps the official 32px More row. */\n.dpui-account-trigger[data-signed-out='true']:not([data-collapsed='true']) {\n  height: 32px;\n  padding: 6px 2px 6px 6px;\n  line-height: 20px;\n}\n\n.dpui-account-trigger[data-collapsed='true'] {\n  flex: none;\n  box-sizing: border-box;\n  width: 36px;\n  height: 36px;\n  justify-content: center;\n  gap: 0;\n  padding: 0;\n}\n\n.dpui-account-avatar {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex: none;\n  width: 24px;\n  height: 24px;\n  overflow: hidden;\n  border-radius: 50%;\n  corner-shape: round;\n  background: var(--dsw-alias-bg-skeleton);\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.dpui-account-avatarImage {\n  display: block;\n  width: 100%;\n  height: 100%;\n  border-radius: 50%;\n  corner-shape: round;\n  object-fit: cover;\n}\n\n.dpui-account-label {\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.dpui-account-seats {\n  display: flex;\n  align-items: stretch;\n  flex: none;\n  gap: 2px;\n}\n\n.dpui-account-seat {\n  display: flex;\n  align-items: center;\n  flex: none;\n  box-sizing: border-box;\n  max-width: 30px;\n  overflow: hidden;\n  padding: 0 6px;\n  border: 0;\n  border-radius: var(--dsw-radius-sm);\n  background: transparent;\n  color: var(--dsw-alias-label-tertiary);\n  font: inherit;\n  font-size: 0.93em;\n  cursor: pointer;\n  transition: max-width 160ms ease, background 120ms ease, color 120ms ease;\n}\n\n.dpui-account-seat:hover {\n  background: var(--dsw-alias-interactive-bg-hover);\n  color: var(--dsw-alias-label-primary);\n}\n\n.dpui-account-seatIcon {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex: none;\n  width: 18px;\n}\n\n.dpui-account-seatSpacer {\n  flex: none;\n  width: 30px;\n}\n\n.dpui-account-list {\n  min-width: 236px;\n}\n\n.dpui-account-dialog {\n  width: min(420px, calc(100vw - 32px));\n  padding: 0;\n}\n\n.dpui-account-dialogContent {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  padding: 20px 20px 12px;\n}\n\n.dpui-account-dialogHeader {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 12px;\n}\n\n.dpui-account-dialogTitle {\n  margin: 0;\n  color: var(--dsw-alias-label-primary);\n  font-size: 16px;\n  line-height: 24px;\n  font-weight: 500;\n}\n\n.dpui-account-dialogClose {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  flex: none;\n  width: 24px;\n  height: 24px;\n  padding: 0;\n  border: 0;\n  border-radius: var(--dsw-radius-sm);\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  cursor: pointer;\n}\n\n.dpui-account-dialogClose:hover {\n  background: var(--dsw-alias-interactive-bg-hover);\n}\n\n.dpui-account-dialogDescription {\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font-size: 13px;\n  line-height: 20px;\n}\n\n.dpui-account-dialogActions {\n  display: flex;\n  justify-content: flex-end;\n  gap: 8px;\n  padding: 12px 20px 20px;\n}\n\n.dpui-account-secondaryButton,\n.dpui-account-primaryButton {\n  min-width: 88px;\n}\n\n.dpui-account-link {\n  padding: 0;\n  border: 0;\n  background: transparent;\n  color: var(--dsw-alias-brand-primary);\n  font: inherit;\n  cursor: pointer;\n}\n\n.dpui-account-link:hover {\n  text-decoration: underline;\n}\n\n.dpui-account-spinner {\n  animation: dpui-spin 1s linear infinite;\n}\n\n@keyframes dpui-spin {\n  to { transform: rotate(360deg); }\n}\n";
+  style.textContent = ".dpui-account-root {\n  flex: 1;\n  min-width: 0;\n}\n\n/* Rail: the seat is the 36x36 avatar box. As a shrink-to-fit item in the\n   centered column the trigger overflows a max-content root and the avatar\n   lands half outside the rail; a fixed box keeps it on the official seat. */\n.dpui-account-root:has(.dpui-account-trigger[data-collapsed='true']) {\n  flex: none;\n  width: 36px;\n}\n\n.dpui-account-anchor {\n  width: 100%;\n}\n\n.dpui-account-triggerRow {\n  display: flex;\n  align-items: stretch;\n  gap: 8px;\n  min-width: 0;\n  width: 100%;\n}\n\n.dpui-account-trigger {\n  user-select: none;\n  display: flex;\n  align-items: center;\n  flex: 1;\n  box-sizing: border-box;\n  min-width: 0;\n  height: 44px;\n  gap: 8px;\n  padding: 6px;\n  border: 0;\n  border-radius: var(--dsw-radius-md);\n  background: transparent;\n  color: var(--dsw-alias-label-primary);\n  font: inherit;\n  font-size: 14px;\n  cursor: pointer;\n}\n\n.dpui-account-trigger:hover {\n  background: var(--dsw-alias-interactive-bg-hover);\n}\n\n/* Signed-out launcher keeps the official 32px More row. */\n.dpui-account-trigger[data-signed-out='true']:not([data-collapsed='true']) {\n  height: 32px;\n  padding: 6px 2px 6px 6px;\n  line-height: 20px;\n}\n\n.dpui-account-trigger[data-collapsed='true'] {\n  flex: none;\n  box-sizing: border-box;\n  width: 36px;\n  height: 36px;\n  justify-content: center;\n  gap: 0;\n  padding: 0;\n}\n\n.dpui-account-avatar {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex: none;\n  width: 24px;\n  height: 24px;\n  overflow: hidden;\n  border-radius: 50%;\n  corner-shape: round;\n  background: var(--dsw-alias-bg-skeleton);\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.dpui-account-avatarImage {\n  display: block;\n  width: 100%;\n  height: 100%;\n  border-radius: 50%;\n  corner-shape: round;\n  object-fit: cover;\n}\n\n.dpui-account-label {\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.dpui-account-seats {\n  display: flex;\n  align-items: stretch;\n  flex: none;\n  gap: 2px;\n}\n\n.dpui-account-seat {\n  display: flex;\n  align-items: center;\n  flex: none;\n  box-sizing: border-box;\n  max-width: 30px;\n  overflow: hidden;\n  padding: 0 6px;\n  border: 0;\n  border-radius: var(--dsw-radius-sm);\n  background: transparent;\n  color: var(--dsw-alias-label-tertiary);\n  font: inherit;\n  font-size: 0.93em;\n  cursor: pointer;\n  transition: max-width 160ms ease, background 120ms ease, color 120ms ease;\n}\n\n.dpui-account-seat:hover {\n  background: var(--dsw-alias-interactive-bg-hover);\n  color: var(--dsw-alias-label-primary);\n}\n\n.dpui-account-seatIcon {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex: none;\n  width: 18px;\n}\n\n.dpui-account-seatSpacer {\n  flex: none;\n  width: 30px;\n}\n\n.dpui-account-list {\n  min-width: 236px;\n}\n\n/* Signed-out launcher menu card and rows, matching the official menu. */\n.dpui-account-signedOutMenu[role='menu'] {\n  min-width: 124px;\n  max-width: 280px;\n  padding: 4px;\n}\n\n.dpui-account-signedOutMenu [role='menuitem'] {\n  min-height: 40px;\n  gap: 8px;\n  padding: 8px 10px;\n  border-radius: var(--dsw-radius-md);\n  font-size: 14px;\n  line-height: 22px;\n}\n\n.dpui-account-signedOutMenu [role='menuitem'] > span:first-child:not(:last-child) {\n  width: 16px;\n  height: 16px;\n  color: var(--dsw-alias-menu-icon);\n}\n\n.dpui-account-signedOutMenu [role='menuitem'] > span:first-child:not(:last-child) svg {\n  width: 16px;\n  height: 16px;\n}\n\n.dpui-account-dialog {\n  width: min(420px, calc(100vw - 32px));\n  padding: 0;\n}\n\n.dpui-account-dialogContent {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  padding: 20px 20px 12px;\n}\n\n.dpui-account-dialogHeader {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 12px;\n}\n\n.dpui-account-dialogTitle {\n  margin: 0;\n  color: var(--dsw-alias-label-primary);\n  font-size: 16px;\n  line-height: 24px;\n  font-weight: 500;\n}\n\n.dpui-account-dialogClose {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  flex: none;\n  width: 24px;\n  height: 24px;\n  padding: 0;\n  border: 0;\n  border-radius: var(--dsw-radius-sm);\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  cursor: pointer;\n}\n\n.dpui-account-dialogClose:hover {\n  background: var(--dsw-alias-interactive-bg-hover);\n}\n\n.dpui-account-dialogDescription {\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font-size: 13px;\n  line-height: 20px;\n}\n\n.dpui-account-dialogActions {\n  display: flex;\n  justify-content: flex-end;\n  gap: 8px;\n  padding: 12px 20px 20px;\n}\n\n.dpui-account-secondaryButton,\n.dpui-account-primaryButton {\n  min-width: 88px;\n}\n\n.dpui-account-link {\n  padding: 0;\n  border: 0;\n  background: transparent;\n  color: var(--dsw-alias-brand-primary);\n  font: inherit;\n  cursor: pointer;\n}\n\n.dpui-account-link:hover {\n  text-decoration: underline;\n}\n\n.dpui-account-spinner {\n  animation: dpui-spin 1s linear infinite;\n}\n\n@keyframes dpui-spin {\n  to { transform: rotate(360deg); }\n}\n";
   document.head.append(style);
 }
 var account_default = new Proxy({}, { get: (_target, key) => typeof key === "string" ? "dpui-account-" + key : void 0 });
@@ -753,6 +753,23 @@ function Avatar({ url }) {
     } });
   }
   return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconUserOutlineMedium, { size: 16 });
+}
+function LogoutIcon() {
+  return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { style: { width: 16, height: 16, position: "relative" }, "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(
+    "svg",
+    {
+      style: { position: "absolute", left: 1.168, top: 1.214 },
+      width: "13.664",
+      height: "13.571",
+      viewBox: "0 0 14 14",
+      fill: "none",
+      xmlns: "http://www.w3.org/2000/svg",
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("path", { d: "M3.9961 1.40039C3.37842 1.40039 2.96028 1.40039 2.63867 1.42871C2.32631 1.45627 2.17171 1.50666 2.06641 1.56543C1.85606 1.68288 1.68189 1.85605 1.56446 2.06641C1.50569 2.17173 1.45625 2.32627 1.42871 2.63867C1.40036 2.9603 1.39942 3.37827 1.39942 3.9961L1.39942 9.5752C1.39942 10.193 1.40036 10.611 1.42871 10.9326C1.45625 11.245 1.50569 11.3996 1.56445 11.5049C1.68188 11.7153 1.85605 11.8884 2.06641 12.0059C2.17171 12.0646 2.32631 12.115 2.63867 12.1426C2.96028 12.1709 3.37842 12.1709 3.9961 12.1709V13.5713C3.4033 13.5713 2.91297 13.5721 2.51563 13.5371C2.10906 13.5013 1.73277 13.4233 1.38379 13.2285C0.946838 12.9845 0.585697 12.6235 0.341799 12.1865C0.14725 11.8377 0.0700118 11.4621 0.0341815 11.0557C-0.000847399 10.6583 1.58129e-06 10.1681 1.85029e-06 9.5752L2.09416e-06 3.9961C1.83027e-06 3.40325 -0.000846367 2.91297 0.0341818 2.51563C0.0700164 2.10924 0.147239 1.73362 0.341799 1.38477C0.585703 0.947758 0.946825 0.586744 1.38379 0.342775C1.73277 0.148001 2.10906 0.0700381 2.51563 0.0341813C2.91297 -0.000823893 3.40331 1.37805e-06 3.9961 1.71712e-06L3.9961 1.40039Z", fill: "currentColor" }),
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("path", { d: "M13.6426 6.51953C13.6705 6.6957 13.6705 6.8756 13.6426 7.05176C13.5902 7.38188 13.4302 7.64112 13.2539 7.86035C13.0857 8.06937 12.8546 8.29971 12.6006 8.55371L9.3086 11.8447L8.31836 10.8545L11.6104 7.56348C11.637 7.53681 11.6628 7.51104 11.6875 7.48633H3.74317V6.08594H11.6885C11.6635 6.06088 11.6374 6.03487 11.6104 6.00781L8.31836 2.7168L9.3086 1.72656L12.6006 5.01758C12.8547 5.27169 13.0857 5.50185 13.2539 5.71094C13.4303 5.93018 13.5902 6.18939 13.6426 6.51953Z", fill: "currentColor" })
+      ]
+    }
+  ) });
 }
 function QuickActionsRow({ t, seats, view, onQuickSelect, onAllSettings }) {
   const [open, setOpen] = (0, import_react2.useState)(false);
@@ -959,7 +976,7 @@ function AccountMenu({
   const quickSelect = (id) => {
     applyQuickSetting(ctx, id);
   };
-  const allSettings = () => {
+  const openSettingsPage = () => {
     setOpen(false);
     queueMicrotask(() => {
       trigger.current?.focus({ preventScroll: true });
@@ -996,15 +1013,19 @@ function AccountMenu({
   const openLink = (url) => {
     window.open(url, "_blank", "noopener,noreferrer");
   };
-  const quick = quickSettingsItems(view, t);
+  const contactUs = () => {
+    const config = globalThis.__DSH_CONTACT_CONFIG__;
+    openLink(config?.contactFormUrl ?? "https://github.com/deepseek-ai/deepseek-harness/issues/new/choose");
+  };
   const items = [
-    { type: "label", id: "quick-label", text: t("account.quickSettings") },
-    ...quick.map((item) => item.id === "all-settings" ? { ...item, icon: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconSlidersTwoOutlineMedium, { size: 16 }), ...settingsShortcut === void 0 ? {} : { shortcut: settingsShortcut } } : item),
-    { type: "separator", id: "quick-end" },
+    {
+      id: "settings",
+      label: t("account.settings"),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconSettingsOutlineMedium, { size: 16 }),
+      ...settingsShortcut === void 0 ? {} : { shortcut: settingsShortcut }
+    },
     { id: "contact", label: t("account.contact"), icon: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconPaperPlaneOutlineMedium, { size: 16 }) },
-    { id: "changelog", label: t("account.changelog"), icon: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconClockOutlineMedium, { size: 16 }) },
-    { id: "mobile", label: t("account.mobile"), icon: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconRightUpOutlineMedium, { size: 16 }) },
-    { id: "about", label: t("account.about"), icon: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconRightUpOutlineMedium, { size: 16 }) }
+    ...signedIn ? [{ id: "signout", label: t("account.signOut"), icon: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(LogoutIcon, {}), disabled: busy }] : [{ id: "signin", label: t("account.signIn"), icon: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconUserOutlineMedium, { size: 16 }) }]
   ];
   return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { ref: anchor, className: account_default.root, children: [
     /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
@@ -1014,8 +1035,8 @@ function AccountMenu({
         side: "top",
         portal: true,
         autoFocus: true,
-        listClassName: account_default.list,
         className: account_default.anchor,
+        listClassName: signedIn ? void 0 : account_default.signedOutMenu,
         anchor: /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: account_default.triggerRow, children: [
           /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(
             "button",
@@ -1044,27 +1065,19 @@ function AccountMenu({
               seats,
               view,
               onQuickSelect: quickSelect,
-              onAllSettings: allSettings
+              onAllSettings: openSettingsPage
             }
           )
         ] }),
         items,
-        footer: signedIn ? [{ id: "signout", label: t("account.signOut"), icon: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconUserOutlineMedium, { size: 16 }), danger: true, disabled: busy }] : [{ id: "signin", label: t("account.signIn"), icon: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconUserOutlineMedium, { size: 16 }) }],
         onClose: () => {
           setOpen(false);
         },
         onSelect: (id) => {
-          if (id === "all-settings") allSettings();
-          else if (applyQuickSetting(ctx, id)) return;
+          if (id === "settings") openSettingsPage();
           else if (id === "contact") {
             setOpen(false);
-            openLink("https://github.com/deepseek-ai/deepseek-harness/issues/new/choose");
-          } else if (id === "changelog") {
-            setOpen(false);
-            openLink("https://deepseek-harness.github.io/deepseek-harness/changelog/");
-          } else if (id === "mobile" || id === "about") {
-            setOpen(false);
-            openLink("https://github.com/deepseek-ai/deepseek-harness");
+            contactUs();
           } else if (id === "signin") {
             setOpen(false);
             setLoginVisible(true);
@@ -1370,10 +1383,7 @@ var zh = {
   "account.signedIn": "\u5DF2\u767B\u5F55 DeepSeek",
   "account.more": "\u66F4\u591A",
   "account.settings": "\u8BBE\u7F6E",
-  "account.contact": "\u610F\u89C1\u53CD\u9988",
-  "account.changelog": "\u66F4\u65B0\u65E5\u5FD7",
-  "account.mobile": "\u4E0B\u8F7D\u79FB\u52A8\u5E94\u7528",
-  "account.about": "\u5173\u4E8E DeepSeek Harness",
+  "account.contact": "\u8054\u7CFB\u6211\u4EEC",
   "account.signIn": "\u767B\u5F55",
   "account.signOut": "\u9000\u51FA\u767B\u5F55",
   "account.signInTitle": "\u5F00\u59CB\u4F7F\u7528",
@@ -1408,7 +1418,6 @@ var zh = {
   "account.sizeMedium": "\u4E2D",
   "account.sizeLarge": "\u5927",
   "account.allSettings": "\u5168\u90E8\u8BBE\u7F6E\u2026",
-  "account.quickSettings": "\u5FEB\u6377\u8BBE\u7F6E",
   "account.quickActionsTitle": "\u8D26\u53F7\u884C\u5FEB\u6377\u64CD\u4F5C",
   "palette.title": "Qoder \u914D\u8272",
   "palette.hint": "\u9009\u62E9\u5916\u89C2\u914D\u8272\uFF1B\u660E\u6697\u4ECD\u8DDF\u968F\u5E94\u7528\u5F53\u524D\u7684\u6D45\u8272/\u6DF1\u8272",
@@ -1423,10 +1432,7 @@ var en = {
   "account.signedIn": "Signed in to DeepSeek",
   "account.more": "More",
   "account.settings": "Settings",
-  "account.contact": "Feedback",
-  "account.changelog": "Changelog",
-  "account.mobile": "Get the mobile app",
-  "account.about": "About DeepSeek Harness",
+  "account.contact": "Contact us",
   "account.signIn": "Sign in",
   "account.signOut": "Sign out",
   "account.signInTitle": "Get started",
@@ -1461,7 +1467,6 @@ var en = {
   "account.sizeMedium": "Medium",
   "account.sizeLarge": "Large",
   "account.allSettings": "All settings\u2026",
-  "account.quickSettings": "Quick settings",
   "account.quickActionsTitle": "Account row quick actions",
   "palette.title": "Qoder palette",
   "palette.hint": "Pick an appearance; light or dark still follows the app",
