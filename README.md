@@ -36,17 +36,6 @@ A Qoder-style UI layer for DeepSeek Harness: palette skin, single-card model and
 
 桌面端账号区只在渲染器检测到 `dshDesktop` 时接管官方 `settings.launcher` 座位；Web 端保留官方账号入口和浏览器登录流程，避免破坏 Web 登录。
 
-## 明确不包含
-
-按约定剔除、且本插件没有实现的内容：
-
-- 桌宠（法斗）及首屏法斗美术。
-- 固定 236px 侧栏宽度、更新圆点、多级全局 Menu、首屏点击轮换。
-- 独立的 Workspace Search 行、hero 标题文案与点击语义、`sidebar` slot 重构、宽度常量、`sidebar.brand.name` 退役、更新契约字段、LTY 桌面身份与图标。
-- 原 fork 中并不存在的“底部添加按钮”“会话行悬停菜单/操作按钮”“插件市场等新页面”——这些没有被发明或补做。
-
-不修改 `/Users/tongyi/dsh-lty` 或任何 core 文件；插件只通过公开的 slot、theme、locale、store 和 `remote.account` 接口工作。
-
 ## 安装
 
 `dist/` 已提交，安装时不需要构建。
