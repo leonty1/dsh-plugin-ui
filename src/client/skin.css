@@ -3,18 +3,28 @@
 [class*="_frame"] > [class*="_centerCol"] { margin: 5px !important; border: none !important; border-radius: 16px !important; overflow: hidden; background: var(--dsw-alias-bg-base) !important; }
 html:not([data-platform='darwin']) [class*="_frame"] { background: var(--dsw-specific-sidebar-fill) !important; }
 [class*="_frame"] > [class*="_rightbarCol"] { background: transparent !important; }
-/* Sidebar text follows the app's text-size setting: General and the quick
-   menu both write theme.fontSizes.text, which the theme presenter publishes as
-   --dsh-content-font-size. Row height and line box follow the same value so
-   the rows stay in proportion at every size. */
-[class*="_sidebarCol"] [class*="_root"][class*="_quietBars"] {
-  --dsh-sidebar-inline-padding: 8px;
-  padding-top: 0 !important;
+/* Sidebar geometry and text size follow the app's text-size setting: General
+   and the quick menu both write theme.fontSizes.text, which the theme presenter
+   publishes as --dsh-content-font-size. Row height and line box derive from the
+   same value so the rows stay in proportion at every size. Scope to the sidebar
+   root element itself: plain [class*="_root"] also matches inner component
+   roots, and [class*="_quietBars"] tracks the pointer (the root drops it while
+   the pointer is inside), which retracted these variables on every hover. */
+[class*="_sidebarCol"] > div > [class*="_root"]:not([class*="_root_"]) {
   --dpui-sidebar-font-size: var(--dsh-content-font-size, 14px);
   --dpui-sidebar-row-height: max(30px, calc(var(--dpui-sidebar-font-size) + 16px));
   --dpui-sidebar-line-height: calc(var(--dpui-sidebar-font-size) + 7px);
 }
-[class*="_sidebarCol"] [class*="_logoRow"] { display: none !important; }
+/* Qoder's tighter padding and lifted top strip are expanded-only: the rail
+   keeps the official 18px/10px padding that the strip's negative margins
+   are calibrated against. */
+[class*="_sidebarCol"] > div > [class*="_root"]:not([class*="_root_"]):not([class*="_collapsed"]) {
+  --dsh-sidebar-inline-padding: 8px;
+  padding-top: 0 !important;
+}
+/* Qoder's expanded top row carries no brand; the collapsed rail keeps the
+   official logo slot (and, on Windows, the caption toggle inside it). */
+[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) [class*="_logoRow"] { display: none !important; }
 /* Scope New Session to the button itself: matching every descendant by the
    local-name suffix inflated the label mask and misaligned its text. */
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] { height: var(--dpui-sidebar-row-height) !important; min-height: var(--dpui-sidebar-row-height) !important; margin: 0 0 8px !important; padding: 4px 8px !important; border: none !important; background: transparent !important; border-radius: 8px !important; font-size: var(--dpui-sidebar-font-size) !important; line-height: calc(var(--dpui-sidebar-font-size) + 8px) !important; font-weight: 400 !important; justify-content: flex-start !important; }
@@ -22,11 +32,12 @@ html:not([data-platform='darwin']) [class*="_frame"] { background: var(--dsw-spe
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] [class*="_newSessionContent"] { justify-content: flex-start !important; }
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] [class*="_newSessionShortcut"] { display: none !important; }
 /* The panel list sits after the scrollable region so Plugins and Automation
-   tasks rest directly above the account footer, under a dashed separator. */
-[class*="_sidebarCol"] [class*="_panelList"] { gap: 0 !important; margin-bottom: 4px !important; order: 1 !important; }
-[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) [class*="_panelList"] { border-top: 1px dashed var(--dsw-alias-border-l2) !important; padding-top: 8px !important; }
-[class*="_sidebarCol"] [class*="_footArea"] { order: 2 !important; }
-[class*="_sidebarCol"] [class*="_panelRow"] { min-height: var(--dpui-sidebar-row-height) !important; height: var(--dpui-sidebar-row-height) !important; margin: 0 !important; padding: 4px 8px !important; border-radius: 8px !important; font-size: var(--dpui-sidebar-font-size) !important; line-height: var(--dpui-sidebar-line-height) !important; }
+   tasks rest directly above the account footer, under a dashed separator.
+   Expanded-only: the collapsed rail keeps the official order and 12px icon
+   rhythm. */
+[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) [class*="_panelList"] { order: 1 !important; gap: 0 !important; margin-bottom: 4px !important; border-top: 1px dashed var(--dsw-alias-border-l2) !important; padding-top: 8px !important; }
+[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) [class*="_footArea"] { order: 2 !important; }
+[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) [class*="_panelRow"] { min-height: var(--dpui-sidebar-row-height) !important; height: var(--dpui-sidebar-row-height) !important; margin: 0 !important; padding: 4px 8px !important; border-radius: 8px !important; font-size: var(--dpui-sidebar-font-size) !important; line-height: var(--dpui-sidebar-line-height) !important; }
 [class*="_sidebarCol"] [class*="_sectionHeader"] { height: var(--dpui-sidebar-row-height) !important; margin-bottom: 2px !important; font-size: calc(var(--dpui-sidebar-font-size) - 1px) !important; }
 [class*="_sidebarCol"] [class*="_projectRow"] { height: var(--dpui-sidebar-row-height) !important; min-height: var(--dpui-sidebar-row-height) !important; font-size: var(--dpui-sidebar-font-size) !important; }
 [class*="_sidebarCol"] [class*="_sessionRow"] { height: var(--dpui-sidebar-row-height) !important; min-height: var(--dpui-sidebar-row-height) !important; font-size: var(--dpui-sidebar-font-size) !important; border-radius: 8px !important; }

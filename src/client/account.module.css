@@ -3,6 +3,14 @@
   min-width: 0;
 }
 
+/* Rail: the seat is the 36x36 avatar box. As a shrink-to-fit item in the
+   centered column the trigger overflows a max-content root and the avatar
+   lands half outside the rail; a fixed box keeps it on the official seat. */
+.root:has(.trigger[data-collapsed='true']) {
+  flex: none;
+  width: 36px;
+}
+
 .anchor {
   width: 100%;
 }
