@@ -10,6 +10,12 @@ A Qoder-style UI layer for DeepSeek Harness: palette skin, single-card model and
 | --- | --- |
 | ![Qoder UI light](docs/images/showcase-light.png) | ![Qoder UI dark](docs/images/showcase-dark.png) |
 
+*模型与推理强度同一张卡片 / Model and reasoning effort in one card*
+
+![Model and reasoning effort](docs/images/showcase-models.png)
+
+*Appearance 下的调色板预览卡 / Palette previews under Appearance*
+
 ![Palette previews under Appearance](docs/images/showcase-settings.png)
 
 ## 包含的内容
