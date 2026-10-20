@@ -38,22 +38,12 @@ A Qoder-style UI layer for DeepSeek Harness: palette skin, single-card model and
 
 ## 安装
 
-`dist/` 已提交，安装时不需要构建。
+`dist/` 已提交，安装时不需要构建。用本项目仓库地址安装：
 
-Desktop：
+- Desktop：Plugins → Add plugin → 填入 `git@github.com:leonty1/dsh-plugin-ui.git` → Install → Enable now，然后重启应用。
+- Web：`dsh plugin --profile web add git@github.com:leonty1/dsh-plugin-ui.git`。
 
-1. 打开 Plugins → Add plugin。
-2. 在输入框填入本目录的绝对路径（例如 `/Users/tongyi/dsh-plugin-ui`）。
-3. Install → Enable now，然后重启应用。
-
-Web profile（CLI）：
-
-```sh
-dsh plugin --profile web add /absolute/path/to/dsh-plugin-ui
-pnpm dsh web   # 或启动你的 Web 实例
-```
-
-卸载：在 Plugins 页卸载，或 `dsh plugin --profile <profile> remove dsh-plugin-ui`。账号相关界面只在 Desktop 出现；Web 端只加载皮肤与模型选择器。
+卸载：在 Plugins 页卸载，或 `dsh plugin --profile <profile> remove dsh-plugin-ui`。
 
 ## 配置与存储
 
