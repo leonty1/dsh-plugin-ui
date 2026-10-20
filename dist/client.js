@@ -576,8 +576,8 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
 }
 
 // src/client/account.jsx
-var import_react2 = require("react");
-var import_dsh_client_ui_primitives4 = require("@deepseek-ai/dsh-client-ui-primitives");
+var import_react3 = require("react");
+var import_dsh_client_ui_primitives5 = require("@deepseek-ai/dsh-client-ui-primitives");
 
 // src/client/quick-settings.jsx
 var import_dsh_client_ui_primitives3 = require("@deepseek-ai/dsh-client-ui-primitives");
@@ -636,18 +636,95 @@ function applyQuickSetting(ctx, id) {
   return false;
 }
 
+// src/client/quick-actions.js
+var import_dsh_client_store = require("@deepseek-ai/dsh-client-store");
+var BUILTIN_QUICK_ACTIONS = [
+  { id: "settings", labelKey: "account.action.settings" },
+  { id: "new-session", labelKey: "account.action.newSession" },
+  { id: "plugins", labelKey: "account.action.plugins" },
+  { id: "schedules", labelKey: "account.action.schedules" },
+  { id: "theme", labelKey: "account.action.theme" },
+  { id: "sidebar", labelKey: "account.action.sidebar" },
+  { id: "all-settings", labelKey: "account.action.allSettings" }
+];
+var QUICK_ACTION_SLOT = "pluginUi.quickAction";
+var QUICK_ACTIONS_PERSIST = "dsh-plugin-ui.quick-actions.v1";
+var DEFAULT_QUICK_ACTIONS = [null, "settings"];
+function createQuickActionsStore() {
+  return (0, import_dsh_client_store.defineStore)({
+    init: () => ({ seats: [...DEFAULT_QUICK_ACTIONS] }),
+    persist: QUICK_ACTIONS_PERSIST,
+    actions: {
+      setSeat: (draft, index, id) => {
+        draft.seats[index] = id;
+      }
+    }
+  });
+}
+
+// src/client/quick-actions-catalog.jsx
+var import_react2 = require("react");
+var import_dsh_client_ui_slots = require("@deepseek-ai/dsh-client-ui-slots");
+var import_dsh_client_ui_primitives4 = require("@deepseek-ai/dsh-client-ui-primitives");
+var import_jsx_runtime3 = require("react/jsx-runtime");
+var BUILTIN_ICONS = {
+  settings: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconSettingsOutlineMedium, { size: 14 }),
+  "new-session": /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconNewChatOutlineMedium, { size: 14 }),
+  plugins: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconCordisPluginOutlineMedium, { size: 14 }),
+  schedules: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconClockOutlineMedium, { size: 14 }),
+  theme: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconLightOutlineMedium, { size: 14 }),
+  sidebar: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconPanelLeftOutlineMedium, { size: 14 }),
+  "all-settings": /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconSlidersTwoOutlineMedium, { size: 14 })
+};
+var BUILTIN_IDS = new Set(BUILTIN_QUICK_ACTIONS.map((action) => action.id));
+function builtinQuickActionIcon(id) {
+  return BUILTIN_ICONS[id];
+}
+function externalQuickActions(ctx) {
+  return ctx.slots.entriesOfSlot(QUICK_ACTION_SLOT).map(({ options }) => ({
+    id: options.id,
+    label: options.label ?? options.id,
+    order: options.order ?? 0
+  })).filter((action) => !BUILTIN_IDS.has(action.id)).sort((a, b) => a.order - b.order);
+}
+function useQuickActionCatalog(ctx, t) {
+  const [external, setExternal] = (0, import_react2.useState)(() => externalQuickActions(ctx));
+  (0, import_react2.useEffect)(() => {
+    const update = () => {
+      setExternal(externalQuickActions(ctx));
+    };
+    update();
+    const off = ctx.slots.subscribe(QUICK_ACTION_SLOT, update);
+    return () => {
+      off?.();
+    };
+  }, [ctx]);
+  return (0, import_react2.useMemo)(() => [
+    ...BUILTIN_QUICK_ACTIONS.map((action) => ({
+      id: action.id,
+      label: t(action.labelKey),
+      builtin: true,
+      icon: BUILTIN_ICONS[action.id]
+    })),
+    ...external.map((action) => ({ ...action, label: (0, import_dsh_client_ui_slots.resolveSlotLabel)(action.label) ?? action.id }))
+  ], [external, t]);
+}
+function quickActionLabel(id, catalog, t) {
+  return catalog.find((action) => action.id === id)?.label ?? t("account.emptyChoice");
+}
+
 // plugin-ui-css-module:/Users/tongyi/dsh-plugin-ui/src/client/account.module.css
 var styleId2 = "dsh-plugin-ui-account";
 if (typeof document !== "undefined" && document.getElementById(styleId2) === null) {
   const style = document.createElement("style");
   style.id = styleId2;
-  style.textContent = ".dpui-account-root {\n  flex: 1;\n  min-width: 0;\n}\n\n/* Rail: the seat is the 36x36 avatar box. As a shrink-to-fit item in the\n   centered column the trigger overflows a max-content root and the avatar\n   lands half outside the rail; a fixed box keeps it on the official seat. */\n.dpui-account-root:has(.dpui-account-trigger[data-collapsed='true']) {\n  flex: none;\n  width: 36px;\n}\n\n.dpui-account-anchor {\n  width: 100%;\n}\n\n.dpui-account-triggerRow {\n  display: flex;\n  align-items: stretch;\n  gap: 8px;\n  min-width: 0;\n  width: 100%;\n}\n\n.dpui-account-trigger {\n  user-select: none;\n  display: flex;\n  align-items: center;\n  flex: 1;\n  box-sizing: border-box;\n  min-width: 0;\n  height: 44px;\n  gap: 8px;\n  padding: 6px;\n  border: 0;\n  border-radius: var(--dsw-radius-md);\n  background: transparent;\n  color: var(--dsw-alias-label-primary);\n  font: inherit;\n  font-size: 14px;\n  cursor: pointer;\n}\n\n.dpui-account-trigger:hover {\n  background: var(--dsw-alias-interactive-bg-hover);\n}\n\n/* Signed-out launcher keeps the official 32px More row. */\n.dpui-account-trigger[data-signed-out='true']:not([data-collapsed='true']) {\n  height: 32px;\n  padding: 6px 2px 6px 6px;\n  line-height: 20px;\n}\n\n.dpui-account-trigger[data-collapsed='true'] {\n  flex: none;\n  box-sizing: border-box;\n  width: 36px;\n  height: 36px;\n  justify-content: center;\n  gap: 0;\n  padding: 0;\n}\n\n.dpui-account-avatar {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex: none;\n  width: 24px;\n  height: 24px;\n  overflow: hidden;\n  border-radius: 50%;\n  corner-shape: round;\n  background: var(--dsw-alias-bg-skeleton);\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.dpui-account-avatarImage {\n  display: block;\n  width: 100%;\n  height: 100%;\n  border-radius: 50%;\n  corner-shape: round;\n  object-fit: cover;\n}\n\n.dpui-account-label {\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.dpui-account-seats {\n  display: flex;\n  align-items: stretch;\n  flex: none;\n  gap: 2px;\n}\n\n.dpui-account-seat {\n  display: flex;\n  align-items: center;\n  flex: none;\n  box-sizing: border-box;\n  max-width: 30px;\n  overflow: hidden;\n  padding: 0 6px;\n  border: 0;\n  border-radius: var(--dsw-radius-sm);\n  background: transparent;\n  color: var(--dsw-alias-label-tertiary);\n  font: inherit;\n  font-size: 0.93em;\n  cursor: pointer;\n  transition: max-width 160ms ease, background 120ms ease, color 120ms ease;\n}\n\n.dpui-account-seat:hover {\n  background: var(--dsw-alias-interactive-bg-hover);\n  color: var(--dsw-alias-label-primary);\n}\n\n.dpui-account-seatIcon {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex: none;\n  width: 18px;\n}\n\n.dpui-account-seatSpacer {\n  flex: none;\n  width: 30px;\n}\n\n.dpui-account-list {\n  min-width: 236px;\n}\n\n/* Signed-out launcher menu card and rows, matching the official menu. */\n.dpui-account-signedOutMenu[role='menu'] {\n  min-width: 124px;\n  max-width: 280px;\n  padding: 4px;\n}\n\n.dpui-account-signedOutMenu [role='menuitem'] {\n  min-height: 40px;\n  gap: 8px;\n  padding: 8px 10px;\n  border-radius: var(--dsw-radius-md);\n  font-size: 14px;\n  line-height: 22px;\n}\n\n.dpui-account-signedOutMenu [role='menuitem'] > span:first-child:not(:last-child) {\n  width: 16px;\n  height: 16px;\n  color: var(--dsw-alias-menu-icon);\n}\n\n.dpui-account-signedOutMenu [role='menuitem'] > span:first-child:not(:last-child) svg {\n  width: 16px;\n  height: 16px;\n}\n\n.dpui-account-dialog {\n  width: min(420px, calc(100vw - 32px));\n  padding: 0;\n}\n\n.dpui-account-dialogContent {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  padding: 20px 20px 12px;\n}\n\n.dpui-account-dialogHeader {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 12px;\n}\n\n.dpui-account-dialogTitle {\n  margin: 0;\n  color: var(--dsw-alias-label-primary);\n  font-size: 16px;\n  line-height: 24px;\n  font-weight: 500;\n}\n\n.dpui-account-dialogClose {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  flex: none;\n  width: 24px;\n  height: 24px;\n  padding: 0;\n  border: 0;\n  border-radius: var(--dsw-radius-sm);\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  cursor: pointer;\n}\n\n.dpui-account-dialogClose:hover {\n  background: var(--dsw-alias-interactive-bg-hover);\n}\n\n.dpui-account-dialogDescription {\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font-size: 13px;\n  line-height: 20px;\n}\n\n.dpui-account-dialogActions {\n  display: flex;\n  justify-content: flex-end;\n  gap: 8px;\n  padding: 12px 20px 20px;\n}\n\n.dpui-account-secondaryButton,\n.dpui-account-primaryButton {\n  min-width: 88px;\n}\n\n.dpui-account-link {\n  padding: 0;\n  border: 0;\n  background: transparent;\n  color: var(--dsw-alias-brand-primary);\n  font: inherit;\n  cursor: pointer;\n}\n\n.dpui-account-link:hover {\n  text-decoration: underline;\n}\n\n.dpui-account-spinner {\n  animation: dpui-spin 1s linear infinite;\n}\n\n@keyframes dpui-spin {\n  to { transform: rotate(360deg); }\n}\n";
+  style.textContent = ".dpui-account-root {\n  flex: 1;\n  min-width: 0;\n}\n\n/* Rail: the seat is the 36x36 avatar box. As a shrink-to-fit item in the\n   centered column the trigger overflows a max-content root and the avatar\n   lands half outside the rail; a fixed box keeps it on the official seat. */\n.dpui-account-root:has(.dpui-account-trigger[data-collapsed='true']) {\n  flex: none;\n  width: 36px;\n}\n\n.dpui-account-anchor {\n  width: 100%;\n}\n\n.dpui-account-triggerRow {\n  display: flex;\n  align-items: stretch;\n  gap: 8px;\n  min-width: 0;\n  width: 100%;\n}\n\n.dpui-account-trigger {\n  user-select: none;\n  display: flex;\n  align-items: center;\n  flex: 1;\n  box-sizing: border-box;\n  min-width: 0;\n  height: 44px;\n  gap: 8px;\n  padding: 6px;\n  border: 0;\n  border-radius: var(--dsw-radius-md);\n  background: transparent;\n  color: var(--dsw-alias-label-primary);\n  font: inherit;\n  font-size: 14px;\n  cursor: pointer;\n}\n\n.dpui-account-trigger:hover {\n  background: var(--dsw-alias-interactive-bg-hover);\n}\n\n/* Signed-out launcher keeps the official 32px More row. */\n.dpui-account-trigger[data-signed-out='true']:not([data-collapsed='true']) {\n  height: 32px;\n  padding: 6px 2px 6px 6px;\n  line-height: 20px;\n}\n\n.dpui-account-trigger[data-collapsed='true'] {\n  flex: none;\n  box-sizing: border-box;\n  width: 36px;\n  height: 36px;\n  justify-content: center;\n  gap: 0;\n  padding: 0;\n}\n\n.dpui-account-avatar {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex: none;\n  width: 24px;\n  height: 24px;\n  overflow: hidden;\n  border-radius: 50%;\n  corner-shape: round;\n  background: var(--dsw-alias-bg-skeleton);\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.dpui-account-avatarImage {\n  display: block;\n  width: 100%;\n  height: 100%;\n  border-radius: 50%;\n  corner-shape: round;\n  object-fit: cover;\n}\n\n.dpui-account-label {\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.dpui-account-seats {\n  display: flex;\n  align-items: stretch;\n  flex: none;\n  gap: 2px;\n}\n\n.dpui-account-seat {\n  display: flex;\n  align-items: center;\n  flex: none;\n  box-sizing: border-box;\n  max-width: 30px;\n  overflow: hidden;\n  padding: 0 6px;\n  border: 0;\n  border-radius: var(--dsw-radius-sm);\n  background: transparent;\n  color: var(--dsw-alias-label-tertiary);\n  font: inherit;\n  font-size: 0.93em;\n  cursor: pointer;\n  transition: max-width 160ms ease, background 120ms ease, color 120ms ease;\n}\n\n.dpui-account-seat:hover {\n  background: var(--dsw-alias-interactive-bg-hover);\n  color: var(--dsw-alias-label-primary);\n}\n\n.dpui-account-seatIcon {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex: none;\n  width: 18px;\n}\n\n.dpui-account-seatSpacer {\n  flex: none;\n  width: 30px;\n}\n\n/* External slot contribution: the entry renders the button, the cell owns the column. */\n.dpui-account-externalSeat {\n  display: flex;\n  align-items: stretch;\n  justify-content: center;\n  flex: none;\n  width: 30px;\n}\n\n.dpui-account-list {\n  min-width: 236px;\n}\n\n/* Signed-out launcher menu card and rows, matching the official menu. */\n.dpui-account-signedOutMenu[role='menu'] {\n  min-width: 124px;\n  max-width: 280px;\n  padding: 4px;\n}\n\n.dpui-account-signedOutMenu [role='menuitem'] {\n  min-height: 40px;\n  gap: 8px;\n  padding: 8px 10px;\n  border-radius: var(--dsw-radius-md);\n  font-size: 14px;\n  line-height: 22px;\n}\n\n.dpui-account-signedOutMenu [role='menuitem'] > span:first-child:not(:last-child) {\n  width: 16px;\n  height: 16px;\n  color: var(--dsw-alias-menu-icon);\n}\n\n.dpui-account-signedOutMenu [role='menuitem'] > span:first-child:not(:last-child) svg {\n  width: 16px;\n  height: 16px;\n}\n\n.dpui-account-dialog {\n  width: min(420px, calc(100vw - 32px));\n  padding: 0;\n}\n\n.dpui-account-dialogContent {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  padding: 20px 20px 12px;\n}\n\n.dpui-account-dialogHeader {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 12px;\n}\n\n.dpui-account-dialogTitle {\n  margin: 0;\n  color: var(--dsw-alias-label-primary);\n  font-size: 16px;\n  line-height: 24px;\n  font-weight: 500;\n}\n\n.dpui-account-dialogClose {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  flex: none;\n  width: 24px;\n  height: 24px;\n  padding: 0;\n  border: 0;\n  border-radius: var(--dsw-radius-sm);\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  cursor: pointer;\n}\n\n.dpui-account-dialogClose:hover {\n  background: var(--dsw-alias-interactive-bg-hover);\n}\n\n.dpui-account-dialogDescription {\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font-size: 13px;\n  line-height: 20px;\n}\n\n.dpui-account-dialogActions {\n  display: flex;\n  justify-content: flex-end;\n  gap: 8px;\n  padding: 12px 20px 20px;\n}\n\n.dpui-account-secondaryButton,\n.dpui-account-primaryButton {\n  min-width: 88px;\n}\n\n.dpui-account-link {\n  padding: 0;\n  border: 0;\n  background: transparent;\n  color: var(--dsw-alias-brand-primary);\n  font: inherit;\n  cursor: pointer;\n}\n\n.dpui-account-link:hover {\n  text-decoration: underline;\n}\n\n.dpui-account-spinner {\n  animation: dpui-spin 1s linear infinite;\n}\n\n@keyframes dpui-spin {\n  to { transform: rotate(360deg); }\n}\n";
   document.head.append(style);
 }
 var account_default = new Proxy({}, { get: (_target, key) => typeof key === "string" ? "dpui-account-" + key : void 0 });
 
 // src/client/account.jsx
-var import_jsx_runtime3 = require("react/jsx-runtime");
+var import_jsx_runtime4 = require("react/jsx-runtime");
 function createAccountStore(ctx) {
   let snapshot = { view: void 0, profile: void 0, failed: false };
   let revision = 0;
@@ -724,11 +801,11 @@ function createAccountStore(ctx) {
   };
 }
 function useSnapshot(store) {
-  return (0, import_react2.useSyncExternalStore)(store.subscribe, store.getSnapshot, store.getSnapshot);
+  return (0, import_react3.useSyncExternalStore)(store.subscribe, store.getSnapshot, store.getSnapshot);
 }
 function useQuickView(ctx) {
-  const [view, setView] = (0, import_react2.useState)(() => quickSettingsView(ctx));
-  (0, import_react2.useEffect)(() => {
+  const [view, setView] = (0, import_react3.useState)(() => quickSettingsView(ctx));
+  (0, import_react3.useEffect)(() => {
     const update = () => {
       setView(quickSettingsView(ctx));
     };
@@ -743,19 +820,19 @@ function useQuickView(ctx) {
   return view;
 }
 function Avatar({ url }) {
-  const [failed, setFailed] = (0, import_react2.useState)(false);
-  (0, import_react2.useEffect)(() => {
+  const [failed, setFailed] = (0, import_react3.useState)(false);
+  (0, import_react3.useEffect)(() => {
     setFailed(false);
   }, [url]);
   if (url !== void 0 && url !== null && url !== "" && !failed) {
-    return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("img", { className: account_default.avatarImage, src: url, alt: "", onError: () => {
+    return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("img", { className: account_default.avatarImage, src: url, alt: "", onError: () => {
       setFailed(true);
     } });
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconUserOutlineMedium, { size: 16 });
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_dsh_client_ui_primitives5.IconUserOutlineMedium, { size: 16 });
 }
 function LogoutIcon() {
-  return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { style: { width: 16, height: 16, position: "relative" }, "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { style: { width: 16, height: 16, position: "relative" }, "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
     "svg",
     {
       style: { position: "absolute", left: 1.168, top: 1.214 },
@@ -765,65 +842,80 @@ function LogoutIcon() {
       fill: "none",
       xmlns: "http://www.w3.org/2000/svg",
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("path", { d: "M3.9961 1.40039C3.37842 1.40039 2.96028 1.40039 2.63867 1.42871C2.32631 1.45627 2.17171 1.50666 2.06641 1.56543C1.85606 1.68288 1.68189 1.85605 1.56446 2.06641C1.50569 2.17173 1.45625 2.32627 1.42871 2.63867C1.40036 2.9603 1.39942 3.37827 1.39942 3.9961L1.39942 9.5752C1.39942 10.193 1.40036 10.611 1.42871 10.9326C1.45625 11.245 1.50569 11.3996 1.56445 11.5049C1.68188 11.7153 1.85605 11.8884 2.06641 12.0059C2.17171 12.0646 2.32631 12.115 2.63867 12.1426C2.96028 12.1709 3.37842 12.1709 3.9961 12.1709V13.5713C3.4033 13.5713 2.91297 13.5721 2.51563 13.5371C2.10906 13.5013 1.73277 13.4233 1.38379 13.2285C0.946838 12.9845 0.585697 12.6235 0.341799 12.1865C0.14725 11.8377 0.0700118 11.4621 0.0341815 11.0557C-0.000847399 10.6583 1.58129e-06 10.1681 1.85029e-06 9.5752L2.09416e-06 3.9961C1.83027e-06 3.40325 -0.000846367 2.91297 0.0341818 2.51563C0.0700164 2.10924 0.147239 1.73362 0.341799 1.38477C0.585703 0.947758 0.946825 0.586744 1.38379 0.342775C1.73277 0.148001 2.10906 0.0700381 2.51563 0.0341813C2.91297 -0.000823893 3.40331 1.37805e-06 3.9961 1.71712e-06L3.9961 1.40039Z", fill: "currentColor" }),
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("path", { d: "M13.6426 6.51953C13.6705 6.6957 13.6705 6.8756 13.6426 7.05176C13.5902 7.38188 13.4302 7.64112 13.2539 7.86035C13.0857 8.06937 12.8546 8.29971 12.6006 8.55371L9.3086 11.8447L8.31836 10.8545L11.6104 7.56348C11.637 7.53681 11.6628 7.51104 11.6875 7.48633H3.74317V6.08594H11.6885C11.6635 6.06088 11.6374 6.03487 11.6104 6.00781L8.31836 2.7168L9.3086 1.72656L12.6006 5.01758C12.8547 5.27169 13.0857 5.50185 13.2539 5.71094C13.4303 5.93018 13.5902 6.18939 13.6426 6.51953Z", fill: "currentColor" })
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("path", { d: "M3.9961 1.40039C3.37842 1.40039 2.96028 1.40039 2.63867 1.42871C2.32631 1.45627 2.17171 1.50666 2.06641 1.56543C1.85606 1.68288 1.68189 1.85605 1.56446 2.06641C1.50569 2.17173 1.45625 2.32627 1.42871 2.63867C1.40036 2.9603 1.39942 3.37827 1.39942 3.9961L1.39942 9.5752C1.39942 10.193 1.40036 10.611 1.42871 10.9326C1.45625 11.245 1.50569 11.3996 1.56445 11.5049C1.68188 11.7153 1.85605 11.8884 2.06641 12.0059C2.17171 12.0646 2.32631 12.115 2.63867 12.1426C2.96028 12.1709 3.37842 12.1709 3.9961 12.1709V13.5713C3.4033 13.5713 2.91297 13.5721 2.51563 13.5371C2.10906 13.5013 1.73277 13.4233 1.38379 13.2285C0.946838 12.9845 0.585697 12.6235 0.341799 12.1865C0.14725 11.8377 0.0700118 11.4621 0.0341815 11.0557C-0.000847399 10.6583 1.58129e-06 10.1681 1.85029e-06 9.5752L2.09416e-06 3.9961C1.83027e-06 3.40325 -0.000846367 2.91297 0.0341818 2.51563C0.0700164 2.10924 0.147239 1.73362 0.341799 1.38477C0.585703 0.947758 0.946825 0.586744 1.38379 0.342775C1.73277 0.148001 2.10906 0.0700381 2.51563 0.0341813C2.91297 -0.000823893 3.40331 1.37805e-06 3.9961 1.71712e-06L3.9961 1.40039Z", fill: "currentColor" }),
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("path", { d: "M13.6426 6.51953C13.6705 6.6957 13.6705 6.8756 13.6426 7.05176C13.5902 7.38188 13.4302 7.64112 13.2539 7.86035C13.0857 8.06937 12.8546 8.29971 12.6006 8.55371L9.3086 11.8447L8.31836 10.8545L11.6104 7.56348C11.637 7.53681 11.6628 7.51104 11.6875 7.48633H3.74317V6.08594H11.6885C11.6635 6.06088 11.6374 6.03487 11.6104 6.00781L8.31836 2.7168L9.3086 1.72656L12.6006 5.01758C12.8547 5.27169 13.0857 5.50185 13.2539 5.71094C13.4303 5.93018 13.5902 6.18939 13.6426 6.51953Z", fill: "currentColor" })
       ]
     }
   ) });
 }
-function QuickActionsRow({ t, seats, view, onQuickSelect, onAllSettings }) {
-  const [open, setOpen] = (0, import_react2.useState)(false);
-  return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { className: account_default.seats, children: seats.map((seat, index) => seat === "settings" ? /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
-    import_dsh_client_ui_primitives4.Menu,
-    {
-      open,
-      side: "top",
-      align: "end",
-      portal: true,
-      autoFocus: true,
-      listClassName: account_default.list,
-      items: quickSettingsItems(view, t),
-      onClose: () => {
-        setOpen(false);
-      },
-      onSelect: (id) => {
-        if (id === "all-settings") {
+function QuickActionSeat({ seat, t, view, onQuickSelect, onAllSettings, onBuiltin, renderSlot }) {
+  const [open, setOpen] = (0, import_react3.useState)(false);
+  if (seat === null || seat === void 0) {
+    return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: account_default.seatSpacer, "aria-hidden": "true" });
+  }
+  if (seat === "settings") {
+    return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+      import_dsh_client_ui_primitives5.Menu,
+      {
+        open,
+        side: "top",
+        align: "end",
+        portal: true,
+        autoFocus: true,
+        listClassName: account_default.list,
+        items: quickSettingsItems(view, t),
+        onClose: () => {
           setOpen(false);
-          onAllSettings();
-        } else onQuickSelect(id);
-      },
-      anchor: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
-        "button",
-        {
-          type: "button",
-          className: account_default.seat,
-          "aria-label": t("account.settingsAction"),
-          "aria-haspopup": "menu",
-          "aria-expanded": open,
-          onClick: () => {
-            setOpen((value) => !value);
-          },
-          children: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { className: account_default.seatIcon, children: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconSettingsOutlineMedium, { size: 14 }) })
-        }
-      )
-    },
-    index
-  ) : /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { className: account_default.seatSpacer, "aria-hidden": "true" }, index)) });
+        },
+        onSelect: (id) => {
+          if (id === "all-settings") {
+            setOpen(false);
+            onAllSettings();
+          } else onQuickSelect(id);
+        },
+        anchor: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+          "button",
+          {
+            type: "button",
+            className: account_default.seat,
+            "aria-label": t("account.settingsAction"),
+            "aria-haspopup": "menu",
+            "aria-expanded": open,
+            onClick: () => {
+              setOpen((value) => !value);
+            },
+            children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: account_default.seatIcon, children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_dsh_client_ui_primitives5.IconSettingsOutlineMedium, { size: 14 }) })
+          }
+        )
+      }
+    );
+  }
+  const builtin = BUILTIN_QUICK_ACTIONS.find((action) => action.id === seat);
+  if (builtin !== void 0) {
+    const label = t(builtin.labelKey);
+    return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_dsh_client_ui_primitives5.Tooltip, { label, side: "top", align: "end", delayMs: 500, portal: true, children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { type: "button", className: account_default.seat, "aria-label": label, onClick: () => {
+      onBuiltin(seat);
+    }, children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: account_default.seatIcon, children: builtinQuickActionIcon(seat) }) }) });
+  }
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: account_default.externalSeat, "data-quick-action": seat, children: renderSlot?.(QUICK_ACTION_SLOT, { size: 14 }, { only: seat }) });
+}
+function QuickActionsRow({ seats, ...seatProps }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: account_default.seats, children: seats.map((seat, index) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(QuickActionSeat, { seat, ...seatProps }, index)) });
 }
 function SignInDialog({ t, account, store, close }) {
-  const [busy, setBusy] = (0, import_react2.useState)(false);
-  const [failed, setFailed] = (0, import_react2.useState)(false);
-  const [copyResult, setCopyResult] = (0, import_react2.useState)(null);
+  const [busy, setBusy] = (0, import_react3.useState)(false);
+  const [failed, setFailed] = (0, import_react3.useState)(false);
+  const [copyResult, setCopyResult] = (0, import_react3.useState)(null);
   const attempt = account.view?.attempt;
   const phase = attempt?.phase;
   const active = busy || phase === "initializing" || phase === "waiting-browser" || phase === "exchanging" || phase === "committing";
   const waiting = active && !failed;
   const expired = phase === "expired";
   const error = failed || phase === "failed";
-  (0, import_react2.useEffect)(() => {
+  (0, import_react3.useEffect)(() => {
     setCopyResult(null);
   }, [attempt?.id, attempt?.authorizeUrl]);
-  (0, import_react2.useEffect)(() => {
+  (0, import_react3.useEffect)(() => {
     if (copyResult === null) return;
     const timer = setTimeout(() => {
       setCopyResult(null);
@@ -832,7 +924,7 @@ function SignInDialog({ t, account, store, close }) {
       clearTimeout(timer);
     };
   }, [copyResult]);
-  (0, import_react2.useEffect)(() => {
+  (0, import_react3.useEffect)(() => {
     if (account.view?.status === "credential-stored") close();
   }, [account.view?.status, close]);
   const run = async (action) => {
@@ -868,17 +960,17 @@ function SignInDialog({ t, account, store, close }) {
   };
   const title = error ? t("account.failed") : active ? t("account.waitingTitle") : expired ? t("account.expired") : t("account.signInTitle");
   const authorizeUrl = attempt?.authorizeUrl;
-  return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(import_dsh_client_ui_primitives4.Modal, { open: true, headless: true, title, onClose: dismiss, className: account_default.dialog, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: account_default.dialogContent, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: account_default.dialogHeader, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("h2", { className: account_default.dialogTitle, children: title }),
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("button", { type: "button", className: account_default.dialogClose, "aria-label": t("account.close"), onClick: dismiss, children: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconCloseOutlineRegular, { size: 14 }) })
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(import_dsh_client_ui_primitives5.Modal, { open: true, headless: true, title, onClose: dismiss, className: account_default.dialog, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: account_default.dialogContent, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: account_default.dialogHeader, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("h2", { className: account_default.dialogTitle, children: title }),
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { type: "button", className: account_default.dialogClose, "aria-label": t("account.close"), onClick: dismiss, children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_dsh_client_ui_primitives5.IconCloseOutlineRegular, { size: 14 }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("p", { className: account_default.dialogDescription, children: waiting ? /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(import_jsx_runtime3.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("p", { className: account_default.dialogDescription, children: waiting ? /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(import_jsx_runtime4.Fragment, { children: [
         t("account.waiting"),
-        authorizeUrl !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(import_jsx_runtime3.Fragment, { children: [
+        authorizeUrl !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(import_jsx_runtime4.Fragment, { children: [
           " ",
-          /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
             "button",
             {
               type: "button",
@@ -892,9 +984,9 @@ function SignInDialog({ t, account, store, close }) {
         ] })
       ] }) : error ? t("account.failed") : expired ? t("account.expired") : t("account.signInDescription") })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: account_default.dialogActions, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
-        import_dsh_client_ui_primitives4.Button,
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: account_default.dialogActions, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        import_dsh_client_ui_primitives5.Button,
         {
           variant: "outline",
           className: account_default.secondaryButton,
@@ -903,8 +995,8 @@ function SignInDialog({ t, account, store, close }) {
           children: t("account.cancel")
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
-        import_dsh_client_ui_primitives4.Button,
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        import_dsh_client_ui_primitives5.Button,
         {
           variant: "primary",
           className: account_default.primaryButton,
@@ -912,25 +1004,25 @@ function SignInDialog({ t, account, store, close }) {
           onClick: () => {
             void run(retry);
           },
-          children: waiting ? /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconLoadingOutlineRegular, { className: account_default.spinner }) : t(error || expired ? "account.retry" : "account.signIn")
+          children: waiting ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_dsh_client_ui_primitives5.IconLoadingOutlineRegular, { className: account_default.spinner }) : t(error || expired ? "account.retry" : "account.signIn")
         }
       )
     ] })
   ] });
 }
 function SignOutDialog({ t, running, busy, close, confirm }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(import_dsh_client_ui_primitives4.Modal, { open: true, headless: true, title: t("account.signOutTitle"), onClose: close, className: account_default.dialog, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: account_default.dialogContent, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: account_default.dialogHeader, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("h2", { className: account_default.dialogTitle, children: t("account.signOutTitle") }),
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("button", { type: "button", className: account_default.dialogClose, "aria-label": t("account.close"), onClick: close, children: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconCloseOutlineRegular, { size: 14 }) })
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(import_dsh_client_ui_primitives5.Modal, { open: true, headless: true, title: t("account.signOutTitle"), onClose: close, className: account_default.dialog, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: account_default.dialogContent, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: account_default.dialogHeader, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("h2", { className: account_default.dialogTitle, children: t("account.signOutTitle") }),
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { type: "button", className: account_default.dialogClose, "aria-label": t("account.close"), onClick: close, children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_dsh_client_ui_primitives5.IconCloseOutlineRegular, { size: 14 }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("p", { className: account_default.dialogDescription, children: running === "unknown" ? t("account.signOutUnknown") : running ? t("account.signOutRunning") : t("account.signOutDescription") })
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("p", { className: account_default.dialogDescription, children: running === "unknown" ? t("account.signOutUnknown") : running ? t("account.signOutRunning") : t("account.signOutDescription") })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: account_default.dialogActions, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.Button, { variant: "outline", className: account_default.secondaryButton, disabled: busy, onClick: close, children: t("account.cancel") }),
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
-        import_dsh_client_ui_primitives4.Button,
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: account_default.dialogActions, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_dsh_client_ui_primitives5.Button, { variant: "outline", className: account_default.secondaryButton, disabled: busy, onClick: close, children: t("account.cancel") }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        import_dsh_client_ui_primitives5.Button,
         {
           variant: "primary",
           className: account_default.primaryButton,
@@ -953,23 +1045,26 @@ function AccountMenu({
   settingsShortcut,
   openSettings,
   accountStore,
-  settingsOpen
+  settingsOpen,
+  uiWorkspace,
+  layout,
+  renderSlot
 }) {
   const seats = useStore((state) => state.seats);
   const account = useSnapshot(accountStore);
   const view = useQuickView(ctx);
-  const anchor = (0, import_react2.useRef)(null);
-  const trigger = (0, import_react2.useRef)(null);
-  const [open, setOpen] = (0, import_react2.useState)(false);
-  const [loginVisible, setLoginVisible] = (0, import_react2.useState)(false);
-  const [signOutState, setSignOutState] = (0, import_react2.useState)(void 0);
-  const [busy, setBusy] = (0, import_react2.useState)(false);
+  const anchor = (0, import_react3.useRef)(null);
+  const trigger = (0, import_react3.useRef)(null);
+  const [open, setOpen] = (0, import_react3.useState)(false);
+  const [loginVisible, setLoginVisible] = (0, import_react3.useState)(false);
+  const [signOutState, setSignOutState] = (0, import_react3.useState)(void 0);
+  const [busy, setBusy] = (0, import_react3.useState)(false);
   const signedIn = account.view?.status === "credential-stored";
   const profile = account.profile;
   const name = profile?.status === "ready" ? profile.value.name ?? profile.value.contact ?? null : null;
   const label = signedIn ? profile === void 0 ? null : name ?? t("account.signedIn") : t("account.more");
-  const settingsWasOpen = (0, import_react2.useRef)(false);
-  (0, import_react2.useEffect)(() => {
+  const settingsWasOpen = (0, import_react3.useRef)(false);
+  (0, import_react3.useEffect)(() => {
     if (settingsOpen && !settingsWasOpen.current) void accountStore.refresh();
     settingsWasOpen.current = settingsOpen;
   }, [accountStore, settingsOpen]);
@@ -982,6 +1077,30 @@ function AccountMenu({
       trigger.current?.focus({ preventScroll: true });
     });
     openSettings();
+  };
+  const runBuiltin = (id) => {
+    if (id === "new-session") {
+      uiWorkspace?.startSession();
+      return;
+    }
+    if (id === "plugins") {
+      layout?.selectPanel("plugins");
+      return;
+    }
+    if (id === "schedules") {
+      layout?.selectPanel("schedules");
+      return;
+    }
+    if (id === "theme") {
+      const scheme = ctx.theme.getTheme().active.colorScheme;
+      ctx.theme.setTheme(scheme === "dark" ? "light" : "dark");
+      return;
+    }
+    if (id === "sidebar") {
+      layout?.toggleSidebar();
+      return;
+    }
+    if (id === "all-settings") openSettingsPage();
   };
   const requestSignOut = async () => {
     setOpen(false);
@@ -1021,15 +1140,15 @@ function AccountMenu({
     {
       id: "settings",
       label: t("account.settings"),
-      icon: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconSettingsOutlineMedium, { size: 16 }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_dsh_client_ui_primitives5.IconSettingsOutlineMedium, { size: 16 }),
       ...settingsShortcut === void 0 ? {} : { shortcut: settingsShortcut }
     },
-    { id: "contact", label: t("account.contact"), icon: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconPaperPlaneOutlineMedium, { size: 16 }) },
-    ...signedIn ? [{ id: "signout", label: t("account.signOut"), icon: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(LogoutIcon, {}), disabled: busy }] : [{ id: "signin", label: t("account.signIn"), icon: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconUserOutlineMedium, { size: 16 }) }]
+    { id: "contact", label: t("account.contact"), icon: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_dsh_client_ui_primitives5.IconPaperPlaneOutlineMedium, { size: 16 }) },
+    ...signedIn ? [{ id: "signout", label: t("account.signOut"), icon: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(LogoutIcon, {}), disabled: busy }] : [{ id: "signin", label: t("account.signIn"), icon: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_dsh_client_ui_primitives5.IconUserOutlineMedium, { size: 16 }) }]
   ];
-  return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { ref: anchor, className: account_default.root, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
-      import_dsh_client_ui_primitives4.Menu,
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { ref: anchor, className: account_default.root, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+      import_dsh_client_ui_primitives5.Menu,
       {
         open,
         side: "top",
@@ -1037,8 +1156,8 @@ function AccountMenu({
         autoFocus: true,
         className: account_default.anchor,
         listClassName: signedIn ? void 0 : account_default.signedOutMenu,
-        anchor: /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: account_default.triggerRow, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(
+        anchor: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: account_default.triggerRow, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
             "button",
             {
               ref: trigger,
@@ -1053,19 +1172,21 @@ function AccountMenu({
                 setOpen((value) => !value);
               },
               children: [
-                signedIn ? /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { className: account_default.avatar, children: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(Avatar, { url: profile?.status === "ready" ? profile.value.avatarUrl : null }) }) : /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives4.IconEllipsisOutlineMedium, { size: 14 }),
-                wide && /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { className: account_default.label, children: label })
+                signedIn ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: account_default.avatar, children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Avatar, { url: profile?.status === "ready" ? profile.value.avatarUrl : null }) }) : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_dsh_client_ui_primitives5.IconEllipsisOutlineMedium, { size: 14 }),
+                wide && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: account_default.label, children: label })
               ]
             }
           ),
-          wide && /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+          wide && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
             QuickActionsRow,
             {
-              t,
               seats,
+              t,
               view,
+              renderSlot,
               onQuickSelect: quickSelect,
-              onAllSettings: openSettingsPage
+              onAllSettings: openSettingsPage,
+              onBuiltin: runBuiltin
             }
           )
         ] }),
@@ -1086,10 +1207,10 @@ function AccountMenu({
         }
       }
     ),
-    loginVisible && /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(SignInDialog, { t, account, store: accountStore, close: () => {
+    loginVisible && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(SignInDialog, { t, account, store: accountStore, close: () => {
       setLoginVisible(false);
     } }),
-    signOutState !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+    signOutState !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
       SignOutDialog,
       {
         t,
@@ -1105,8 +1226,8 @@ function AccountMenu({
 }
 
 // src/client/quick-actions-settings.jsx
-var import_react3 = require("react");
-var import_dsh_client_ui_primitives5 = require("@deepseek-ai/dsh-client-ui-primitives");
+var import_react4 = require("react");
+var import_dsh_client_ui_primitives6 = require("@deepseek-ai/dsh-client-ui-primitives");
 
 // plugin-ui-css-module:/Users/tongyi/dsh-plugin-ui/src/client/quick-actions-settings.module.css
 var styleId3 = "dsh-plugin-ui-quick-actions-settings";
@@ -1119,17 +1240,16 @@ if (typeof document !== "undefined" && document.getElementById(styleId3) === nul
 var quick_actions_settings_default = new Proxy({}, { get: (_target, key) => typeof key === "string" ? "dpui-quick-actions-settings-" + key : void 0 });
 
 // src/client/quick-actions-settings.jsx
-var import_jsx_runtime4 = require("react/jsx-runtime");
-function SeatRow({ seat, title, description, labels, onSelect }) {
-  const [open, setOpen] = (0, import_react3.useState)(false);
-  const pill = (0, import_react3.useRef)(null);
-  const labelFor = (id) => id === "settings" ? labels.settings : labels.empty;
+var import_jsx_runtime5 = require("react/jsx-runtime");
+function SeatRow({ seat, title, description, items, labelFor, onSelect }) {
+  const [open, setOpen] = (0, import_react4.useState)(false);
+  const pill = (0, import_react4.useRef)(null);
   const chosen = (id) => {
     pill.current?.focus({ preventScroll: true });
     setOpen(false);
     onSelect(id === "" ? null : id);
   };
-  const anchor = /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
+  const anchor = /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
     "button",
     {
       ref: pill,
@@ -1142,17 +1262,17 @@ function SeatRow({ seat, title, description, labels, onSelect }) {
       },
       children: [
         labelFor(seat),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_dsh_client_ui_primitives5.IconChevronDownOutlineRegular, { className: quick_actions_settings_default.chevron })
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_dsh_client_ui_primitives6.IconChevronDownOutlineRegular, { className: quick_actions_settings_default.chevron })
       ]
     }
   );
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: quick_actions_settings_default.row, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: quick_actions_settings_default.rowText, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: quick_actions_settings_default.title, children: title }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: quick_actions_settings_default.desc, children: description })
+  return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: quick_actions_settings_default.row, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: quick_actions_settings_default.rowText, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: quick_actions_settings_default.title, children: title }),
+      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: quick_actions_settings_default.desc, children: description })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-      import_dsh_client_ui_primitives5.Menu,
+    /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+      import_dsh_client_ui_primitives6.Menu,
       {
         open,
         onClose: () => {
@@ -1160,22 +1280,37 @@ function SeatRow({ seat, title, description, labels, onSelect }) {
         },
         align: "end",
         portal: true,
-        items: [{ id: "settings", label: labels.settings }, { id: "", label: labels.empty }],
+        items,
         onSelect: chosen,
         anchor
       }
     )
   ] });
 }
-function QuickActionsSettings({ t, useStore, actions }) {
+function QuickActionsSettings({ t, useStore, actions, ctx }) {
   const seats = useStore((state) => state.seats);
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_jsx_runtime4.Fragment, { children: seats.map((seat, index) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+  const catalog = useQuickActionCatalog(ctx, t);
+  const items = (0, import_react4.useMemo)(() => {
+    const builtins = catalog.filter((action) => action.builtin);
+    const external = catalog.filter((action) => !action.builtin);
+    return [
+      ...builtins.map((action) => ({ id: action.id, label: action.label })),
+      ...external.length === 0 ? [] : [
+        { type: "label", id: "account.quickActionExternal", text: t("account.quickActionExternal") },
+        ...external.map((action) => ({ id: action.id, label: action.label }))
+      ],
+      { id: "", label: t("account.emptyChoice") }
+    ];
+  }, [catalog, t]);
+  const labelFor = (seat) => seat === null ? t("account.emptyChoice") : quickActionLabel(seat, catalog, t);
+  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_jsx_runtime5.Fragment, { children: seats.map((seat, index) => /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
     SeatRow,
     {
       seat: seat ?? null,
       title: t("account.quickActionSeat", { index: index + 1 }),
       description: t("account.quickActionSeatDescription", { index: index + 1 }),
-      labels: { settings: t("account.settingsChoice"), empty: t("account.emptyChoice") },
+      items,
+      labelFor,
       onSelect: (next) => {
         actions.setSeat(index === 0 ? 0 : 1, next);
       }
@@ -1184,25 +1319,8 @@ function QuickActionsSettings({ t, useStore, actions }) {
   )) });
 }
 
-// src/client/quick-actions.js
-var import_dsh_client_store = require("@deepseek-ai/dsh-client-store");
-var QUICK_ACTIONS_PERSIST = "dsh-plugin-ui.quick-actions.v1";
-var DEFAULT_QUICK_ACTIONS = [null, "settings"];
-function createQuickActionsStore() {
-  return (0, import_dsh_client_store.defineStore)({
-    init: () => ({ seats: [...DEFAULT_QUICK_ACTIONS] }),
-    persist: QUICK_ACTIONS_PERSIST,
-    actions: {
-      setSeat: (draft, index, id) => {
-        draft.seats[index] = id;
-      }
-    }
-  });
-}
-
 // src/client/palette.jsx
-var import_react4 = require("react");
-var import_dsh_client_ui_primitives6 = require("@deepseek-ai/dsh-client-ui-primitives");
+var import_react5 = require("react");
 
 // src/client/generated-palettes.js
 var PALETTE_LAYERS = { "forest": { "--dsw-alias-bg-base": { "light": "#fff", "dark": "#191b1a" }, "--dsw-alias-bg-document-preview": { "light": "#fff", "dark": "#191b1a" }, "--dsw-alias-bg-layer-1": { "light": "#fff", "dark": "#222523" }, "--dsw-alias-button-elevated-fill": { "light": "#fff", "dark": "#222523" }, "--dsw-alias-button-floating-fill": { "light": "#fff", "dark": "#222523" }, "--dsw-alias-bg-layer-2": { "light": "#f9f9f9", "dark": "#252825" }, "--dsw-alias-bg-overlay": { "light": "#f9f9f9", "dark": "#252825" }, "--dsw-alias-menu-group-header-fill": { "light": "#f9f9f9", "dark": "#252825" }, "--dsw-alias-bg-multi-select": { "light": "#080807", "dark": "#fff" }, "--dsw-alias-bg-skeleton": { "light": "#080807", "dark": "#fff" }, "--dsw-alias-label-primary": { "light": "#141414", "dark": "#d9dcd9" }, "--dsw-alias-markdown-code-block": { "light": "#141414", "dark": "#d9dcd9" }, "--dsw-alias-label-secondary": { "light": "#636261", "dark": "#b3bab4" }, "--dsw-alias-label-primary-dimmed": { "light": "#636261", "dark": "#b3bab4" }, "--dsw-alias-label-tertiary": { "light": "#838280", "dark": "#949d96" }, "--dsw-alias-menu-icon": { "light": "#838280", "dark": "#949d96" }, "--dsw-alias-label-dimmed": { "light": "#aaa9a8", "dark": "#8a948c" }, "--dsw-alias-label-caption": { "light": "#aaa9a8", "dark": "#8a948c" }, "--dsw-alias-markdown-placeholder": { "light": "#aaa9a8", "dark": "#8a948c" }, "--dsw-alias-label-primary-foreground": { "light": "#fdfdfd", "dark": "#080807" }, "--dsw-alias-toast-label": { "light": "#fdfdfd", "dark": "#080807" }, "--dsw-alias-brand-primary": { "light": "#4b6f5a", "dark": "#4d9c61" }, "--dsw-alias-state-business-primary": { "light": "#4b6f5a", "dark": "#4d9c61" }, "--dsw-alias-brand-text": { "light": "#4b6f5a", "dark": "#4d9c61" }, "--dsw-alias-button-primary-hover": { "light": "#436651", "dark": "#62ad78" }, "--dsw-alias-button-floating-hover": { "light": "#436651", "dark": "#62ad78" }, "--dsw-alias-interactive-bg-hover-accent": { "light": "#3a5747", "dark": "#428955" }, "--dsw-alias-button-ghost-active-hover": { "light": "#3a5747", "dark": "#428955" }, "--dsw-alias-border-l3": { "light": "#ddd", "dark": "#404842" }, "--dsw-alias-button-ghost-active-border": { "light": "#d5dbd8", "dark": "#335942" }, "--dsw-alias-state-business-tertiary": { "light": "#f2f4f2", "dark": "#14261c" }, "--dsw-alias-turn-trigger-bg": { "light": "#f2f4f2", "dark": "#14261c" }, "--dsw-alias-interactive-bg-hover": { "light": "#00000012", "dark": "#2d332e" }, "--dsw-alias-border-l4": { "light": "#bcbbba", "dark": "#4b554d" }, "--dsw-alias-border-l2": { "light": "#e6e6e6", "dark": "#363c37" }, "--dsw-alias-border-l2-darkmode-thin": { "light": "#e6e6e6", "dark": "#363c37" }, "--dsw-alias-border-l1": { "light": "#eee", "dark": "#2b302c" }, "--dsw-alias-interactive-bg-active": { "light": "#dfdfdf", "dark": "#363d37" }, "--dsw-alias-bg-layer-3": { "light": "#f9f9f9", "dark": "#252825" }, "--dsw-alias-state-error-primary": { "light": "#ec5b56", "dark": "#ff4d4f" }, "--dsw-alias-state-error-secondary": { "light": "#ec5b56", "dark": "#ff4d4f" }, "--dsw-alias-file-diff-deleted-marker": { "light": "#ec5b56", "dark": "#ff4d4f" }, "--dsw-alias-file-diff-deleted-bg": { "light": "#fdf2f0", "dark": "#4a1a1b" }, "--dsw-alias-state-success-primary": { "light": "#579b6e", "dark": "#73cd94" }, "--dsw-alias-file-diff-added-marker": { "light": "#579b6e", "dark": "#73cd94" }, "--dsw-alias-file-diff-added-bg": { "light": "#ebf7f0", "dark": "#14261c" }, "--dsw-alias-button-info-fill": { "light": "#4b6f5a", "dark": "#4d9c61" }, "--dsw-alias-link": { "light": "#4d9868", "dark": "#8ee5a1" }, "--dsw-alias-button-info-hover": { "light": "#436651", "dark": "#62ad78" }, "--dsw-specific-sidebar-fill": { "light": "#fff", "dark": "#222523" }, "--dsw-specific-bubble": { "light": "#f2f4f2", "dark": "#14261c" }, "--dsw-radius-xs": { "light": "2px", "dark": "2px" }, "--dsw-radius-sm": { "light": "4px", "dark": "4px" }, "--dsw-radius-md": { "light": "6px", "dark": "6px" }, "--dsw-radius-lg": { "light": "8px", "dark": "8px" }, "--dsw-radius-xl": { "light": "12px", "dark": "12px" }, "--dsw-radius-panel": { "light": "16px", "dark": "16px" }, "--dsh-font-family-text": { "light": 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif', "dark": 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif' }, "--dsh-font-family-code": { "light": 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace', "dark": 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace' } }, "mint": { "--dsw-alias-bg-base": { "light": "#f9fbf9", "dark": "#0b110e" }, "--dsw-alias-bg-document-preview": { "light": "#f9fbf9", "dark": "#0b110e" }, "--dsw-alias-bg-layer-1": { "light": "#fff", "dark": "#0a0f0d" }, "--dsw-alias-button-elevated-fill": { "light": "#fff", "dark": "#0a0f0d" }, "--dsw-alias-button-floating-fill": { "light": "#fff", "dark": "#0a0f0d" }, "--dsw-alias-bg-layer-2": { "light": "#f9f9f9", "dark": "#1a2420" }, "--dsw-alias-bg-overlay": { "light": "#f9f9f9", "dark": "#1a2420" }, "--dsw-alias-menu-group-header-fill": { "light": "#f9f9f9", "dark": "#1a2420" }, "--dsw-alias-bg-multi-select": { "light": "#080807", "dark": "#eaf3ef" }, "--dsw-alias-bg-skeleton": { "light": "#080807", "dark": "#eaf3ef" }, "--dsw-alias-label-primary": { "light": "#2f4b2d", "dark": "#eaf3ef" }, "--dsw-alias-markdown-code-block": { "light": "#2f4b2d", "dark": "#eaf3ef" }, "--dsw-alias-label-secondary": { "light": "#536157", "dark": "#b0c3ba" }, "--dsw-alias-label-primary-dimmed": { "light": "#536157", "dark": "#b0c3ba" }, "--dsw-alias-label-tertiary": { "light": "#737f76", "dark": "#788f85" }, "--dsw-alias-menu-icon": { "light": "#737f76", "dark": "#788f85" }, "--dsw-alias-label-dimmed": { "light": "#98a29a", "dark": "#52645c" }, "--dsw-alias-label-caption": { "light": "#98a29a", "dark": "#52645c" }, "--dsw-alias-markdown-placeholder": { "light": "#98a29a", "dark": "#52645c" }, "--dsw-alias-label-primary-foreground": { "light": "#f7faf8", "dark": "#07130f" }, "--dsw-alias-toast-label": { "light": "#f7faf8", "dark": "#07130f" }, "--dsw-alias-brand-primary": { "light": "#4fa98f", "dark": "#62c9a8" }, "--dsw-alias-state-business-primary": { "light": "#4fa98f", "dark": "#62c9a8" }, "--dsw-alias-brand-text": { "light": "#4fa98f", "dark": "#62c9a8" }, "--dsw-alias-button-primary-hover": { "light": "#66b89f", "dark": "#8de2c5" }, "--dsw-alias-button-floating-hover": { "light": "#66b89f", "dark": "#8de2c5" }, "--dsw-alias-interactive-bg-hover-accent": { "light": "#3f8f78", "dark": "#76d9b9" }, "--dsw-alias-button-ghost-active-hover": { "light": "#3f8f78", "dark": "#76d9b9" }, "--dsw-alias-border-l3": { "light": "#d1e4dd", "dark": "#314039" }, "--dsw-alias-button-ghost-active-border": { "light": "#a9d8c8", "dark": "#285546" }, "--dsw-alias-state-business-tertiary": { "light": "#e6f5f0", "dark": "#122a24" }, "--dsw-alias-turn-trigger-bg": { "light": "#e6f5f0", "dark": "#122a24" }, "--dsw-alias-interactive-bg-hover": { "light": "#00000012", "dark": "#232e29" }, "--dsw-alias-border-l4": { "light": "#afcbc1", "dark": "#394a42" }, "--dsw-alias-border-l2": { "light": "#e1eee9", "dark": "#27332e" }, "--dsw-alias-border-l2-darkmode-thin": { "light": "#e1eee9", "dark": "#27332e" }, "--dsw-alias-border-l1": { "light": "#eef6f3", "dark": "#1d2722" }, "--dsw-alias-interactive-bg-active": { "light": "#dfdfdf", "dark": "#2b3731" }, "--dsw-alias-bg-layer-3": { "light": "#f9f9f9", "dark": "#1a2420" }, "--dsw-alias-state-error-primary": { "light": "#ec5b56", "dark": "#ff4d4f" }, "--dsw-alias-state-error-secondary": { "light": "#ec5b56", "dark": "#ff4d4f" }, "--dsw-alias-file-diff-deleted-marker": { "light": "#ec5b56", "dark": "#ff4d4f" }, "--dsw-alias-file-diff-deleted-bg": { "light": "#fdf2f0", "dark": "#4a1a1b" }, "--dsw-alias-state-success-primary": { "light": "#579b6e", "dark": "#73cd94" }, "--dsw-alias-file-diff-added-marker": { "light": "#579b6e", "dark": "#73cd94" }, "--dsw-alias-file-diff-added-bg": { "light": "#ebf7f0", "dark": "#14261c" }, "--dsw-alias-button-info-fill": { "light": "#4fa98f", "dark": "#62c9a8" }, "--dsw-alias-link": { "light": "#2a7b68", "dark": "#75d7b7" }, "--dsw-alias-button-info-hover": { "light": "#66b89f", "dark": "#8de2c5" }, "--dsw-specific-sidebar-fill": { "light": "#fff", "dark": "#0a0f0d" }, "--dsw-specific-bubble": { "light": "#e6f5f0", "dark": "#122a24" }, "--dsw-radius-xs": { "light": "2px", "dark": "2px" }, "--dsw-radius-sm": { "light": "4px", "dark": "4px" }, "--dsw-radius-md": { "light": "6px", "dark": "6px" }, "--dsw-radius-lg": { "light": "8px", "dark": "8px" }, "--dsw-radius-xl": { "light": "12px", "dark": "12px" }, "--dsw-radius-panel": { "light": "16px", "dark": "16px" }, "--dsh-font-family-text": { "light": 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif', "dark": 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif' }, "--dsh-font-family-code": { "light": 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace', "dark": 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace' } }, "bee": { "--dsw-alias-bg-base": { "light": "#fff", "dark": "#10110e" }, "--dsw-alias-bg-document-preview": { "light": "#fff", "dark": "#10110e" }, "--dsw-alias-bg-layer-1": { "light": "#fff", "dark": "#0f100d" }, "--dsw-alias-button-elevated-fill": { "light": "#fff", "dark": "#0f100d" }, "--dsw-alias-button-floating-fill": { "light": "#fff", "dark": "#0f100d" }, "--dsw-alias-bg-layer-2": { "light": "#f9f9f9", "dark": "#20221d" }, "--dsw-alias-bg-overlay": { "light": "#f9f9f9", "dark": "#20221d" }, "--dsw-alias-menu-group-header-fill": { "light": "#f9f9f9", "dark": "#20221d" }, "--dsw-alias-bg-multi-select": { "light": "#080807", "dark": "#f2f1e8" }, "--dsw-alias-bg-skeleton": { "light": "#080807", "dark": "#f2f1e8" }, "--dsw-alias-label-primary": { "light": "#141414", "dark": "#f2f1e8" }, "--dsw-alias-markdown-code-block": { "light": "#141414", "dark": "#f2f1e8" }, "--dsw-alias-label-secondary": { "light": "#636261", "dark": "#c1bfb1" }, "--dsw-alias-label-primary-dimmed": { "light": "#636261", "dark": "#c1bfb1" }, "--dsw-alias-label-tertiary": { "light": "#838280", "dark": "#89877a" }, "--dsw-alias-menu-icon": { "light": "#838280", "dark": "#89877a" }, "--dsw-alias-label-dimmed": { "light": "#aaa9a8", "dark": "#626056" }, "--dsw-alias-label-caption": { "light": "#aaa9a8", "dark": "#626056" }, "--dsw-alias-markdown-placeholder": { "light": "#aaa9a8", "dark": "#626056" }, "--dsw-alias-label-primary-foreground": { "light": "#fdfdfd", "dark": "#171407" }, "--dsw-alias-toast-label": { "light": "#fdfdfd", "dark": "#171407" }, "--dsw-alias-brand-primary": { "light": "#0d0d0d", "dark": "#e0c65c" }, "--dsw-alias-state-business-primary": { "light": "#0d0d0d", "dark": "#e0c65c" }, "--dsw-alias-brand-text": { "light": "#0d0d0d", "dark": "#e0c65c" }, "--dsw-alias-button-primary-hover": { "light": "#436651", "dark": "#f0da78" }, "--dsw-alias-button-floating-hover": { "light": "#436651", "dark": "#f0da78" }, "--dsw-alias-interactive-bg-hover-accent": { "light": "#3a5747", "dark": "#e8d06e" }, "--dsw-alias-button-ghost-active-hover": { "light": "#3a5747", "dark": "#e8d06e" }, "--dsw-alias-border-l3": { "light": "#ddd", "dark": "#3b3d36" }, "--dsw-alias-button-ghost-active-border": { "light": "#d5dbd8", "dark": "#5a4d1f" }, "--dsw-alias-state-business-tertiary": { "light": "#f2f4f2", "dark": "#2e2916" }, "--dsw-alias-turn-trigger-bg": { "light": "#f2f4f2", "dark": "#2e2916" }, "--dsw-alias-interactive-bg-hover": { "light": "#efefef", "dark": "#2c2e28" }, "--dsw-alias-border-l4": { "light": "#bcbbba", "dark": "#47483f" }, "--dsw-alias-border-l2": { "light": "#e6e6e6", "dark": "#30322d" }, "--dsw-alias-border-l2-darkmode-thin": { "light": "#e6e6e6", "dark": "#30322d" }, "--dsw-alias-border-l1": { "light": "#eee", "dark": "#252721" }, "--dsw-alias-interactive-bg-active": { "light": "#dfdfdf", "dark": "#363830" }, "--dsw-alias-bg-layer-3": { "light": "#f9f9f9", "dark": "#20221d" }, "--dsw-alias-state-error-primary": { "light": "#ec5b56", "dark": "#ff4d4f" }, "--dsw-alias-state-error-secondary": { "light": "#ec5b56", "dark": "#ff4d4f" }, "--dsw-alias-file-diff-deleted-marker": { "light": "#ec5b56", "dark": "#ff4d4f" }, "--dsw-alias-file-diff-deleted-bg": { "light": "#fdf2f0", "dark": "#4a1a1b" }, "--dsw-alias-state-success-primary": { "light": "#579b6e", "dark": "#73cd94" }, "--dsw-alias-file-diff-added-marker": { "light": "#579b6e", "dark": "#73cd94" }, "--dsw-alias-file-diff-added-bg": { "light": "#ebf7f0", "dark": "#14261c" }, "--dsw-alias-button-info-fill": { "light": "#0d0d0d", "dark": "#e0c65c" }, "--dsw-alias-link": { "light": "#4d9868", "dark": "#e6ce6a" }, "--dsw-alias-button-info-hover": { "light": "#436651", "dark": "#f0da78" }, "--dsw-specific-sidebar-fill": { "light": "#fff", "dark": "#0f100d" }, "--dsw-specific-bubble": { "light": "#f2f4f2", "dark": "#2e2916" }, "--dsw-radius-xs": { "light": "2px", "dark": "2px" }, "--dsw-radius-sm": { "light": "4px", "dark": "4px" }, "--dsw-radius-md": { "light": "6px", "dark": "6px" }, "--dsw-radius-lg": { "light": "8px", "dark": "8px" }, "--dsw-radius-xl": { "light": "12px", "dark": "12px" }, "--dsw-radius-panel": { "light": "16px", "dark": "16px" }, "--dsh-font-family-text": { "light": 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif', "dark": 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif' }, "--dsh-font-family-code": { "light": 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace', "dark": 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace' } }, "parchment": { "--dsw-alias-bg-base": { "light": "#fbfbfa", "dark": "#151310" }, "--dsw-alias-bg-document-preview": { "light": "#fbfbfa", "dark": "#151310" }, "--dsw-alias-bg-layer-1": { "light": "#fff", "dark": "#12100e" }, "--dsw-alias-button-elevated-fill": { "light": "#fff", "dark": "#12100e" }, "--dsw-alias-button-floating-fill": { "light": "#fff", "dark": "#12100e" }, "--dsw-alias-bg-layer-2": { "light": "#f6f5f3", "dark": "#26221d" }, "--dsw-alias-bg-overlay": { "light": "#f6f5f3", "dark": "#26221d" }, "--dsw-alias-menu-group-header-fill": { "light": "#f6f5f3", "dark": "#26221d" }, "--dsw-alias-bg-multi-select": { "light": "#202116", "dark": "#f1ece5" }, "--dsw-alias-bg-skeleton": { "light": "#202116", "dark": "#f1ece5" }, "--dsw-alias-label-primary": { "light": "#202116", "dark": "#f1ece5" }, "--dsw-alias-markdown-code-block": { "light": "#202116", "dark": "#f1ece5" }, "--dsw-alias-label-secondary": { "light": "#4a463c", "dark": "#c2b7ac" }, "--dsw-alias-label-primary-dimmed": { "light": "#4a463c", "dark": "#c2b7ac" }, "--dsw-alias-label-tertiary": { "light": "#6b665c", "dark": "#8e8175" }, "--dsw-alias-menu-icon": { "light": "#6b665c", "dark": "#8e8175" }, "--dsw-alias-label-dimmed": { "light": "#a7a49b", "dark": "#665b52" }, "--dsw-alias-label-caption": { "light": "#a7a49b", "dark": "#665b52" }, "--dsw-alias-markdown-placeholder": { "light": "#a7a49b", "dark": "#665b52" }, "--dsw-alias-label-primary-foreground": { "light": "#fff9f4", "dark": "#1b0e09" }, "--dsw-alias-toast-label": { "light": "#fff9f4", "dark": "#1b0e09" }, "--dsw-alias-brand-primary": { "light": "#c96442", "dark": "#e08a68" }, "--dsw-alias-state-business-primary": { "light": "#c96442", "dark": "#e08a68" }, "--dsw-alias-brand-text": { "light": "#c96442", "dark": "#e08a68" }, "--dsw-alias-button-primary-hover": { "light": "#b24e32", "dark": "#eea184" }, "--dsw-alias-button-floating-hover": { "light": "#b24e32", "dark": "#eea184" }, "--dsw-alias-interactive-bg-hover-accent": { "light": "#a9432a", "dark": "#e79576" }, "--dsw-alias-button-ghost-active-hover": { "light": "#a9432a", "dark": "#e79576" }, "--dsw-alias-border-l3": { "light": "#e5e1d9", "dark": "#413a33" }, "--dsw-alias-button-ghost-active-border": { "light": "#f2c7b6", "dark": "#704233" }, "--dsw-alias-state-business-tertiary": { "light": "#f1f0ed", "dark": "#321f19" }, "--dsw-alias-turn-trigger-bg": { "light": "#f1f0ed", "dark": "#321f19" }, "--dsw-alias-interactive-bg-hover": { "light": "#e9e8e5", "dark": "#302b26" }, "--dsw-alias-border-l4": { "light": "#d4cfc6", "dark": "#4b433b" }, "--dsw-alias-border-l2": { "light": "#ede9e2", "dark": "#352f2a" }, "--dsw-alias-border-l2-darkmode-thin": { "light": "#ede9e2", "dark": "#352f2a" }, "--dsw-alias-border-l1": { "light": "#f3efe8", "dark": "#292520" }, "--dsw-alias-interactive-bg-active": { "light": "#f1f0ed", "dark": "#3b352f" }, "--dsw-alias-bg-layer-3": { "light": "#f6f5f3", "dark": "#26221d" }, "--dsw-alias-state-error-primary": { "light": "#c9363e", "dark": "#ff4d4f" }, "--dsw-alias-state-error-secondary": { "light": "#c9363e", "dark": "#ff4d4f" }, "--dsw-alias-file-diff-deleted-marker": { "light": "#c9363e", "dark": "#ff4d4f" }, "--dsw-alias-file-diff-deleted-bg": { "light": "#fff2f0", "dark": "#4a1a1b" }, "--dsw-alias-state-success-primary": { "light": "#5a7a5e", "dark": "#73cd94" }, "--dsw-alias-file-diff-added-marker": { "light": "#5a7a5e", "dark": "#73cd94" }, "--dsw-alias-file-diff-added-bg": { "light": "#eef2ed", "dark": "#14261c" }, "--dsw-alias-button-info-fill": { "light": "#c96442", "dark": "#e08a68" }, "--dsw-alias-link": { "light": "#c96442", "dark": "#e79576" }, "--dsw-alias-button-info-hover": { "light": "#b24e32", "dark": "#eea184" }, "--dsw-specific-sidebar-fill": { "light": "#fff", "dark": "#12100e" }, "--dsw-specific-bubble": { "light": "#f1f0ed", "dark": "#321f19" }, "--dsw-radius-xs": { "light": "2px", "dark": "2px" }, "--dsw-radius-sm": { "light": "4px", "dark": "4px" }, "--dsw-radius-md": { "light": "6px", "dark": "6px" }, "--dsw-radius-lg": { "light": "8px", "dark": "8px" }, "--dsw-radius-xl": { "light": "12px", "dark": "12px" }, "--dsw-radius-panel": { "light": "16px", "dark": "16px" }, "--dsh-font-family-text": { "light": 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif', "dark": 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif' }, "--dsh-font-family-code": { "light": 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace', "dark": 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace' } } };
@@ -1266,8 +1384,18 @@ html:not([data-platform='darwin']) [class*="_frame"] { background: var(--dsw-spe
 [class*="_composerStack"] button[class$="_primary"] { border-radius: var(--dsw-radius-sm) !important; }
 `;
 
+// plugin-ui-css-module:/Users/tongyi/dsh-plugin-ui/src/client/palette.module.css
+var styleId4 = "dsh-plugin-ui-palette";
+if (typeof document !== "undefined" && document.getElementById(styleId4) === null) {
+  const style = document.createElement("style");
+  style.id = styleId4;
+  style.textContent = "/* Palette preview row: same row rhythm as the other General rows, with one\n   miniature window per choice so the colors are visible before applying. */\n.dpui-palette-section {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  padding: 16px 0;\n  border-bottom: 0.5px solid var(--dsw-alias-border-l2);\n}\n\n.dpui-palette-head {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.dpui-palette-title {\n  font-size: 14px;\n  font-weight: 400;\n  line-height: 22px;\n  color: var(--dsw-alias-label-primary);\n}\n\n.dpui-palette-desc {\n  font-size: 12px;\n  font-weight: 400;\n  line-height: 18px;\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.dpui-palette-grid {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n\n.dpui-palette-card {\n  display: flex;\n  flex: 1 1 92px;\n  flex-direction: column;\n  gap: 6px;\n  max-width: 148px;\n  min-width: 92px;\n  padding: 0;\n  border: 0;\n  background: transparent;\n  text-align: left;\n  cursor: pointer;\n}\n\n.dpui-palette-preview {\n  display: flex;\n  height: 56px;\n  overflow: hidden;\n  border: 0.5px solid;\n  border-radius: var(--dsw-radius-md);\n}\n\n.dpui-palette-card:hover .dpui-palette-preview {\n  filter: brightness(0.97);\n}\n\n.dpui-palette-cardActive .dpui-palette-preview,\n.dpui-palette-card:focus-visible .dpui-palette-preview {\n  outline: 2px solid var(--dsw-alias-brand-primary);\n  outline-offset: 1px;\n}\n\n.dpui-palette-side {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  flex: none;\n  width: 32%;\n  padding: 8px 6px;\n  border-right: 0.5px solid;\n}\n\n.dpui-palette-main {\n  display: flex;\n  flex: 1;\n  flex-direction: column;\n  gap: 4px;\n  padding: 8px 6px;\n}\n\n.dpui-palette-accent {\n  width: 20px;\n  height: 6px;\n  border-radius: 3px;\n}\n\n.dpui-palette-line {\n  width: 72%;\n  height: 3px;\n  border-radius: 2px;\n  opacity: 0.8;\n}\n\n.dpui-palette-lineShort {\n  width: 44%;\n  height: 3px;\n  border-radius: 2px;\n  opacity: 0.4;\n}\n\n.dpui-palette-label {\n  overflow: hidden;\n  font-size: 12px;\n  line-height: 18px;\n  color: var(--dsw-alias-label-secondary);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.dpui-palette-cardActive .dpui-palette-label {\n  color: var(--dsw-alias-label-primary);\n}\n";
+  document.head.append(style);
+}
+var palette_default = new Proxy({}, { get: (_target, key) => typeof key === "string" ? "dpui-palette-" + key : void 0 });
+
 // src/client/palette.jsx
-var import_jsx_runtime5 = require("react/jsx-runtime");
+var import_jsx_runtime6 = require("react/jsx-runtime");
 var STORAGE_KEY = "dsh-plugin-ui.palette";
 var DEFAULT_PALETTE = "forest";
 var SKIN_STYLE_ID = "dsh-plugin-ui-structure";
@@ -1330,50 +1458,79 @@ function createPaletteController(ctx) {
     }
   };
 }
-function PaletteSettings({ t, controller }) {
-  const [pair, setPair] = (0, import_react4.useState)(() => controller.get());
-  const [open, setOpen] = (0, import_react4.useState)(false);
+var NONE_COLORS = {
+  light: { bg: "#fff", side: "#e5e5e5", border: "#e5e5e5", accent: "#4d6bfe", ink: "#141414" },
+  dark: { bg: "#171717", side: "#333", border: "#333", accent: "#6b8aff", ink: "#e5e5e5" }
+};
+function paletteColors(id, scheme) {
+  if (id === "none") return NONE_COLORS[scheme];
+  const layer = PALETTE_LAYERS[id];
+  return {
+    bg: layer["--dsw-alias-bg-base"]?.[scheme],
+    side: layer["--dsw-alias-border-l2"]?.[scheme],
+    border: layer["--dsw-alias-border-l2"]?.[scheme],
+    accent: layer["--dsw-alias-brand-primary"]?.[scheme],
+    ink: layer["--dsw-alias-label-primary"]?.[scheme]
+  };
+}
+function useColorScheme(ctx) {
+  const read = () => ctx.theme.getTheme().active?.colorScheme ?? "light";
+  const [scheme, setScheme] = (0, import_react5.useState)(read);
+  (0, import_react5.useEffect)(() => {
+    const update = () => {
+      setScheme(read());
+    };
+    update();
+    const off = ctx.on("theme/change", update);
+    return () => {
+      off?.();
+    };
+  }, [ctx]);
+  return scheme;
+}
+function PaletteSettings({ t, controller, ctx }) {
+  const [pair, setPair] = (0, import_react5.useState)(() => controller.get());
+  const scheme = useColorScheme(ctx);
   const choose = (id) => {
     controller.choose(id);
     setPair(id);
-    setOpen(false);
   };
-  const anchor = /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
-    "button",
-    {
-      type: "button",
-      className: quick_actions_settings_default.selector,
-      "aria-haspopup": "menu",
-      "aria-expanded": open,
-      onClick: () => {
-        setOpen((value) => !value);
-      },
-      children: [
-        paletteLabel(pair, t),
-        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_dsh_client_ui_primitives6.IconChevronDownOutlineRegular, { className: quick_actions_settings_default.chevron })
-      ]
-    }
-  );
-  return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: quick_actions_settings_default.row, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: quick_actions_settings_default.rowText, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: quick_actions_settings_default.title, children: t("palette.title") }),
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: quick_actions_settings_default.desc, children: t("palette.hint") })
+  return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: palette_default.section, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: palette_default.head, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: palette_default.title, children: t("palette.title") }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: palette_default.desc, children: t("palette.hint") })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
-      import_dsh_client_ui_primitives6.Menu,
-      {
-        open,
-        onClose: () => {
-          setOpen(false);
+    /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: palette_default.grid, role: "radiogroup", "aria-label": t("palette.title"), children: ["none", ...PALETTE_NAMES].map((id) => {
+      const colors = paletteColors(id, scheme);
+      const active = pair === id;
+      return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(
+        "button",
+        {
+          type: "button",
+          role: "radio",
+          "aria-checked": active,
+          className: clsx(palette_default.card, active && palette_default.cardActive),
+          onClick: () => {
+            choose(id);
+          },
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("span", { className: palette_default.preview, style: { background: colors.bg, borderColor: colors.border }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("span", { className: palette_default.side, style: { background: colors.side, borderColor: colors.border }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: palette_default.line, style: { background: colors.ink } }),
+                /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: palette_default.lineShort, style: { background: colors.ink } })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("span", { className: palette_default.main, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: palette_default.accent, style: { background: colors.accent } }),
+                /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: palette_default.line, style: { background: colors.ink } }),
+                /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: palette_default.lineShort, style: { background: colors.ink } })
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: palette_default.label, children: paletteLabel(id, t) })
+          ]
         },
-        align: "end",
-        portal: true,
-        selectedId: pair,
-        items: ["none", ...PALETTE_NAMES].map((id) => ({ id, label: paletteLabel(id, t) })),
-        onSelect: choose,
-        anchor
-      }
-    )
+        id
+      );
+    }) })
   ] });
 }
 
@@ -1404,10 +1561,17 @@ var zh = {
   "account.signOutRunning": "\u5F53\u524D\u6709\u4EFB\u52A1\u6B63\u5728\u6267\u884C\uFF0C\u9000\u51FA\u767B\u5F55\u4F1A\u4E2D\u65AD\u8FD9\u4E9B\u4EFB\u52A1\u3002\u662F\u5426\u7EE7\u7EED\uFF1F",
   "account.signOutUnknown": "\u6682\u65F6\u65E0\u6CD5\u786E\u8BA4\u4EFB\u52A1\u72B6\u6001\uFF0C\u9000\u51FA\u767B\u5F55\u53EF\u80FD\u4F1A\u4E2D\u65AD\u4F7F\u7528\u6B64\u8D26\u53F7\u7684\u4EFB\u52A1\u3002\u662F\u5426\u7EE7\u7EED\uFF1F",
   "account.quickActionSeat": "\u5FEB\u6377\u64CD\u4F5C\u4F4D\u7F6E {index}",
-  "account.quickActionSeatDescription": "\u4FA7\u680F\u8D26\u53F7\u884C\u4E0A\u7684\u7B2C {index} \u4E2A\u6309\u94AE\uFF0C\u9009\u62E9\u5B83\u6267\u884C\u7684\u52A8\u4F5C\uFF0C\u6216\u7559\u7A7A\u3002",
-  "account.settingsChoice": "\u8BBE\u7F6E",
+  "account.quickActionSeatDescription": "\u4FA7\u680F\u8D26\u53F7\u884C\u4E0A\u7684\u7B2C {index} \u4E2A\u6309\u94AE\uFF1B\u53EF\u9009\u5185\u7F6E\u52A8\u4F5C\u3001\u5DF2\u5B89\u88C5\u63D2\u4EF6\u63D0\u4F9B\u7684\u52A8\u4F5C\uFF0C\u6216\u7559\u7A7A\u3002",
+  "account.quickActionExternal": "\u63D2\u4EF6\u63D0\u4F9B\u7684\u52A8\u4F5C",
+  "account.action.settings": "\u5FEB\u6377\u8BBE\u7F6E",
+  "account.action.newSession": "\u65B0\u5EFA\u4F1A\u8BDD",
+  "account.action.plugins": "\u63D2\u4EF6",
+  "account.action.schedules": "\u81EA\u52A8\u5316\u4EFB\u52A1",
+  "account.action.theme": "\u5207\u6362\u660E\u6697",
+  "account.action.sidebar": "\u6536\u8D77\u4FA7\u680F",
+  "account.action.allSettings": "\u5168\u90E8\u8BBE\u7F6E\u2026",
   "account.emptyChoice": "\u7A7A",
-  "account.settingsAction": "\u8BBE\u7F6E",
+  "account.settingsAction": "\u5FEB\u6377\u8BBE\u7F6E",
   "account.language": "\u8BED\u8A00",
   "account.appearanceMode": "\u660E\u6697\u6A21\u5F0F",
   "account.themeLight": "\u6D45\u8272",
@@ -1453,10 +1617,17 @@ var en = {
   "account.signOutRunning": "Tasks are currently running. Signing out will interrupt them. Sign out now?",
   "account.signOutUnknown": "Could not check running tasks. Signing out may interrupt tasks using this account. Sign out now?",
   "account.quickActionSeat": "Quick action slot {index}",
-  "account.quickActionSeatDescription": "The button in position {index} of the sidebar account row. Choose what it does, or leave it empty.",
-  "account.settingsChoice": "Settings",
+  "account.quickActionSeatDescription": "The button in position {index} of the sidebar account row. Pick a built-in action, one contributed by an installed plugin, or leave it empty.",
+  "account.quickActionExternal": "From installed plugins",
+  "account.action.settings": "Quick settings",
+  "account.action.newSession": "New session",
+  "account.action.plugins": "Plugins",
+  "account.action.schedules": "Automation tasks",
+  "account.action.theme": "Toggle light/dark",
+  "account.action.sidebar": "Toggle sidebar",
+  "account.action.allSettings": "All settings\u2026",
   "account.emptyChoice": "Empty",
-  "account.settingsAction": "Settings",
+  "account.settingsAction": "Quick settings",
   "account.language": "Language",
   "account.appearanceMode": "Color mode",
   "account.themeLight": "Light",
@@ -1536,9 +1707,9 @@ function apply(ctx) {
   ctx.slots.inject("settings.general.item", () => ctx.slots.register({
     name: "settings.general.item",
     id: "plugin-ui.palette",
-    order: 20,
+    order: 10.5,
     locale: UI_NS,
-    inject: () => ({ controller: palette })
+    inject: () => ({ controller: palette, ctx })
   }, PaletteSettings));
   ctx.inject(["slots", "modelDirectories", "sessions", "remote", "remote.session"], (scope) => {
     const models = scope.modelDirectories;
@@ -1563,7 +1734,7 @@ function apply(ctx) {
     }, ModelSelect));
   });
   if (!("dshDesktop" in globalThis)) return;
-  ctx.inject(["slots", "remote", "remote.account"], (scope) => {
+  ctx.inject(["slots", "remote", "remote.account", "uiWorkspace", "layout"], (scope) => {
     const quickActions = createQuickActionsStore();
     const accountStore = createAccountStore(scope);
     accountStore.start();
@@ -1572,14 +1743,21 @@ function apply(ctx) {
       locale: UI_NS,
       store: quickActions,
       priority: -1,
-      inject: () => ({ ctx: scope, accountStore })
+      children: { [QUICK_ACTION_SLOT]: { kind: "list", scope: "root" } },
+      inject: () => ({
+        ctx: scope,
+        accountStore,
+        uiWorkspace: scope.get("uiWorkspace"),
+        layout: scope.get("layout")
+      })
     }, AccountMenu));
     scope.slots.inject("settings.general.item", () => scope.slots.register({
       name: "settings.general.item",
       id: "plugin-ui.quick-actions",
       order: 12,
       locale: UI_NS,
-      store: quickActions
+      store: quickActions,
+      inject: () => ({ ctx: scope })
     }, QuickActionsSettings));
   });
 }

@@ -1,0 +1,118 @@
+/* Palette preview row: same row rhythm as the other General rows, with one
+   miniature window per choice so the colors are visible before applying. */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 0.5px solid var(--dsw-alias-border-l2);
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  color: var(--dsw-alias-label-primary);
+}
+
+.desc {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.card {
+  display: flex;
+  flex: 1 1 92px;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 148px;
+  min-width: 92px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.preview {
+  display: flex;
+  height: 56px;
+  overflow: hidden;
+  border: 0.5px solid;
+  border-radius: var(--dsw-radius-md);
+}
+
+.card:hover .preview {
+  filter: brightness(0.97);
+}
+
+.cardActive .preview,
+.card:focus-visible .preview {
+  outline: 2px solid var(--dsw-alias-brand-primary);
+  outline-offset: 1px;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: none;
+  width: 32%;
+  padding: 8px 6px;
+  border-right: 0.5px solid;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 6px;
+}
+
+.accent {
+  width: 20px;
+  height: 6px;
+  border-radius: 3px;
+}
+
+.line {
+  width: 72%;
+  height: 3px;
+  border-radius: 2px;
+  opacity: 0.8;
+}
+
+.lineShort {
+  width: 44%;
+  height: 3px;
+  border-radius: 2px;
+  opacity: 0.4;
+}
+
+.label {
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardActive .label {
+  color: var(--dsw-alias-label-primary);
+}

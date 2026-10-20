@@ -2,9 +2,11 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import {
   Button, IconCloseOutlineRegular, IconEllipsisOutlineMedium, IconLoadingOutlineRegular,
-  IconPaperPlaneOutlineMedium, IconSettingsOutlineMedium, IconUserOutlineMedium, Menu, Modal,
+  IconPaperPlaneOutlineMedium, IconSettingsOutlineMedium, IconUserOutlineMedium, Menu, Modal, Tooltip,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import { applyQuickSetting, quickSettingsItems, quickSettingsView } from './quick-settings.jsx'
+import { BUILTIN_QUICK_ACTIONS, QUICK_ACTION_SLOT } from './quick-actions.js'
+import { builtinQuickActionIcon } from './quick-actions-catalog.jsx'
 import css from './account.module.css'
 
 /** Build the small account state store shared by the launcher and its dialogs. */
@@ -122,27 +124,47 @@ function LogoutIcon() {
 }
 
 /**
- * One of the two configurable seats. The settings seat opens the quick
- * settings menu; an empty seat keeps its column.
+ * One configurable seat: the quick-settings menu, a built-in action, an
+ * external slot contribution, or an empty column.
  */
-function QuickActionsRow({ t, seats, view, onQuickSelect, onAllSettings }) {
+function QuickActionSeat({ seat, t, view, onQuickSelect, onAllSettings, onBuiltin, renderSlot }) {
   const [open, setOpen] = useState(false)
+  if (seat === null || seat === undefined) {
+    return <span className={css.seatSpacer} aria-hidden="true" />
+  }
+  if (seat === 'settings') {
+    return <Menu open={open} side="top" align="end" portal autoFocus
+      listClassName={css.list}
+      items={quickSettingsItems(view, t)}
+      onClose={() => { setOpen(false) }}
+      onSelect={(id) => {
+        if (id === 'all-settings') { setOpen(false); onAllSettings() }
+        else onQuickSelect(id)
+      }}
+      anchor={<button type="button" className={css.seat} aria-label={t('account.settingsAction')}
+        aria-haspopup="menu" aria-expanded={open}
+        onClick={() => { setOpen(value => !value) }}>
+        <span className={css.seatIcon}><IconSettingsOutlineMedium size={14} /></span>
+      </button>} />
+  }
+  const builtin = BUILTIN_QUICK_ACTIONS.find(action => action.id === seat)
+  if (builtin !== undefined) {
+    const label = t(builtin.labelKey)
+    return <Tooltip label={label} side="top" align="end" delayMs={500} portal>
+      <button type="button" className={css.seat} aria-label={label} onClick={() => { onBuiltin(seat) }}>
+        <span className={css.seatIcon}>{builtinQuickActionIcon(seat)}</span>
+      </button>
+    </Tooltip>
+  }
+  return <span className={css.externalSeat} data-quick-action={seat}>
+    {renderSlot?.(QUICK_ACTION_SLOT, { size: 14 }, { only: seat })}
+  </span>
+}
+
+/** The seat pair; each seat owns its menu so two settings seats stay independent. */
+function QuickActionsRow({ seats, ...seatProps }) {
   return <span className={css.seats}>
-    {seats.map((seat, index) => seat === 'settings'
-      ? <Menu key={index} open={open} side="top" align="end" portal autoFocus
-        listClassName={css.list}
-        items={quickSettingsItems(view, t)}
-        onClose={() => { setOpen(false) }}
-        onSelect={(id) => {
-          if (id === 'all-settings') { setOpen(false); onAllSettings() }
-          else onQuickSelect(id)
-        }}
-        anchor={<button type="button" className={css.seat} aria-label={t('account.settingsAction')}
-          aria-haspopup="menu" aria-expanded={open}
-          onClick={() => { setOpen(value => !value) }}>
-          <span className={css.seatIcon}><IconSettingsOutlineMedium size={14} /></span>
-        </button>} />
-      : <span key={index} className={css.seatSpacer} aria-hidden="true" />)}
+    {seats.map((seat, index) => <QuickActionSeat key={index} seat={seat} {...seatProps} />)}
   </span>
 }
 
@@ -251,6 +273,7 @@ function SignOutDialog({ t, running, busy, close, confirm }) {
  */
 export function AccountMenu({
   t, ctx, useStore, actions, wide, settingsShortcut, openSettings, accountStore, settingsOpen,
+  uiWorkspace, layout, renderSlot,
 }) {
   const seats = useStore(state => state.seats)
   const account = useSnapshot(accountStore)
@@ -275,6 +298,18 @@ export function AccountMenu({
     setOpen(false)
     queueMicrotask(() => { trigger.current?.focus({ preventScroll: true }) })
     openSettings()
+  }
+  const runBuiltin = id => {
+    if (id === 'new-session') { uiWorkspace?.startSession(); return }
+    if (id === 'plugins') { layout?.selectPanel('plugins'); return }
+    if (id === 'schedules') { layout?.selectPanel('schedules'); return }
+    if (id === 'theme') {
+      const scheme = ctx.theme.getTheme().active.colorScheme
+      ctx.theme.setTheme(scheme === 'dark' ? 'light' : 'dark')
+      return
+    }
+    if (id === 'sidebar') { layout?.toggleSidebar(); return }
+    if (id === 'all-settings') openSettingsPage()
   }
   const requestSignOut = async () => {
     setOpen(false)
@@ -330,8 +365,8 @@ export function AccountMenu({
             : <IconEllipsisOutlineMedium size={14} />}
           {wide && <span className={css.label}>{label}</span>}
         </button>
-        {wide && <QuickActionsRow t={t} seats={seats} view={view}
-          onQuickSelect={quickSelect} onAllSettings={openSettingsPage} />}
+        {wide && <QuickActionsRow seats={seats} t={t} view={view} renderSlot={renderSlot}
+          onQuickSelect={quickSelect} onAllSettings={openSettingsPage} onBuiltin={runBuiltin} />}
       </div>}
       items={items}
       onClose={() => { setOpen(false) }}

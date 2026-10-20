@@ -135,6 +135,15 @@
   width: 30px;
 }
 
+/* External slot contribution: the entry renders the button, the cell owns the column. */
+.externalSeat {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  flex: none;
+  width: 30px;
+}
+
 .list {
   min-width: 236px;
 }

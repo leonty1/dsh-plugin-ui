@@ -1,9 +1,9 @@
-/** Qoder palette skin: token layer, structure CSS, and the General-settings row that picks one. */
-import { useState } from 'react'
-import { IconChevronDownOutlineRegular, Menu } from '@deepseek-ai/dsh-client-ui-primitives'
+/** Qoder palette skin: token layer, structure CSS, and the Appearance preview row that picks one. */
+import { useEffect, useState } from 'react'
+import clsx from './clsx.js'
 import { FONT_FACE_CSS, PALETTE_LAYERS, PALETTE_NAMES } from './generated-palettes.js'
 import skinCss from './skin.css'
-import css from './quick-actions-settings.module.css'
+import css from './palette.module.css'
 
 /** Storage key carrying the chosen palette; `none` disables the skin. */
 const STORAGE_KEY = 'dsh-plugin-ui.palette'
@@ -87,34 +87,78 @@ export function createPaletteController(ctx) {
   }
 }
 
+/** Neutral preview for "No skin", whose colors come from the app rather than a layer. */
+const NONE_COLORS = {
+  light: { bg: '#fff', side: '#e5e5e5', border: '#e5e5e5', accent: '#4d6bfe', ink: '#141414' },
+  dark: { bg: '#171717', side: '#333', border: '#333', accent: '#6b8aff', ink: '#e5e5e5' },
+}
+
+/** @param id - palette id or `none`. @param scheme - the app's active color scheme. @returns preview colors. */
+function paletteColors(id, scheme) {
+  if (id === 'none') return NONE_COLORS[scheme]
+  const layer = PALETTE_LAYERS[id]
+  return {
+    bg: layer['--dsw-alias-bg-base']?.[scheme],
+    side: layer['--dsw-alias-border-l2']?.[scheme],
+    border: layer['--dsw-alias-border-l2']?.[scheme],
+    accent: layer['--dsw-alias-brand-primary']?.[scheme],
+    ink: layer['--dsw-alias-label-primary']?.[scheme],
+  }
+}
+
+/** Follow the resolved light/dark scheme so previews match the current appearance. */
+function useColorScheme(ctx) {
+  const read = () => ctx.theme.getTheme().active?.colorScheme ?? 'light'
+  const [scheme, setScheme] = useState(read)
+  useEffect(() => {
+    const update = () => { setScheme(read()) }
+    update()
+    const off = ctx.on('theme/change', update)
+    return () => { off?.() }
+  }, [ctx])
+  return scheme
+}
+
 /**
- * One General-settings row: title and hint on the left, a pill naming the
- * current palette on the right.
- * @param props - plugin dictionary and the palette controller.
- * @returns the preference row.
+ * One Appearance row: title and hint over a preview card per palette. Each
+ * card samples the palette's own background, sidebar, accent, and ink under
+ * the current light/dark scheme, and clicking it applies that palette.
+ * @param props - plugin dictionary, palette controller, and client context.
+ * @returns the palette preview row.
  */
-export function PaletteSettings({ t, controller }) {
+export function PaletteSettings({ t, controller, ctx }) {
   const [pair, setPair] = useState(() => controller.get())
-  const [open, setOpen] = useState(false)
+  const scheme = useColorScheme(ctx)
   const choose = id => {
     controller.choose(id)
     setPair(id)
-    setOpen(false)
   }
-  const anchor = <button type="button" className={css.selector}
-    aria-haspopup="menu" aria-expanded={open}
-    onClick={() => { setOpen(value => !value) }}>
-    {paletteLabel(pair, t)}
-    <IconChevronDownOutlineRegular className={css.chevron} />
-  </button>
-  return <div className={css.row}>
-    <div className={css.rowText}>
+  return <div className={css.section}>
+    <div className={css.head}>
       <div className={css.title}>{t('palette.title')}</div>
       <div className={css.desc}>{t('palette.hint')}</div>
     </div>
-    <Menu open={open} onClose={() => { setOpen(false) }} align="end" portal
-      selectedId={pair}
-      items={['none', ...PALETTE_NAMES].map(id => ({ id, label: paletteLabel(id, t) }))}
-      onSelect={choose} anchor={anchor} />
+    <div className={css.grid} role="radiogroup" aria-label={t('palette.title')}>
+      {['none', ...PALETTE_NAMES].map(id => {
+        const colors = paletteColors(id, scheme)
+        const active = pair === id
+        return <button key={id} type="button" role="radio" aria-checked={active}
+          className={clsx(css.card, active && css.cardActive)}
+          onClick={() => { choose(id) }}>
+          <span className={css.preview} style={{ background: colors.bg, borderColor: colors.border }}>
+            <span className={css.side} style={{ background: colors.side, borderColor: colors.border }}>
+              <span className={css.line} style={{ background: colors.ink }} />
+              <span className={css.lineShort} style={{ background: colors.ink }} />
+            </span>
+            <span className={css.main}>
+              <span className={css.accent} style={{ background: colors.accent }} />
+              <span className={css.line} style={{ background: colors.ink }} />
+              <span className={css.lineShort} style={{ background: colors.ink }} />
+            </span>
+          </span>
+          <span className={css.label}>{paletteLabel(id, t)}</span>
+        </button>
+      })}
+    </div>
   </div>
 }

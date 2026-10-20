@@ -1,8 +1,19 @@
 /** The two configurable quick-action seats at the right edge of the sidebar account row. */
 import { defineStore } from '@deepseek-ai/dsh-client-store'
 
-/** Quick action one seat can carry; null leaves the seat empty. */
-export const QUICK_ACTION_CHOICES = ['settings', null]
+/** Built-in actions every installation offers; external plugins add more through the seat slot. */
+export const BUILTIN_QUICK_ACTIONS = [
+  { id: 'settings', labelKey: 'account.action.settings' },
+  { id: 'new-session', labelKey: 'account.action.newSession' },
+  { id: 'plugins', labelKey: 'account.action.plugins' },
+  { id: 'schedules', labelKey: 'account.action.schedules' },
+  { id: 'theme', labelKey: 'account.action.theme' },
+  { id: 'sidebar', labelKey: 'account.action.sidebar' },
+  { id: 'all-settings', labelKey: 'account.action.allSettings' },
+]
+
+/** List slot external plugins register one seat contribution into. */
+export const QUICK_ACTION_SLOT = 'pluginUi.quickAction'
 
 /** Storage key carrying the seat pair, persisted whole by the store. */
 export const QUICK_ACTIONS_PERSIST = 'dsh-plugin-ui.quick-actions.v1'

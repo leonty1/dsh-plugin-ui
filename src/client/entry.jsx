@@ -5,7 +5,7 @@
 import { ModelSelect } from './ModelSelect.tsx'
 import { AccountMenu, createAccountStore } from './account.jsx'
 import { QuickActionsSettings } from './quick-actions-settings.jsx'
-import { createQuickActionsStore } from './quick-actions.js'
+import { createQuickActionsStore, QUICK_ACTION_SLOT } from './quick-actions.js'
 import { createPaletteController, PaletteSettings } from './palette.jsx'
 import { en, modelEn, modelZh, zh } from './locales.js'
 
@@ -27,8 +27,8 @@ export function apply(ctx) {
   const palette = createPaletteController(ctx)
   ctx.effect(() => palette.install(), 'dsh-plugin-ui: palette layer')
   ctx.slots.inject('settings.general.item', () => ctx.slots.register({
-    name: 'settings.general.item', id: 'plugin-ui.palette', order: 20,
-    locale: UI_NS, inject: () => ({ controller: palette }),
+    name: 'settings.general.item', id: 'plugin-ui.palette', order: 10.5,
+    locale: UI_NS, inject: () => ({ controller: palette, ctx }),
   }, PaletteSettings))
 
   // `remote.session` is required by the directory's own Host calls, which run
@@ -55,17 +55,21 @@ export function apply(ctx) {
   // signs in through its own browser flow and keeps the official seat.
   if (!('dshDesktop' in globalThis)) return
 
-  ctx.inject(['slots', 'remote', 'remote.account'], scope => {
+  ctx.inject(['slots', 'remote', 'remote.account', 'uiWorkspace', 'layout'], scope => {
     const quickActions = createQuickActionsStore()
     const accountStore = createAccountStore(scope)
     accountStore.start()
     scope.slots.inject('settings.launcher', () => scope.slots.register({
       name: 'settings.launcher', locale: UI_NS, store: quickActions, priority: -1,
-      inject: () => ({ ctx: scope, accountStore }),
+      children: { [QUICK_ACTION_SLOT]: { kind: 'list', scope: 'root' } },
+      inject: () => ({
+        ctx: scope, accountStore,
+        uiWorkspace: scope.get('uiWorkspace'), layout: scope.get('layout'),
+      }),
     }, AccountMenu))
     scope.slots.inject('settings.general.item', () => scope.slots.register({
       name: 'settings.general.item', id: 'plugin-ui.quick-actions', order: 12,
-      locale: UI_NS, store: quickActions,
+      locale: UI_NS, store: quickActions, inject: () => ({ ctx: scope }),
     }, QuickActionsSettings))
   })
 }
