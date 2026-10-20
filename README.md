@@ -8,15 +8,15 @@ A Qoder-style UI layer for DeepSeek Harness: palette skin, single-card model and
 
 | 浅色 Light | 深色 Dark |
 | --- | --- |
-| ![Qoder UI light](docs/images/showcase-light.png) | ![Qoder UI dark](docs/images/showcase-dark.png) |
+| ![Qoder 界面 · 浅色](docs/images/showcase-light.png) | ![Qoder 界面 · 深色](docs/images/showcase-dark.png) |
 
-*模型与推理强度同一张卡片 / Model and reasoning effort in one card*
+*模型与推理强度同一张卡片（账号信息已遮挡）*
 
-![Model and reasoning effort](docs/images/showcase-models.png)
+![模型与推理强度](docs/images/showcase-models.png)
 
-*Appearance 下的调色板预览卡 / Palette previews under Appearance*
+*Appearance 下的调色板预览卡*
 
-![Palette previews under Appearance](docs/images/showcase-settings.png)
+![调色板预览](docs/images/showcase-settings.png)
 
 ## 包含的内容
 
@@ -28,7 +28,7 @@ A Qoder-style UI layer for DeepSeek Harness: palette skin, single-card model and
 | 侧栏底部分区 | Plugins 与 Automation tasks 固定在滚动区域之后、账号行正上方，上缘一条 `border-l2` 浅色虚线（跟随皮肤配色）与工作区隔离。 |
 | 发送按钮 | 编辑器的发送键改为 Qoder 的圆角方形（跟随 `--dsw-radius-sm`），不再使用圆形。 |
 | 首屏角标 | 隐藏 hero 上的预览/版本角标（`.previewBadge`）。 |
-| 模型与强度 | 用单张卡片替换官方模型菜单：左侧强度卡（Off / Low / High / Max 与说明），右侧模型卡（按供应商分组）；选中模型后菜单保持打开，可继续调整强度；支持搜索、加载失败重试与空状态。触发键显示“模型 + 当前强度”。 |
+| 模型与强度 | 用单张卡片替换官方模型菜单：左侧强度卡（关闭 / 低 / 高 / 最高，带说明），右侧模型卡（按供应商分组）；中文界面显示中文本地化的强度名与提示，未知强度沿用提供方文案。选中模型后菜单保持打开，可继续调整强度；支持搜索、加载失败重试与空状态。触发键显示“模型 + 当前强度”。 |
 | 账号行（仅 Desktop） | 左下角账号行保持官方显示：登录后 24px 头像 + 名称（44px 行高、14px 字），未登录为官方 ⋯ + “更多”（32px 行高）；右侧仅追加快捷座位（可执行内置动作或其他插件提供的动作）。 |
 | 账号菜单（仅 Desktop） | 与官方一致：设置（带设置快捷键）、联系我们、退出登录；未登录时为设置、联系我们、登录。 |
 | 快捷设置菜单 | 由账号行右侧齿轮座位打开，语言 / 明暗 / 字号各成一组。菜单刻意保持单层，当前值以 “✓” 标出，不依赖多级子菜单。 |

@@ -48,6 +48,27 @@ interface EffortChoice {
   label: string
 }
 
+/** Reasoning-effort ids the plugin localizes; provider-specific ids keep their own names. */
+const KNOWN_EFFORTS = new Set(['off', 'none', 'minimal', 'low', 'medium', 'high', 'max'])
+
+/** @returns the lowercase dictionary key for a known effort id. */
+function knownEffort(id: string | undefined): string | undefined {
+  const key = id?.toLowerCase()
+  return key !== undefined && KNOWN_EFFORTS.has(key) ? key : undefined
+}
+
+/** Localized level name, falling back to the provider's label. */
+function effortLabelFor(t: PropsLocale<'model'>['t'], id: string | undefined, fallback: string): string {
+  const key = knownEffort(id)
+  return key === undefined ? fallback : t(`effort.${key}`)
+}
+
+/** Localized one-line hint, falling back to the provider's description. */
+function effortHintFor(t: PropsLocale<'model'>['t'], id: string | undefined, fallback: string | undefined): string | undefined {
+  const key = knownEffort(id)
+  return key === undefined ? fallback : t(`effort.hint.${key}`)
+}
+
 /** Unplaced portal card: hidden but laid out at a fixed origin so offsetWidth/offsetHeight are real (Menu primitive's measure pass). */
 const MEASURE_STYLE: CSSProperties = { visibility: 'hidden', left: 0, top: 0 }
 
@@ -127,7 +148,7 @@ export function ModelSelect(
       ? state.retainedEffort
       : effectiveEffort === undefined
         ? t('effort.providerDefault')
-        : reasoning.efforts.find(level => level.id === effectiveEffort)?.name ?? effectiveEffort
+        : effortLabelFor(t, effectiveEffort, reasoning.efforts.find(level => level.id === effectiveEffort)?.name ?? effectiveEffort)
   const shownChoice = preview === null
     ? currentChoice
     : choices.find(choice => choice.group.id === preview.provider && choice.model.id === preview.model) ?? currentChoice
@@ -144,10 +165,11 @@ export function ModelSelect(
       ...shownReasoning.efforts.map((effort: ModelReasoningEffort) => ({
         key: `effort:${effort.id}`,
         effort: effort.id,
-        label: effort.name,
+        label: effortLabelFor(t, effort.id, effort.name),
       })),
     ], [shownReasoning, t])
-  const effortDescription = shownReasoning?.efforts.find(level => level.id === shownEffort)?.description
+  const providerDescription = shownReasoning?.efforts.find(level => level.id === shownEffort)?.description
+  const effortDescription = effortHintFor(t, shownEffort, providerDescription)
   const { pending } = state
   const busy = pending !== null
 

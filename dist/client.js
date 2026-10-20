@@ -60,6 +60,19 @@ function orderModelProviders(groups) {
 
 // src/client/ModelSelect.tsx
 var import_jsx_runtime = require("react/jsx-runtime");
+var KNOWN_EFFORTS = /* @__PURE__ */ new Set(["off", "none", "minimal", "low", "medium", "high", "max"]);
+function knownEffort(id) {
+  const key = id?.toLowerCase();
+  return key !== void 0 && KNOWN_EFFORTS.has(key) ? key : void 0;
+}
+function effortLabelFor(t, id, fallback) {
+  const key = knownEffort(id);
+  return key === void 0 ? fallback : t(`effort.${key}`);
+}
+function effortHintFor(t, id, fallback) {
+  const key = knownEffort(id);
+  return key === void 0 ? fallback : t(`effort.hint.${key}`);
+}
 var MEASURE_STYLE = { visibility: "hidden", left: 0, top: 0 };
 function ModelSelect({ locked, available, directory, load, select, t }) {
   const state = (0, import_react.useSyncExternalStore)(
@@ -109,7 +122,7 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
   const currentChoice = choices[selectedIndex];
   const reasoning = currentChoice?.model.reasoning;
   const effectiveEffort = state.current?.reasoningEffort ?? reasoning?.defaultEffort;
-  const effortLabel = currentChoice === void 0 ? void 0 : reasoning === void 0 ? state.retainedEffort : effectiveEffort === void 0 ? t("effort.providerDefault") : reasoning.efforts.find((level) => level.id === effectiveEffort)?.name ?? effectiveEffort;
+  const effortLabel = currentChoice === void 0 ? void 0 : reasoning === void 0 ? state.retainedEffort : effectiveEffort === void 0 ? t("effort.providerDefault") : effortLabelFor(t, effectiveEffort, reasoning.efforts.find((level) => level.id === effectiveEffort)?.name ?? effectiveEffort);
   const shownChoice = preview === null ? currentChoice : choices.find((choice) => choice.group.id === preview.provider && choice.model.id === preview.model) ?? currentChoice;
   const shownReasoning = shownChoice?.model.reasoning;
   const shownEffort = shownChoice === currentChoice ? effectiveEffort : shownReasoning?.defaultEffort;
@@ -118,10 +131,11 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
     ...shownReasoning.efforts.map((effort) => ({
       key: `effort:${effort.id}`,
       effort: effort.id,
-      label: effort.name
+      label: effortLabelFor(t, effort.id, effort.name)
     }))
   ], [shownReasoning, t]);
-  const effortDescription = shownReasoning?.efforts.find((level) => level.id === shownEffort)?.description;
+  const providerDescription = shownReasoning?.efforts.find((level) => level.id === shownEffort)?.description;
+  const effortDescription = effortHintFor(t, shownEffort, providerDescription);
   const { pending } = state;
   const busy = pending !== null;
   const reload = () => {
@@ -1657,7 +1671,21 @@ var modelZh = {
   "menu.aria": "\u6A21\u578B\u4E0E\u63A8\u7406\u7B49\u7EA7",
   "menu.model": "\u6A21\u578B",
   "menu.effort": "\u63A8\u7406\u7B49\u7EA7",
-  "effort.providerDefault": "Default",
+  "effort.providerDefault": "\u9ED8\u8BA4",
+  "effort.off": "\u5173\u95ED",
+  "effort.none": "\u65E0",
+  "effort.minimal": "\u6700\u4F4E",
+  "effort.low": "\u4F4E",
+  "effort.medium": "\u4E2D",
+  "effort.high": "\u9AD8",
+  "effort.max": "\u6700\u9AD8",
+  "effort.hint.off": "\u4E0D\u8FDB\u884C\u63A8\u7406",
+  "effort.hint.none": "\u4E0D\u8FDB\u884C\u63A8\u7406",
+  "effort.hint.minimal": "\u6700\u4F4E\u9650\u5EA6\u7684\u63A8\u7406",
+  "effort.hint.low": "\u66F4\u5FEB\u54CD\u5E94\uFF0C\u9002\u5408\u7B80\u5355\u4EFB\u52A1",
+  "effort.hint.medium": "\u517C\u987E\u901F\u5EA6\u4E0E\u6DF1\u5EA6",
+  "effort.hint.high": "\u9002\u5408\u5927\u591A\u6570\u4EFB\u52A1\u7684\u9ED8\u8BA4\u5E73\u8861\u6863",
+  "effort.hint.max": "\u5C3D\u53EF\u80FD\u6DF1\u5165\u63A8\u7406",
   "status.loading": "\u6B63\u5728\u5237\u65B0\u6A21\u578B\u5217\u8868\u2026",
   "error.action": "\u6A21\u578B\u64CD\u4F5C\u5931\u8D25\uFF1A{message}",
   "error.sessionInUse": "\u5F53\u524D\u4F1A\u8BDD\u5DF2\u88AB\u5360\u7528\uFF0C\u53EF\u80FD\u662F\u5176\u4ED6\u6B63\u5728\u8FD0\u884C\u7684 DSH \u5BFC\u81F4\u7684\uFF08\u5982\u5176\u4ED6 dsh web\u3001\u684C\u9762\u7AEF\uFF09\uFF0C\u8BF7\u9000\u51FA\u5176\u4ED6\u6B63\u5728\u8FD0\u884C\u7684 DSH \u540E\u91CD\u8BD5\u3002",
@@ -1680,6 +1708,20 @@ var modelEn = {
   "menu.model": "Model",
   "menu.effort": "Effort",
   "effort.providerDefault": "Default",
+  "effort.off": "Off",
+  "effort.none": "None",
+  "effort.minimal": "Minimal",
+  "effort.low": "Low",
+  "effort.medium": "Medium",
+  "effort.high": "High",
+  "effort.max": "Max",
+  "effort.hint.off": "No reasoning",
+  "effort.hint.none": "No reasoning",
+  "effort.hint.minimal": "Minimal reasoning",
+  "effort.hint.low": "Faster responses for simple tasks",
+  "effort.hint.medium": "Balanced speed and depth",
+  "effort.hint.high": "The default balance for most tasks",
+  "effort.hint.max": "Maximum reasoning depth",
   "status.loading": "Refreshing model list\u2026",
   "error.action": "Model operation failed: {message}",
   "error.sessionInUse": "This session is already in use, possibly by another running DSH instance (such as dsh web or the desktop app). Quit other running DSH instances and try again.",
