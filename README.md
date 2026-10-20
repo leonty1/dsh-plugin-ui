@@ -9,7 +9,7 @@ A Qoder-style UI layer for DeepSeek Harness: palette skin, single-card model and
 | 区域 | 行为 |
 | --- | --- |
 | 配色皮肤 | 四套 Qoder 配色（Forest 默认 / Mint / Bee / Parchment），每套都有明暗两版；同时覆盖圆角、正文/代码字体（Inter 子集内置）。General 设置里可切换，也可选 “No skin” 回到官方外观。 |
-| 外框与侧栏 | 中栏 5px 外边距、16px 圆角；侧栏行高 30px 起、8px 圆角；选中行使用 `interactive-bg-active`；隐藏顶部品牌行；New Session 降为普通导航行；工作区/会话行按 Qoder 的几何收紧。 |
+| 外框与侧栏 | 中栏 5px 外边距、16px 圆角；侧栏行高 30px 起、8px 圆角；选中行使用 `interactive-bg-active`；隐藏顶部品牌行；New Session 降为普通导航行（悬停时行尾淡入 ⌘N 键帽，与官方一致）；工作区/会话行按 Qoder 的几何收紧。 |
 | 侧栏字号 | 侧栏全部文字（New Session、工作区、会话、Plugins/Automation、账号行）跟随 `--dsh-content-font-size`，与快捷菜单 Text size、设置里的正文大小同一个值；行高与行距按同一变量推导，整组一起缩放。 |
 | 侧栏底部分区 | Plugins 与 Automation tasks 固定在滚动区域之后、账号行正上方，上缘一条 `border-l2` 浅色虚线（跟随皮肤配色）与工作区隔离；顶部只保留收起按钮。 |
 | 发送按钮 | 编辑器的发送键改为 Qoder 的圆角方形（跟随 `--dsw-radius-sm`），不再使用圆形。 |

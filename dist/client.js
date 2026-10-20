@@ -1229,7 +1229,6 @@ html:not([data-platform='darwin']) [class*="_frame"] { background: var(--dsw-spe
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] { height: var(--dpui-sidebar-row-height) !important; min-height: var(--dpui-sidebar-row-height) !important; margin: 0 0 8px !important; padding: 4px 8px !important; border: none !important; background: transparent !important; border-radius: 8px !important; font-size: var(--dpui-sidebar-font-size) !important; line-height: calc(var(--dpui-sidebar-font-size) + 8px) !important; font-weight: 400 !important; justify-content: flex-start !important; }
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"]:hover { background: var(--dsw-alias-interactive-bg-hover) !important; }
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] [class*="_newSessionContent"] { justify-content: flex-start !important; }
-[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] [class*="_newSessionShortcut"] { display: none !important; }
 /* The panel list sits after the scrollable region so Plugins and Automation
    tasks rest directly above the account footer, under a dashed separator.
    Expanded-only: the collapsed rail keeps the official order and 12px icon
