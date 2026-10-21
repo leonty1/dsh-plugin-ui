@@ -15,6 +15,7 @@ const ROLE_BINDINGS = {
   '--dsw-alias-bg-layer-1': 'bg-base',
   '--dsw-alias-bg-layer-2': 'bg-elevated',
   '--dsw-alias-bg-layer-3': 'bg-elevated',
+  '--dsw-alias-markdown-code-block': 'bg-elevated',
   '--dsw-specific-sidebar-fill': 'bg-base',
   '--dsw-specific-bubble': 'primary-bg',
 }

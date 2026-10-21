@@ -11,7 +11,7 @@
 | `bg-container` | `#fff` → `#191b1a` | `--dsw-alias-bg-layer-1` |
 | `bg-elevated` | `#f9f9f9` → `#252825` | `--dsw-alias-bg-layer-2` `--dsw-alias-bg-overlay` `--dsw-alias-menu-group-header-fill` |
 | `bg-highlight` | `#080807` → `#fff` | `--dsw-alias-bg-multi-select` `--dsw-alias-bg-skeleton` |
-| `text` | `#141414` → `#d9dcd9` | `--dsw-alias-label-primary` `--dsw-alias-markdown-code-block` |
+| `text` | `#141414` → `#d9dcd9` | `--dsw-alias-label-primary`（`--dsw-alias-markdown-code-block` 是底色，构建期改绑） |
 | `text-secondary` | `#636261` → `#b3bab4` | `--dsw-alias-label-secondary` `--dsw-alias-label-primary-dimmed` |
 | `text-tertiary` | `#838280` → `#949d96` | `--dsw-alias-label-tertiary` `--dsw-alias-menu-icon` |
 | `text-quaternary` | `#aaa9a8` → `#8a948c` | `--dsw-alias-label-dimmed` `--dsw-alias-label-caption` `--dsw-alias-markdown-placeholder` |
@@ -39,7 +39,7 @@
 
 ## 构建期覆盖（`scripts/build.mjs` 的 `ROLE_BINDINGS`）
 
-多个角色曾竞争同一个 alias；`design/dsh-theme-definitions.json` 先按上表落成单一取值，构建时再把 7 处按「这个控件在 Qoder 里是什么表面」改绑：
+多个角色曾竞争同一个 alias；`design/dsh-theme-definitions.json` 先按上表落成单一取值，构建时再把 8 处按「这个控件在 Qoder 里是什么表面」改绑：
 
 | DSH alias | 绑定角色 | 原因 |
 |---|---|---|
@@ -48,6 +48,7 @@
 | `--dsw-alias-bg-layer-1` | `bg-base` | 侧栏/主面板的抬升面，不是画布 |
 | `--dsw-alias-bg-layer-2` | `bg-elevated` | Qoder 的抬升卡片 |
 | `--dsw-alias-bg-layer-3` | `bg-elevated` | DSH 四级、Qoder 三级，最深一级与抬升层同值 |
+| `--dsw-alias-markdown-code-block` | `bg-elevated` | DSH 用它当代码块、终端、Shiki 的底色；`text` 在浅色下是近黑 |
 | `--dsw-specific-sidebar-fill` | `bg-base` | darwin 振动材质下的侧栏底色，不在 alias 表里 |
 | `--dsw-specific-bubble` | `primary-bg` | Qoder 用户气泡是主色浅底（浅色实测 `#f3f4f2`） |
 
