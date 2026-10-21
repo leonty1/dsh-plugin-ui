@@ -736,15 +736,10 @@ function createPaletteController(ctx) {
   };
   const apply2 = (id) => {
     current = id;
-    showSkinCss(id !== "none");
-    if (id === "none") {
-      layer?.();
-      layer = void 0;
-      return;
-    }
+    showSkinCss(true);
     installFonts();
     layer?.();
-    layer = ctx.theme.overrideTokens("dsh-plugin-ui", PALETTE_LAYERS[id]);
+    layer = id === "none" ? void 0 : ctx.theme.overrideTokens("dsh-plugin-ui", PALETTE_LAYERS[id]);
   };
   return {
     get: () => current,
@@ -1660,7 +1655,7 @@ var zh = {
   "account.allSettings": "\u5168\u90E8\u8BBE\u7F6E\u2026",
   "account.quickActionsTitle": "\u8D26\u53F7\u884C\u5FEB\u6377\u64CD\u4F5C",
   "palette.title": "Qoder \u914D\u8272",
-  "palette.hint": "\u9009\u62E9\u5916\u89C2\u914D\u8272\uFF1B\u660E\u6697\u4ECD\u8DDF\u968F\u5E94\u7528\u5F53\u524D\u7684\u6D45\u8272/\u6DF1\u8272",
+  "palette.hint": "\u53EA\u66FF\u6362\u989C\u8272\uFF1B\u5E03\u5C40\u4E0E\u7EC4\u4EF6\u4FDD\u6301\u63D2\u4EF6\u8BBE\u8BA1\uFF0C\u660E\u6697\u4ECD\u8DDF\u968F\u5E94\u7528\u5F53\u524D\u7684\u6D45\u8272/\u6DF1\u8272",
   "palette.none": "\u539F\u8272",
   "palette.forest": "\u68EE\u6797",
   "palette.mint": "\u8584\u8377",
@@ -1716,7 +1711,7 @@ var en = {
   "account.allSettings": "All settings\u2026",
   "account.quickActionsTitle": "Account row quick actions",
   "palette.title": "Qoder palette",
-  "palette.hint": "Pick an appearance; light or dark still follows the app",
+  "palette.hint": "Colors only; layout and components keep the plugin design, while light or dark follows the app",
   "palette.none": "Original colors",
   "palette.forest": "Forest",
   "palette.mint": "Mint",

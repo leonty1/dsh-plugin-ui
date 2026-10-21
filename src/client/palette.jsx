@@ -61,15 +61,12 @@ export function createPaletteController(ctx) {
   const notify = () => { for (const listener of listeners) listener() }
   const apply = id => {
     current = id
-    showSkinCss(id !== 'none')
-    if (id === 'none') {
-      layer?.()
-      layer = undefined
-      return
-    }
+    // "Original colors" only drops the color layer; the structure and fonts
+    // stay, so the plugin layout survives every palette choice.
+    showSkinCss(true)
     installFonts()
     layer?.()
-    layer = ctx.theme.overrideTokens('dsh-plugin-ui', PALETTE_LAYERS[id])
+    layer = id === 'none' ? undefined : ctx.theme.overrideTokens('dsh-plugin-ui', PALETTE_LAYERS[id])
   }
   return {
     get: () => current,
