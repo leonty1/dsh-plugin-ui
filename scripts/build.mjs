@@ -54,6 +54,10 @@ const layers = PALETTES.map(([pair, lightId, darkId]) => {
   for (const [alias, role] of Object.entries(ROLE_BINDINGS)) {
     tokens[alias] = { light: palette[lightId][role], dark: palette[darkId][role] }
   }
+  // Qoder's palette carries one flat #fff base for every light skin, so the
+  // role binding left the sidebar white while the document took the palette
+  // tint. The sidebar is document surface; dark keeps its recessed fill.
+  tokens['--dsw-specific-sidebar-fill'].light = tokens['--dsw-alias-bg-base'].light
   for (const [name, value] of Object.entries(STRUCTURE)) tokens[name] = { light: value, dark: value }
   return [pair, tokens]
 })
