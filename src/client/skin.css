@@ -10,10 +10,11 @@ html:not([data-platform='darwin']) [class*="_frame"]:has(> [class*="_centerCol"]
    colors keep the official washes.
    The tint alone (40% of bg-base, which is white in every light palette) reads
    as plain white through vibrancy and leaves the middle of the column flat, so
-   the base layer carries the palette's rail color at 72%: the same 88/12 mix
-   the Windows block uses, kept translucent so the desktop still shows through.
-   Dark mode steps the rail toward black instead of accent, which would lift a
-   near-black base; the washes stay untouched. */
+   the base layer carries the palette's rail color at 72%: an 88/12 mix kept
+   translucent so the desktop still shows through, which composites to roughly
+   the 90/10 flat rail Windows paints. Dark mode steps the rail toward black
+   instead of accent, which would lift a near-black base; the washes stay
+   untouched. */
 html[data-platform='darwin'] body[data-dsh-palette] [class*="_sidebarCol"] {
   background:
     linear-gradient(
@@ -105,19 +106,22 @@ html[data-platform='darwin'] body[data-dsh-palette][data-ds-dark-theme] [class*=
    the seam where the band used to meet the sidebar. Sampled against the mac
    forest-light caption band (#dadfdc, ~21% accent over the document color) is the
    ceiling: vibrancy lifts that mix on macOS, but here it sits flat, so the rail
-   starts lighter at 12% accent.
+   starts lighter at 12% accent. That still sat a few levels below what macOS
+   shows, because its translucent rail is composited over vibrancy; on a light
+   desktop the mac mid column lands near 10% accent, so this rail uses the same
+   90/10 mix to match it with an opaque fill.
    Declared on body with !important because the theme presenter writes the
    palette into body's inline style, and every rule here sits behind
    :not([data-platform='darwin']), so macOS never sees any of it. */
 html:not([data-platform='darwin']) body {
-  --dpui-rail: color-mix(in srgb, var(--dsw-alias-bg-base) 88%, var(--dsw-alias-brand-primary));
+  --dpui-rail: color-mix(in srgb, var(--dsw-alias-bg-base) 90%, var(--dsw-alias-brand-primary));
   --dsw-specific-sidebar-fill: var(--dpui-rail) !important;
 }
 /* Dark mode: mixing the accent into a near-black base brightens it, so the rail
    steps down toward black instead, mirroring how the mac dark sidebar sinks
-   below its card, at the same 12% depth as the light rail. */
+   below its card, at the same 10% depth as the light rail. */
 html:not([data-platform='darwin']) body[data-ds-dark-theme] {
-  --dpui-rail: color-mix(in srgb, var(--dsw-alias-bg-base) 88%, black);
+  --dpui-rail: color-mix(in srgb, var(--dsw-alias-bg-base) 90%, black);
 }
 /* One surface everywhere the card is not. The frame behind the gutters and the
    bottom row take the rail color, so the caption strip, the left column and the
