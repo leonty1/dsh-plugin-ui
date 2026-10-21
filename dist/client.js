@@ -764,21 +764,50 @@ html[data-platform='darwin'] body[data-dsh-palette][data-ds-dark-theme] [class*=
    circle. The theme's own superellipse corner shape stays in effect. */
 [class*="_composerStack"] button[class$="_primary"] { border-radius: var(--dsw-radius-sm) !important; }
 
-/* Windows only: no vibrancy to separate the columns, so tint the sidebar with a
-   palette-aware wash and hand the content column the shell's own card geometry.
-   Every selector is guarded so macOS keeps rendering exactly as before. */
-html:not([data-platform='darwin']) [class*="_sidebarCol"] {
-  background: color-mix(in srgb, var(--dsw-specific-sidebar-fill) 96%, var(--dsw-alias-brand-primary)) !important;
+/* Windows only: macOS reads its depth from vibrancy, which Windows has not, so
+   paint the same hierarchy with opaque palette-derived tones. The canvas fills
+   every gutter and the caption strip; the rail is one step deeper so the left
+   column stays a single surface from the traffic lights down to the account row.
+   Sampled from the mac forest-light baseline: the caption band reads as ~21%
+   accent over the document color and the list floor as pure document color, so
+   the rail averages to 84% bg-base over the accent and the canvas to 92%.
+   Both variables are declared inside a darwin-guarded rule, so macOS never
+   sees them. */
+html:not([data-platform='darwin']) [class*="_frame"] {
+  --dpui-canvas: color-mix(in srgb, var(--dsw-alias-bg-base) 92%, var(--dsw-alias-brand-primary));
+  --dpui-rail: color-mix(in srgb, var(--dsw-alias-bg-base) 84%, var(--dsw-alias-brand-primary));
+  background: var(--dpui-canvas) !important;
 }
+/* Dark mode: mixing the accent into the near-black base brightens it, so the
+   rail instead steps down toward black, mirroring how the mac dark sidebar
+   sinks below its card. */
+html:not([data-platform='darwin']) body[data-ds-dark-theme] [class*="_frame"] {
+  --dpui-canvas: color-mix(in srgb, var(--dsw-alias-bg-base) 90%, black);
+  --dpui-rail: color-mix(in srgb, var(--dsw-alias-bg-base) 80%, black);
+}
+/* The caption strip: rail tone over the sidebar, canvas over the card. The
+   sidebar-width variable exists only under data-windows-titlebar and collapses
+   to 0px when the sidebar folds, so the fallback must be a full-width canvas. */
 html:not([data-platform='darwin']) [class*="_frame"]::before {
-  background: color-mix(in srgb, var(--dsw-specific-sidebar-fill) 96%, var(--dsw-alias-brand-primary)) !important;
+  background: linear-gradient(to right,
+      var(--dpui-rail) 0 var(--dsh-windows-sidebar-width, 100%),
+      var(--dpui-canvas) var(--dsh-windows-sidebar-width, 100%)) !important;
 }
-html:not([data-platform='darwin']) [class*="_frame"] { background: var(--dsw-alias-bg-base) !important; }
+html:not([data-platform='darwin']) [class*="_sidebarCol"] { background: var(--dpui-rail) !important; }
+/* The bottom row spans the full grid width; keep it canvas so the left column
+   does not turn white below the account row. */
+html:not([data-platform='darwin']) [class*="_frame"] > [class*="_bottomRow"] {
+  background: var(--dpui-canvas) !important;
+}
+/* The content column goes back to the shared floating card: 5px gutter and the
+   16px radius on all four corners instead of the shell's single top-left one.
+   No right margin: the rightbar column is transparent and shows the same
+   canvas, matching the mac gutter read. */
 html:not([data-platform='darwin']) [class*="_frame"] > [class*="_centerCol"] {
-  margin: 0 !important;
-  border-radius: var(--dsw-radius-panel) 0 0 0 !important;
-  box-shadow: none !important;
+  margin: 5px 0 5px 5px !important;
+  border-radius: var(--dsw-radius-panel) !important;
   background: var(--dsw-alias-bg-base) !important;
+  box-shadow: none !important;
 }
 `;
 
