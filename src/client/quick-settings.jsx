@@ -4,6 +4,7 @@ import {
   IconLightOutlineMedium, IconSettingsOutlineMedium, IconSparkleMedium,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import { PALETTE_NAMES } from './generated-palettes.js'
+import { PaletteIcon } from './palette-icons.jsx'
 import { paletteLabel } from './palette.jsx'
 
 /** Pixel sizes the quick menu offers, each with its dictionary key. */
@@ -51,6 +52,7 @@ export function quickSettingsItems(view, t) {
   const palettes = ['none', ...PALETTE_NAMES].map(id => ({
     id: `palette:${id}`,
     label: marked(paletteLabel(id, t), id === view.palette),
+    icon: <PaletteIcon id={id} size={14} />,
   }))
   return [
     { id: 'language', label: t('account.language'), icon: <IconGlobeOutlineMedium size={16} />, submenu: language },
