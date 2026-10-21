@@ -280,11 +280,17 @@ export function ModelSelect(
     }
   }, [open, query, visibleModels.length])
 
-  // The effort card belongs to the model in use, so it rides beside the list
-  // rather than following the pointer: it opens leftward (the list sits against
-  // the composer's right edge), flips right when the window leaves no room, and
-  // keeps its bottom level with the list's. It measures against the list's live
-  // rect, so a card resize never moves the list.
+  // The effort card follows the row the pointer last visited — content and
+  // position alike. Its top edge lines up with that row's top (the model
+  // name), so the card reads as the row's own annotation; it still opens
+  // leftward (the list sits against the composer's right edge), flips right
+  // when the window leaves no room, and clamps inside the viewport. Before
+  // any row is hovered it anchors to the model in use; afterwards it stays
+  // on the last hovered row even once the pointer leaves the list, because
+  // the card itself is the next click target and snapping away mid-reach
+  // would apply the level to a different model than the one being read.
+  // Live rects keep a card resize from moving the list and keep the anchor
+  // glued to the row while the list scrolls.
   useLayoutEffect(() => {
     if (!open || menuPos === null) { setDetailPos(null); return }
     const place = (): void => {
@@ -296,7 +302,13 @@ export function ModelSelect(
       let dx = list.left - PLACE_GAP - dw
       if (dx < PLACE_MARGIN) dx = list.right + PLACE_GAP
       const x = Math.min(Math.max(dx, PLACE_MARGIN), window.innerWidth - dw - PLACE_MARGIN)
-      const y = Math.min(Math.max(list.bottom - dh, PLACE_MARGIN), window.innerHeight - dh - PLACE_MARGIN)
+      // The hovered row is the anchor; with no hover yet, the model in use —
+      // unless the current filter hides it, in which case the list decides.
+      const anchorIndex = preview !== null
+        ? visibleModels.findIndex(model => model.provider === preview.provider && model.model === preview.model)
+        : currentVisibleIndex
+      const rowRect = anchorIndex >= 0 ? itemRefs.current[anchorIndex]?.getBoundingClientRect() : undefined
+      const y = Math.min(Math.max(rowRect?.top ?? list.bottom - dh, PLACE_MARGIN), window.innerHeight - dh - PLACE_MARGIN)
       setDetailPos(current => samePoint(current, x, y) ? current : { left: x, top: y })
     }
     place()
@@ -306,7 +318,7 @@ export function ModelSelect(
       window.removeEventListener('scroll', place, true)
       window.removeEventListener('resize', place)
     }
-  }, [open, menuPos, shownChoice, shownReasoning])
+  }, [open, menuPos, shownChoice, shownReasoning, preview, visibleModels, currentVisibleIndex])
   /* jscpd:ignore-end */
 
   if (!available) return null
@@ -665,8 +677,8 @@ export function ModelSelect(
         </MenuSurface>,
         document.body,
       )}
-      {/* The effort card states the levels the model in use actually
-            advertises, so it follows the selection and never the pointer. */}
+      {/* The effort card states the levels the previewed model actually
+            advertises; content and anchor both follow the hovered row. */}
       {open && shownChoice !== undefined && createPortal(
         <MenuSurface
           ref={detailRef}

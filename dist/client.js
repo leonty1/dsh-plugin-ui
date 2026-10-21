@@ -229,7 +229,9 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
       let dx = list.left - PLACE_GAP - dw;
       if (dx < PLACE_MARGIN) dx = list.right + PLACE_GAP;
       const x = Math.min(Math.max(dx, PLACE_MARGIN), window.innerWidth - dw - PLACE_MARGIN);
-      const y = Math.min(Math.max(list.bottom - dh, PLACE_MARGIN), window.innerHeight - dh - PLACE_MARGIN);
+      const anchorIndex = preview !== null ? visibleModels.findIndex((model) => model.provider === preview.provider && model.model === preview.model) : currentVisibleIndex;
+      const rowRect = anchorIndex >= 0 ? itemRefs.current[anchorIndex]?.getBoundingClientRect() : void 0;
+      const y = Math.min(Math.max(rowRect?.top ?? list.bottom - dh, PLACE_MARGIN), window.innerHeight - dh - PLACE_MARGIN);
       setDetailPos((current) => samePoint(current, x, y) ? current : { left: x, top: y });
     };
     place();
@@ -239,7 +241,7 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
       window.removeEventListener("scroll", place, true);
       window.removeEventListener("resize", place);
     };
-  }, [open, menuPos, shownChoice, shownReasoning]);
+  }, [open, menuPos, shownChoice, shownReasoning, preview, visibleModels, currentVisibleIndex]);
   if (!available) return null;
   const show = () => {
     setSelectionFocus(false);
