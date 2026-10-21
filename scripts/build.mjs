@@ -8,7 +8,11 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)))
 const source = JSON.parse(readFileSync(join(root, 'design', 'dsh-theme-definitions.json'), 'utf8'))
 const palette = JSON.parse(readFileSync(join(root, 'design', 'qoder-palette.json'), 'utf8')).palette
 
-/** Aliases DSH uses for a different visual role than their name suggests, bound to the Qoder role that matches the control. */
+/**
+ * Aliases DSH uses for a different visual role than their name suggests, bound
+ * to the Qoder role that matches the control. A pair binds one role per scheme
+ * where Qoder's light and dark ramps sit at different steps.
+ */
 const ROLE_BINDINGS = {
   '--dsw-alias-button-info-fill': 'primary',
   '--dsw-alias-button-info-hover': 'primary-hover',
@@ -16,9 +20,37 @@ const ROLE_BINDINGS = {
   '--dsw-alias-bg-layer-2': 'bg-elevated',
   '--dsw-alias-bg-layer-3': 'bg-elevated',
   '--dsw-alias-markdown-code-block': 'bg-elevated',
+  '--dsw-alias-markdown-code-block-banner': { light: 'fill-tertiary', dark: 'fill-secondary' },
+  '--dsw-alias-markdown-inline-code': 'fill-tertiary',
+  '--dsw-alias-markdown-tag': 'fill-tertiary',
+  '--dsw-alias-bg-module-platform': { light: 'fill-tertiary', dark: 'fill' },
+  '--dsw-alias-interactive-bg-hover-solid': { light: 'fill-tertiary', dark: 'fill-secondary' },
+  '--dsw-alias-button-floating-hover': { light: 'fill-tertiary', dark: 'fill-secondary' },
+  '--dsw-alias-button-ghost-active-fill': { light: 'fill-secondary', dark: 'fill' },
+  '--dsw-alias-markdown-citation': { light: 'border-tertiary', dark: 'border' },
+  '--dsw-alias-label-document-preview': 'text-secondary',
+  '--dsw-alias-brand-primary-new-colorprimary-new-color': 'primary',
   '--dsw-specific-sidebar-fill': 'bg-base',
   '--dsw-specific-bubble': 'primary-bg',
+  '--dsw-specific-input-major': { light: 'bg-base', dark: 'bg-elevated' },
+  '--dsw-specific-selector': { light: 'fill-tertiary', dark: 'fill' },
+  '--dsw-specific-sidebar-nav-item-active': { light: 'fill-secondary', dark: 'fill' },
+  '--dsw-specific-sidebar-nav-item-hover': { light: 'fill-tertiary', dark: 'fill-secondary' },
 }
+
+/**
+ * Tokens whose official value is a scheme-invariant alpha or a fixed contrast
+ * ink, and whose Qoder counterpart would break them: DSH paints skeletons with
+ * a 4-8% wash, toast labels stay white on an always-dark toast, and
+ * markdown-placeholder is a surface, not ink. Dropping them lets every palette
+ * inherit the official value.
+ */
+const INHERITED = [
+  '--dsw-alias-bg-multi-select',
+  '--dsw-alias-bg-skeleton',
+  '--dsw-alias-toast-label',
+  '--dsw-alias-markdown-placeholder',
+]
 
 /** Qoder's four named light/dark pairs. */
 const PALETTES = [
@@ -52,8 +84,30 @@ const layers = PALETTES.map(([pair, lightId, darkId]) => {
     light: light.tokens[name]?.light ?? dark.tokens[name]?.light,
     dark: dark.tokens[name]?.dark ?? light.tokens[name]?.dark,
   }]))
-  for (const [alias, role] of Object.entries(ROLE_BINDINGS)) {
-    tokens[alias] = { light: palette[lightId][role], dark: palette[darkId][role] }
+  for (const name of INHERITED) delete tokens[name]
+  for (const [alias, roles] of Object.entries(ROLE_BINDINGS)) {
+    const [lightRole, darkRole] = typeof roles === 'string' ? [roles, roles] : [roles.light, roles.dark]
+    tokens[alias] = { light: palette[lightId][lightRole], dark: palette[darkId][darkRole] }
+  }
+  // Menu surfaces keep the official 94% macOS alpha over the palette's raised
+  // pane; blur-backed menus keep the official translucency so page content
+  // still shows through; selection mirrors the official 40% blue with the skin
+  // accent, and the option badge uses a light wash of the same accent.
+  tokens['--dsw-specific-menu'] = {
+    light: `color-mix(in srgb, ${palette[lightId]['bg-elevated']} 94%, transparent)`,
+    dark: `color-mix(in srgb, ${palette[darkId]['bg-elevated']} 94%, transparent)`,
+  }
+  tokens['--dsw-menu-surface-fill'] = {
+    light: `color-mix(in srgb, ${palette[lightId]['bg-elevated']} 58%, transparent)`,
+    dark: `color-mix(in srgb, ${palette[darkId]['bg-elevated']} 45%, transparent)`,
+  }
+  tokens['--dsw-alias-bg-document-selection'] = {
+    light: `color-mix(in srgb, ${palette[lightId].primary} 40%, transparent)`,
+    dark: `color-mix(in srgb, ${palette[darkId].primary} 40%, transparent)`,
+  }
+  tokens['--dsw-specific-sidebar-nav-item-active-accent'] = {
+    light: `color-mix(in srgb, ${palette[lightId].primary} 14%, transparent)`,
+    dark: `color-mix(in srgb, ${palette[darkId].primary} 14%, transparent)`,
   }
   // Qoder's palette carries one flat #fff base for every light skin, so the
   // role binding left the sidebar white while the document took the palette

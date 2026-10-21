@@ -2,6 +2,32 @@
    the hashed prefix changes per build, the suffix is the source class name. */
 [class*="_frame"] > [class*="_centerCol"] { margin: 5px !important; border: none !important; border-radius: 16px !important; overflow: hidden; background: var(--dsw-alias-bg-base) !important; }
 html:not([data-platform='darwin']) [class*="_frame"] { background: var(--dsw-specific-sidebar-fill) !important; }
+/* macOS paints its sidebar with a translucent tint and two blue-violet washes.
+   Those washes stay DeepSeek-blue under every palette, so retint them with the
+   palette accent; alphas and the vibrancy underneath stay as official. Original
+   colors keep the official washes. */
+html[data-platform='darwin'] body[data-dsh-palette] [class*="_sidebarCol"] {
+  background:
+    linear-gradient(
+      to bottom,
+      rgb(from var(--dsw-alias-brand-primary) r g b / 0.1),
+      rgb(from var(--dsw-alias-brand-primary) r g b / 0) 35%,
+      rgb(from var(--dsw-alias-brand-primary) r g b / 0) 68%,
+      rgb(from var(--dsw-alias-brand-primary) r g b / 0.09)
+    ),
+    color-mix(in srgb, var(--dsw-specific-sidebar-fill) 40%, transparent) !important;
+}
+html[data-platform='darwin'] body[data-dsh-palette][data-ds-dark-theme] [class*="_sidebarCol"] {
+  background:
+    linear-gradient(
+      to bottom,
+      rgb(from var(--dsw-alias-brand-primary) r g b / 0.08),
+      rgb(from var(--dsw-alias-brand-primary) r g b / 0) 35%,
+      rgb(from var(--dsw-alias-brand-primary) r g b / 0) 68%,
+      rgb(from var(--dsw-alias-brand-primary) r g b / 0.07)
+    ),
+    color-mix(in srgb, var(--dsw-specific-sidebar-fill) 50%, transparent) !important;
+}
 [class*="_frame"] > [class*="_rightbarCol"] { background: transparent !important; }
 /* Sidebar geometry and text size follow the app's text-size setting: General
    and the quick menu both write theme.fontSizes.text, which the theme presenter

@@ -62,7 +62,10 @@ export function createPaletteController(ctx) {
   const apply = id => {
     current = id
     // "Original colors" only drops the color layer; the structure and fonts
-    // stay, so the plugin layout survives every palette choice.
+    // stay, so the plugin layout survives every palette choice. The marker lets
+    // skin.css retint surfaces the layer cannot reach, such as darwin's sidebar
+    // atmosphere, without touching Original colors.
+    document.body.toggleAttribute('data-dsh-palette', id !== 'none')
     showSkinCss(true)
     installFonts()
     layer?.()
@@ -86,6 +89,7 @@ export function createPaletteController(ctx) {
       return () => {
         layer?.()
         layer = undefined
+        document.body.removeAttribute('data-dsh-palette')
         showSkinCss(false)
       }
     },
