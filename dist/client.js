@@ -692,7 +692,13 @@ html:not([data-platform='darwin']) [class*="_frame"]:has(> [class*="_centerCol"]
 /* macOS paints its sidebar with a translucent tint and two blue-violet washes.
    Those washes stay DeepSeek-blue under every palette, so retint them with the
    palette accent; alphas and the vibrancy underneath stay as official. Original
-   colors keep the official washes. */
+   colors keep the official washes.
+   The tint alone (40% of bg-base, which is white in every light palette) reads
+   as plain white through vibrancy and leaves the middle of the column flat, so
+   the base layer carries the palette's rail color at 72%: the same 88/12 mix
+   the Windows block uses, kept translucent so the desktop still shows through.
+   Dark mode steps the rail toward black instead of accent, which would lift a
+   near-black base; the washes stay untouched. */
 html[data-platform='darwin'] body[data-dsh-palette] [class*="_sidebarCol"] {
   background:
     linear-gradient(
@@ -702,7 +708,9 @@ html[data-platform='darwin'] body[data-dsh-palette] [class*="_sidebarCol"] {
       rgb(from var(--dsw-alias-brand-primary) r g b / 0) 68%,
       rgb(from var(--dsw-alias-brand-primary) r g b / 0.09)
     ),
-    color-mix(in srgb, var(--dsw-specific-sidebar-fill) 40%, transparent) !important;
+    color-mix(in srgb,
+      color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) 72%,
+      transparent) !important;
 }
 html[data-platform='darwin'] body[data-dsh-palette][data-ds-dark-theme] [class*="_sidebarCol"] {
   background:
@@ -713,7 +721,9 @@ html[data-platform='darwin'] body[data-dsh-palette][data-ds-dark-theme] [class*=
       rgb(from var(--dsw-alias-brand-primary) r g b / 0) 68%,
       rgb(from var(--dsw-alias-brand-primary) r g b / 0.07)
     ),
-    color-mix(in srgb, var(--dsw-specific-sidebar-fill) 50%, transparent) !important;
+    color-mix(in srgb,
+      color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, black) 72%,
+      transparent) !important;
 }
 [class*="_frame"] > [class*="_rightbarCol"] { background: transparent !important; }
 /* Sidebar geometry and text size follow the app's text-size setting: General
