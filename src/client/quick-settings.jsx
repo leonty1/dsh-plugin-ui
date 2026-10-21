@@ -1,19 +1,22 @@
 /** Quick-settings rows shared by the account menu and the settings seat. */
 import {
   IconDarkOutlineMedium, IconFollowsystemOutlineMedium, IconGlobeOutlineMedium,
-  IconLightOutlineMedium, IconSlidersTwoOutlineMedium,
+  IconLightOutlineMedium, IconPersonalizationOutlineMedium, IconSlidersTwoOutlineMedium,
 } from '@deepseek-ai/dsh-client-ui-primitives'
+import { PALETTE_NAMES } from './generated-palettes.js'
+import { paletteLabel } from './palette.jsx'
 
 /** Pixel sizes the quick menu offers, each with its dictionary key. */
 export const SIZE_CHOICES = [[12, 'account.sizeSmall'], [14, 'account.sizeMedium'], [16, 'account.sizeLarge']]
 
 /** The current value of each group. */
-export function quickSettingsView(ctx) {
+export function quickSettingsView(ctx, palette) {
   const theme = ctx.theme.getTheme()
   return {
     locale: ctx.locale.getSnapshot(),
     preference: theme.preference,
     textSize: theme.fontSizes.text,
+    palette: palette?.get(),
   }
 }
 
@@ -43,9 +46,18 @@ export function quickSettingsItems(view, t) {
     id: `size:${px}`,
     label: marked(t(key), px === view.textSize),
   }))
+  // The palette group mirrors the Appearance cards, so a Qoder skin is one
+  // submenu away from the seats; it renders only while a controller is injected.
+  const palettes = ['none', ...PALETTE_NAMES].map(id => ({
+    id: `palette:${id}`,
+    label: marked(paletteLabel(id, t), id === view.palette),
+  }))
   return [
     { id: 'language', label: t('account.language'), icon: <IconGlobeOutlineMedium size={16} />, submenu: language },
     { id: 'mode', label: t('account.appearanceMode'), icon: <IconDarkOutlineMedium size={16} />, submenu: modes },
+    ...(view.palette === undefined ? [] : [{
+      id: 'palette', label: t('palette.title'), icon: <IconPersonalizationOutlineMedium size={16} />, submenu: palettes,
+    }]),
     { id: 'text-size', label: t('account.textSize'), icon: <IconSlidersTwoOutlineMedium size={16} />, submenu: sizes },
     {
       id: 'all-settings',
@@ -59,11 +71,16 @@ export function quickSettingsItems(view, t) {
  * Apply one quick-settings row.
  * @param ctx - client context carrying theme and locale.
  * @param id - row id in the group's `kind:value` form.
+ * @param palette - palette controller behind the Appearance cards.
  * @returns whether the row named a quick setting; unowned ids stay the caller's.
  */
-export function applyQuickSetting(ctx, id) {
+export function applyQuickSetting(ctx, id, palette) {
   if (id.startsWith('mode:')) {
     ctx.theme.setTheme(id.slice('mode:'.length))
+    return true
+  }
+  if (id.startsWith('palette:') && palette !== undefined) {
+    palette.choose(id.slice('palette:'.length))
     return true
   }
   const size = /^size:(\d+)$/.exec(id)

@@ -18,12 +18,12 @@ A Qoder-style UI layer for DeepSeek Harness: palette skin, a single-card model a
 
 ## Features
 
-- **Appearance**: four Qoder palettes (Forest / Mint / Bee / Parchment, each in light and dark), picked from preview cards under Appearance; “No skin” restores the official look, and the sidebar takes the selected palette's fill.
+- **Appearance**: four Qoder palettes (Forest / Mint / Bee / Parchment, each in light and dark), picked from preview cards under Appearance or from the “Qoder palette” group in the quick settings menu; “No skin” restores the official look, and the sidebar takes the selected palette's fill.
 - **Sidebar**: 5px main margin and 16px radius; workspace/session rows tightened to 30px and up; official brand row and New Session button kept; Plugins/Automation pinned above the account row with a solid divider.
 - **Text size**: sidebar text, including the account name, follows Text size (S/M/L = 12/14/16px) and New Session scales with it; the account row keeps the official 44px / 32px rows and 24px avatar.
 - **Model & effort**: one card shows the model list and effort levels (Off / Low / High / Max) with search, retry, and empty states; the Chinese UI localizes effort names.
 - **Account row (desktop)**: official 24px avatar / 44px row; signed out it is ⋯ + “More”; two configurable quick seats sit on the right.
-- **Account menu**: matches the official items (Settings, Contact us, sign in/out); quick settings open from the gear seat.
+- **Account menu**: matches the official items (Settings, Contact us, sign in/out); quick settings open from the gear seat with language, color mode, Qoder palette, text size, and All settings.
 
 ## Install
 
@@ -36,7 +36,7 @@ Uninstall from the Plugins page or with `dsh plugin --profile <profile> remove d
 
 ## Configuration
 
-- Appearance → **Qoder palette**: pick a palette from the preview cards; Forest is the default.
+- Appearance → **Qoder palette**: pick a palette from the preview cards; Forest is the default. The “Qoder palette” group in the quick settings menu writes the same setting.
 - General → **Quick action slot 1/2**: choose a built-in action, an action registered by another plugin, or leave it empty.
 - Storage: `dsh-plugin-ui.palette` (palette) and `dsh-plugin-ui.quick-actions.v1` (the two seats).
 

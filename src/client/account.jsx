@@ -89,16 +89,17 @@ function useSnapshot(store) {
   return useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot)
 }
 
-/** Follow theme and locale writes made anywhere in the app. */
-function useQuickView(ctx) {
-  const [view, setView] = useState(() => quickSettingsView(ctx))
+/** Follow theme, locale, and palette writes made anywhere in the app. */
+function useQuickView(ctx, palette) {
+  const [view, setView] = useState(() => quickSettingsView(ctx, palette))
   useEffect(() => {
-    const update = () => { setView(quickSettingsView(ctx)) }
+    const update = () => { setView(quickSettingsView(ctx, palette)) }
     update()
     const offTheme = ctx.on('theme/change', update)
     const offLocale = ctx.locale.subscribe(update)
-    return () => { offTheme?.(); offLocale?.() }
-  }, [ctx])
+    const offPalette = palette?.subscribe(update)
+    return () => { offTheme?.(); offLocale?.(); offPalette?.() }
+  }, [ctx, palette])
   return view
 }
 
@@ -273,11 +274,11 @@ function SignOutDialog({ t, running, busy, close, confirm }) {
  */
 export function AccountMenu({
   t, ctx, useStore, actions, wide, settingsShortcut, openSettings, accountStore, settingsOpen,
-  uiWorkspace, layout, renderSlot,
+  uiWorkspace, layout, palette, renderSlot,
 }) {
   const seats = useStore(state => state.seats)
   const account = useSnapshot(accountStore)
-  const view = useQuickView(ctx)
+  const view = useQuickView(ctx, palette)
   const anchor = useRef(null)
   const trigger = useRef(null)
   const [open, setOpen] = useState(false)
@@ -293,7 +294,7 @@ export function AccountMenu({
     if (settingsOpen && !settingsWasOpen.current) void accountStore.refresh()
     settingsWasOpen.current = settingsOpen
   }, [accountStore, settingsOpen])
-  const quickSelect = id => { applyQuickSetting(ctx, id) }
+  const quickSelect = id => { applyQuickSetting(ctx, id, palette) }
   const openSettingsPage = () => {
     setOpen(false)
     queueMicrotask(() => { trigger.current?.focus({ preventScroll: true }) })

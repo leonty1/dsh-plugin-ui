@@ -63,7 +63,7 @@ export function apply(ctx) {
       name: 'settings.launcher', locale: UI_NS, store: quickActions, priority: -1,
       children: { [QUICK_ACTION_SLOT]: { kind: 'list', scope: 'root' } },
       inject: () => ({
-        ctx: scope, accountStore,
+        ctx: scope, accountStore, palette,
         uiWorkspace: scope.get('uiWorkspace'), layout: scope.get('layout'),
       }),
     }, AccountMenu))

@@ -57,6 +57,8 @@ function installFonts() {
 export function createPaletteController(ctx) {
   let current = storedPalette()
   let layer
+  const listeners = new Set()
+  const notify = () => { for (const listener of listeners) listener() }
   const apply = id => {
     current = id
     showSkinCss(id !== 'none')
@@ -75,6 +77,12 @@ export function createPaletteController(ctx) {
       if (id !== 'none' && !PALETTE_NAMES.includes(id)) return
       localStorage.setItem(STORAGE_KEY, id)
       apply(id)
+      notify()
+    },
+    /** @param listener - called after every {@link choose}. @returns the unsubscribe. */
+    subscribe(listener) {
+      listeners.add(listener)
+      return () => { listeners.delete(listener) }
     },
     install() {
       apply(current)
@@ -129,10 +137,12 @@ function useColorScheme(ctx) {
 export function PaletteSettings({ t, controller, ctx }) {
   const [pair, setPair] = useState(() => controller.get())
   const scheme = useColorScheme(ctx)
-  const choose = id => {
-    controller.choose(id)
-    setPair(id)
-  }
+  useEffect(() => {
+    const update = () => { setPair(controller.get()) }
+    update()
+    return controller.subscribe(update)
+  }, [controller])
+  const choose = id => { controller.choose(id) }
   return <div className={css.section}>
     <div className={css.head}>
       <div className={css.title}>{t('palette.title')}</div>
