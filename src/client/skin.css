@@ -78,3 +78,20 @@ html[data-platform='darwin'] body[data-dsh-palette][data-ds-dark-theme] [class*=
 /* A-list composer controls: the send/stop control is a rounded square, not a
    circle. The theme's own superellipse corner shape stays in effect. */
 [class*="_composerStack"] button[class$="_primary"] { border-radius: var(--dsw-radius-sm) !important; }
+
+/* Windows only: no vibrancy to separate the columns, so tint the sidebar with a
+   palette-aware wash and hand the content column the shell's own card geometry.
+   Every selector is guarded so macOS keeps rendering exactly as before. */
+html:not([data-platform='darwin']) [class*="_sidebarCol"] {
+  background: color-mix(in srgb, var(--dsw-specific-sidebar-fill) 96%, var(--dsw-alias-brand-primary)) !important;
+}
+html:not([data-platform='darwin']) [class*="_frame"]::before {
+  background: color-mix(in srgb, var(--dsw-specific-sidebar-fill) 96%, var(--dsw-alias-brand-primary)) !important;
+}
+html:not([data-platform='darwin']) [class*="_frame"] { background: var(--dsw-alias-bg-base) !important; }
+html:not([data-platform='darwin']) [class*="_frame"] > [class*="_centerCol"] {
+  margin: 0 !important;
+  border-radius: var(--dsw-radius-panel) 0 0 0 !important;
+  box-shadow: none !important;
+  background: var(--dsw-alias-bg-base) !important;
+}
