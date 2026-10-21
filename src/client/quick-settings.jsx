@@ -1,7 +1,7 @@
 /** Quick-settings rows shared by the account menu and the settings seat. */
 import {
-  IconDarkOutlineMedium, IconFollowsystemOutlineMedium, IconGlobeOutlineMedium,
-  IconLightOutlineMedium, IconPersonalizationOutlineMedium, IconSlidersTwoOutlineMedium,
+  IconDarkOutlineMedium, IconEnhanceOutlineMedium, IconFollowsystemOutlineMedium, IconGlobeOutlineMedium,
+  IconLightOutlineMedium, IconSettingsOutlineMedium, IconSparkleMedium,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import { PALETTE_NAMES } from './generated-palettes.js'
 import { paletteLabel } from './palette.jsx'
@@ -56,13 +56,13 @@ export function quickSettingsItems(view, t) {
     { id: 'language', label: t('account.language'), icon: <IconGlobeOutlineMedium size={16} />, submenu: language },
     { id: 'mode', label: t('account.appearanceMode'), icon: <IconDarkOutlineMedium size={16} />, submenu: modes },
     ...(view.palette === undefined ? [] : [{
-      id: 'palette', label: t('palette.title'), icon: <IconPersonalizationOutlineMedium size={16} />, submenu: palettes,
+      id: 'palette', label: t('palette.title'), icon: <IconSparkleMedium size={16} />, submenu: palettes,
     }]),
-    { id: 'text-size', label: t('account.textSize'), icon: <IconSlidersTwoOutlineMedium size={16} />, submenu: sizes },
+    { id: 'text-size', label: t('account.textSize'), icon: <IconEnhanceOutlineMedium size={16} />, submenu: sizes },
     {
       id: 'all-settings',
       label: t('account.allSettings'),
-      icon: <IconSlidersTwoOutlineMedium size={16} />,
+      icon: <IconSettingsOutlineMedium size={16} />,
     },
   ]
 }

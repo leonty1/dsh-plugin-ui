@@ -892,14 +892,14 @@ function quickSettingsItems(view, t) {
     ...view.palette === void 0 ? [] : [{
       id: "palette",
       label: t("palette.title"),
-      icon: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives3.IconPersonalizationOutlineMedium, { size: 16 }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives3.IconSparkleMedium, { size: 16 }),
       submenu: palettes
     }],
-    { id: "text-size", label: t("account.textSize"), icon: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives3.IconSlidersTwoOutlineMedium, { size: 16 }), submenu: sizes },
+    { id: "text-size", label: t("account.textSize"), icon: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives3.IconEnhanceOutlineMedium, { size: 16 }), submenu: sizes },
     {
       id: "all-settings",
       label: t("account.allSettings"),
-      icon: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives3.IconSlidersTwoOutlineMedium, { size: 16 })
+      icon: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_dsh_client_ui_primitives3.IconSettingsOutlineMedium, { size: 16 })
     }
   ];
 }
