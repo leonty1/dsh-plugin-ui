@@ -18,7 +18,7 @@ A Qoder-style UI layer for DeepSeek Harness: palette skin, a single-card model a
 
 ## Features
 
-- **Appearance**: four Qoder palettes (Forest / Mint / Bee / Parchment, each in light and dark), picked from preview cards under Appearance or from the “Qoder palette” group in the quick settings menu; “No skin” restores the official look, and the sidebar takes the selected palette's fill.
+- **Appearance**: four Qoder palettes (Forest / Mint / Bee / Parchment, each in light and dark), picked from preview cards under Appearance or from the “Qoder palette” group in the quick settings menu; “Original colors” leaves the app's own palette untouched, and the sidebar takes the selected palette's fill.
 - **Sidebar**: 5px main margin and 16px radius; workspace/session rows tightened to 30px and up; official brand row and New Session button kept; Plugins/Automation pinned above the account row with a solid divider.
 - **Text size**: sidebar text, including the account name, follows Text size (S/M/L = 12/14/16px) and New Session scales with it; the account row keeps the official 44px / 32px rows and 24px avatar.
 - **Model & effort**: one card shows the model list and effort levels (Off / Low / High / Max) with search, retry, and empty states; the Chinese UI localizes effort names.
@@ -65,7 +65,7 @@ pnpm check   # build + syntax check
 
 ## Tested
 
-- Web (Chromium): four palettes, No skin, dark mode, model list/switching, effort switching, search and empty states.
+- Web (Chromium): four palettes, Original colors, dark mode, model list/switching, effort switching, search and empty states.
 - Desktop (official 0.2.1-rc.2): install, model/effort card, official account row and quick seats, sidebar text sizes 12/14/16px, New Session hover keycaps, settings preview cards; third-party action registration verified.
 - Not tested: a successful real-account sign-in and sign-out confirmation.
 

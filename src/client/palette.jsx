@@ -95,7 +95,7 @@ export function createPaletteController(ctx) {
   }
 }
 
-/** Neutral preview for "No skin", whose colors come from the app rather than a layer. */
+/** Neutral preview for “Original colors”, whose colors come from the app rather than a layer. */
 const NONE_COLORS = {
   light: { bg: '#fff', side: '#e5e5e5', border: '#e5e5e5', accent: '#4d6bfe', ink: '#141414' },
   dark: { bg: '#171717', side: '#333', border: '#333', accent: '#6b8aff', ink: '#e5e5e5' },
