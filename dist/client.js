@@ -1180,6 +1180,16 @@ html:has(body[data-dsh-glass]) [class*="_centerCol"] {
     var(--dsw-alias-bg-base) calc((1 - var(--dpui-glass-opacity, 0.5)) * 100%),
     transparent) !important;
 }
+/* The workspace paints its base twice: the centre column, then the
+   conversation root inside it. Making only the column translucent left the
+   root's opaque bg-base covering the wallpaper, so the sidebar frosted while
+   the workspace did not. The root rides the same frost as its column and
+   lets the frame's wallpaper through. */
+html:has(body[data-dsh-glass]) [class*="_centerCol"] [class*="_root"],
+html:has(body[data-dsh-glass]) [class*="_rightbarCol"] [class*="_root"],
+html:has(body[data-dsh-glass]) [class*="_bottomRow"] {
+  background: transparent !important;
+}
 html:has(body[data-dsh-glass])[data-platform='darwin'] body[data-dsh-palette] [class*="_sidebarCol"] {
   background: linear-gradient(
       to bottom,
