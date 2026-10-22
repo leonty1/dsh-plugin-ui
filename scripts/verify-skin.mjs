@@ -97,9 +97,11 @@ const PLUGIN_SURFACES = [
   '_frame', '_sidebarCol', '_centerCol', '_rightbarCol', '_bottomRow',
   '_composerStack', '_panelRow', '_panelList', '_footArea', '_sectionHeader',
   '_projectRow', '_sessionRow', '_searchResultRow', '_newSession', '_previewBadge',
-  '_header', '_root', '_card',
+  '_header', '_root', '_card', '_genieSlice',
 ]
-const owned = rule => PLUGIN_SURFACES.some(name => rule.includes(`[class*="${name}"]`))
+const owned = rule =>
+  PLUGIN_SURFACES.some(name => rule.includes(`[class*="${name}"]`))
+  || rule.includes('.dpui-ground-')   // the ground section's own settings UI
 const macReachable = list => list.filter(rule => !rule.includes(WIN_GUARD)).sort()
 const current = macReachable(distRules)
 for (const rule of current) {

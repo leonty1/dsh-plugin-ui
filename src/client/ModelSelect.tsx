@@ -117,7 +117,7 @@ function samePoint(current: CSSProperties | null, left: number, top: number): bo
 const MEASURE_STYLE: CSSProperties = { visibility: 'hidden', left: 0, top: 0 }
 
 /** Slices in the genie collapse; more slices = smoother wave, more nodes. */
-const GENIE_SLICES = 8
+const GENIE_SLICES = 14
 
 /** One card's measured roll-up geometry, as produced by the fold measurement. */
 interface FoldGeometry {
@@ -162,13 +162,15 @@ function foldStyle(base: CSSProperties | null, fold: FoldGeometry): CSSPropertie
  * @returns placement, band clip, and phase variables for the slice.
  */
 function sliceStyle(index: number, base: CSSProperties | null, fold: FoldGeometry): CSSProperties {
-  const bandTop = index * (100 / GENIE_SLICES)
+  const phase = index / GENIE_SLICES
+  const bandTop = phase * 100
   return {
     ...foldStyle(base, fold),
     '--dpui-band-top': `${bandTop}%`,
     '--dpui-band-bottom': `${100 - bandTop - 100 / GENIE_SLICES}%`,
-    '--dpui-slice-phase': index / GENIE_SLICES,
-    animationDelay: `${Math.round((index / GENIE_SLICES) * FOLD_MS * 0.55)}ms`,
+    '--dpui-slice-phase': phase,
+    '--dpui-slice-tilt': `${(phase - 0.5) * 14}deg`,
+    animationDelay: `${Math.round(phase * FOLD_MS * 0.72)}ms`,
   } as CSSProperties
 }
 
@@ -409,25 +411,15 @@ export function ModelSelect(
   // one, and scrolling would slide a different row into the next click.
   const pointerPicked = useRef(false)
 
-  // Opening restores the list's own scroll position: the user remembers where
-  // the rows were, so reopening at the middle keeps the middle in view rather
-  // than snapping to the selected row. Only keyboard entry needs the selected
-  // row visible, and that arrives through the focus path, not here.
-  const savedScroll = useRef(0)
+  // Opening lands on the selected model: that row is the menu's answer, so
+  // it scrolls into view (nearest edge, minimal movement) rather than leaving
+  // the list wherever it happened to be last time. Keyboard entry reaches the
+  // same row through focus; a pointer pick never scrolls.
   useLayoutEffect(() => {
-    if (!open) savedScroll.current = groupsRef.current?.scrollTop ?? savedScroll.current
-  }, [open])
-  useLayoutEffect(() => {
-    if (open && savedScroll.current > 0) {
-      groupsRef.current?.scrollTo({ top: savedScroll.current })
-      savedScroll.current = 0
-    }
-  }, [open, filteredGroups])
-  useLayoutEffect(() => {
-    if (open && activeModelIndex >= 0 && !pointerPicked.current && highlightedIndex !== null) {
+    if (open && activeModelIndex >= 0 && !pointerPicked.current) {
       itemRefs.current[activeModelIndex]?.scrollIntoView({ block: 'nearest' })
     }
-  }, [open, activeModelIndex, visibleModels, highlightedIndex])
+  }, [open, activeModelIndex, visibleModels])
 
   // Portaled placement (the Menu primitive's portal rules: fixed from the
   // anchor rect, measured before paint, clamped inside the viewport): above

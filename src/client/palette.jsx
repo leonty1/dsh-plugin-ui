@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import clsx from './clsx.js'
 import { FONT_FACE_CSS, PALETTE_LAYERS, PALETTE_NAMES } from './generated-palettes.js'
+import { GroundSettings } from './glass.jsx'
 import skinCss from './skin.css'
 import css from './palette.module.css'
 
@@ -135,7 +136,7 @@ function useColorScheme(ctx) {
  * @param props - plugin dictionary, palette controller, and client context.
  * @returns the palette preview row.
  */
-export function PaletteSettings({ t, controller, ctx }) {
+export function PaletteSettings({ t, controller, ground, ctx }) {
   const [pair, setPair] = useState(() => controller.get())
   const scheme = useColorScheme(ctx)
   useEffect(() => {
@@ -171,5 +172,6 @@ export function PaletteSettings({ t, controller, ctx }) {
         </button>
       })}
     </div>
+    <GroundSettings controller={ground} ctx={ctx} />
   </div>
 }

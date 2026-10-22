@@ -235,3 +235,53 @@ html:not([data-platform='darwin']) [class*="_frame"] > [class*="_centerCol"] {
   background: var(--dsw-alias-bg-base) !important;
   box-shadow: none !important;
 }
+
+/* Ground treatment (frosted glass + wallpaper), driven by body-scoped
+   variables the glass controller publishes. Wallpaper sits on the frame
+   behind both floating cards; the frosted layer rides the two cards
+   themselves. Off (no glass, no wallpaper) nothing here resolves, because
+   the data-dsh-glass attribute is absent. Applies on both platforms: the
+   wallpaper replaces Windows' sidebar-fill ground and mac's vibrancy gutter
+   while it is set. */
+html:has(body[data-dsh-glass]) [class*="_frame"]:has(> [class*="_centerCol"]) {
+  background: var(--dpui-ground-image) center / cover no-repeat !important;
+}
+html:has(body[data-dsh-glass]) [class*="_sidebarCol"],
+html:has(body[data-dsh-glass]) [class*="_centerCol"] {
+  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 22px)) saturate(1.4) !important;
+  background: color-mix(in srgb,
+    var(--dsw-alias-bg-base) calc((1 - var(--dpui-glass-opacity, 0.5)) * 100%),
+    transparent) !important;
+}
+html:has(body[data-dsh-glass])[data-platform='darwin'] body[data-dsh-palette] [class*="_sidebarCol"] {
+  background: linear-gradient(
+      to bottom,
+      rgb(from var(--dsw-alias-brand-primary) r g b / 0.1),
+      rgb(from var(--dsw-alias-brand-primary) r g b / 0) 35%,
+      rgb(from var(--dsw-alias-brand-primary) r g b / 0) 68%,
+      rgb(from var(--dsw-alias-brand-primary) r g b / 0.09)
+    ),
+    color-mix(in srgb,
+      color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) calc(var(--dpui-glass-opacity, 0.5) * 72%),
+      transparent) !important;
+}
+/* Settings rows for the ground section (plain classes: rendered through the
+   scoped-css Proxy, but these stay unhashed for simplicity). */
+.dpui-ground-section { display: flex; flex-direction: column; gap: 10px; }
+.dpui-ground-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.dpui-ground-label { min-width: 56px; }
+.dpui-ground-row input[type="range"] { flex: 1; min-width: 160px; }
+.dpui-ground-chip {
+  padding: 3px 10px;
+  border: 1px solid var(--dsw-alias-border-l3);
+  border-radius: var(--dsw-radius-md);
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  cursor: pointer;
+}
+.dpui-ground-chipActive {
+  border-color: var(--dsw-alias-brand-primary);
+  color: var(--dsw-alias-brand-text);
+  font-weight: 500;
+}

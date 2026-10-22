@@ -7,6 +7,7 @@ import { AccountMenu, createAccountStore } from './account.jsx'
 import { QuickActionsSettings } from './quick-actions-settings.jsx'
 import { createQuickActionsStore, QUICK_ACTION_SLOT } from './quick-actions.js'
 import { createPaletteController, PaletteSettings } from './palette.jsx'
+import { createGroundController, GroundSettings } from './glass.jsx'
 import { en, modelEn, modelZh, zh } from './locales.js'
 
 /** Services required for every face; account services are injected separately. */
@@ -26,9 +27,11 @@ export function apply(ctx) {
 
   const palette = createPaletteController(ctx)
   ctx.effect(() => palette.install(), 'dsh-plugin-ui: palette layer')
+  const ground = createGroundController()
+  ctx.effect(() => ground.install(), 'dsh-plugin-ui: ground layer')
   ctx.slots.inject('settings.general.item', () => ctx.slots.register({
     name: 'settings.general.item', id: 'plugin-ui.palette', order: 10.5,
-    locale: UI_NS, inject: () => ({ controller: palette, ctx }),
+    locale: UI_NS, inject: () => ({ controller: palette, ground, ctx }),
   }, PaletteSettings))
 
   // `remote.session` is required by the directory's own Host calls, which run
