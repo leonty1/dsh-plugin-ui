@@ -774,7 +774,7 @@ var styleId2 = "dsh-plugin-ui-palette";
 if (typeof document !== "undefined" && document.getElementById(styleId2) === null) {
   const style = document.createElement("style");
   style.id = styleId2;
-  style.textContent = "/* Palette preview row: same row rhythm as the other General rows, with one\n   miniature window per choice so the colors are visible before applying. */\n.dpui-palette-section {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  padding: 16px 0;\n  border-bottom: 0.5px solid var(--dsw-alias-border-l2);\n}\n\n.dpui-palette-head {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.dpui-palette-title {\n  font-size: 14px;\n  font-weight: 400;\n  line-height: 22px;\n  color: var(--dsw-alias-label-primary);\n}\n\n.dpui-palette-desc {\n  font-size: 12px;\n  font-weight: 400;\n  line-height: 18px;\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.dpui-palette-grid {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n\n.dpui-palette-card {\n  display: flex;\n  flex: 1 1 92px;\n  flex-direction: column;\n  gap: 6px;\n  max-width: 148px;\n  min-width: 92px;\n  padding: 0;\n  border: 0;\n  background: transparent;\n  text-align: left;\n  cursor: pointer;\n}\n\n.dpui-palette-preview {\n  display: flex;\n  height: 56px;\n  overflow: hidden;\n  border: 0.5px solid;\n  border-radius: var(--dsw-radius-md);\n}\n\n.dpui-palette-card:hover .dpui-palette-preview {\n  filter: brightness(0.97);\n}\n\n.dpui-palette-cardActive .dpui-palette-preview,\n.dpui-palette-card:focus-visible .dpui-palette-preview {\n  outline: 2px solid var(--dsw-alias-brand-primary);\n  outline-offset: 1px;\n}\n\n.dpui-palette-side {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  flex: none;\n  width: 32%;\n  padding: 8px 6px;\n  border-right: 0.5px solid;\n}\n\n.dpui-palette-main {\n  display: flex;\n  flex: 1;\n  flex-direction: column;\n  gap: 4px;\n  padding: 8px 6px;\n}\n\n.dpui-palette-accent {\n  width: 20px;\n  height: 6px;\n  border-radius: 3px;\n}\n\n.dpui-palette-line {\n  width: 72%;\n  height: 3px;\n  border-radius: 2px;\n  opacity: 0.8;\n}\n\n.dpui-palette-lineShort {\n  width: 44%;\n  height: 3px;\n  border-radius: 2px;\n  opacity: 0.4;\n}\n\n.dpui-palette-label {\n  overflow: hidden;\n  font-size: 12px;\n  line-height: 18px;\n  color: var(--dsw-alias-label-secondary);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.dpui-palette-cardActive .dpui-palette-label {\n  color: var(--dsw-alias-label-primary);\n}\n\n/* Ground rows (frosted glass slider, wallpaper picker): the General section's\n   two-column row, reused from the palette head classes. */\n.dpui-palette-row {\n  display: flex;\n  align-items: center;\n  gap: 16px;\n  padding: 16px 0;\n  border-bottom: 0.5px solid var(--dsw-alias-border-l2);\n}\n\n.dpui-palette-slider {\n  flex: none;\n  width: 180px;\n  height: 20px;\n  accent-color: var(--dsw-alias-brand-primary);\n  cursor: pointer;\n}\n\n.dpui-palette-chipRow {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n\n.dpui-palette-chip {\n  padding: 5px 12px;\n  border: 1px solid var(--dsw-alias-border-l3);\n  border-radius: var(--dsw-radius-md);\n  background: var(--dsw-alias-bg-layer-1);\n  color: var(--dsw-alias-label-secondary);\n  font-size: 12px;\n  line-height: 18px;\n  cursor: pointer;\n}\n\n.dpui-palette-chip:hover {\n  border-color: var(--dsw-alias-border-l4);\n  color: var(--dsw-alias-label-primary);\n}\n\n.dpui-palette-chipActive {\n  border-color: var(--dsw-alias-brand-primary);\n  color: var(--dsw-alias-brand-text);\n  font-weight: 500;\n}\n\n/* Wallpaper picker: a swatch grid under its own head, so sixteen presets read\n   as pictures rather than as a paragraph of chips. Sizes ride the palette\n   cards above it \u2014 same flex basis, same label scale, same active ring. */\n.dpui-palette-groundBlock {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  padding: 16px 0;\n  border-bottom: 0.5px solid var(--dsw-alias-border-l2);\n}\n\n.dpui-palette-groundGrid {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n\n.dpui-palette-groundSwatch {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  height: 56px;\n  border: 0.5px solid var(--dsw-alias-border-l3);\n  border-radius: var(--dsw-radius-md);\n  background-position: center;\n  background-size: cover;\n  background-repeat: no-repeat;\n}\n\n.dpui-palette-cardActive .dpui-palette-groundSwatch,\n.dpui-palette-card:focus-visible .dpui-palette-groundSwatch {\n  outline: 2px solid var(--dsw-alias-brand-primary);\n  outline-offset: 1px;\n}\n\n/* No wallpaper: a quiet empty plate, not a colour the eye mistakes for a preset. */\n.dpui-palette-groundSwatchNone {\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.dpui-palette-groundSwatchCustom {\n  height: 56px;\n  border: 0.5px dashed var(--dsw-alias-border-l3);\n  border-radius: var(--dsw-radius-md);\n  background: transparent;\n  font-size: 16px;\n  line-height: 1;\n  text-align: center;\n  color: var(--dsw-alias-label-tertiary);\n}\n";
+  style.textContent = "/* Palette preview row: same row rhythm as the other General rows, with one\n   miniature window per choice so the colors are visible before applying. */\n.dpui-palette-section {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  padding: 16px 0;\n  border-bottom: 0.5px solid var(--dsw-alias-border-l2);\n}\n\n.dpui-palette-head {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.dpui-palette-title {\n  font-size: 14px;\n  font-weight: 400;\n  line-height: 22px;\n  color: var(--dsw-alias-label-primary);\n}\n\n.dpui-palette-desc {\n  font-size: 12px;\n  font-weight: 400;\n  line-height: 18px;\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.dpui-palette-grid {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n\n.dpui-palette-card {\n  display: flex;\n  flex: 1 1 92px;\n  flex-direction: column;\n  gap: 6px;\n  max-width: 148px;\n  min-width: 92px;\n  padding: 0;\n  border: 0;\n  background: transparent;\n  text-align: left;\n  cursor: pointer;\n}\n\n.dpui-palette-preview {\n  display: flex;\n  height: 56px;\n  overflow: hidden;\n  border: 0.5px solid;\n  border-radius: var(--dsw-radius-md);\n}\n\n.dpui-palette-card:hover .dpui-palette-preview {\n  filter: brightness(0.97);\n}\n\n.dpui-palette-cardActive .dpui-palette-preview,\n.dpui-palette-card:focus-visible .dpui-palette-preview {\n  outline: 2px solid var(--dsw-alias-brand-primary);\n  outline-offset: 1px;\n}\n\n.dpui-palette-side {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  flex: none;\n  width: 32%;\n  padding: 8px 6px;\n  border-right: 0.5px solid;\n}\n\n.dpui-palette-main {\n  display: flex;\n  flex: 1;\n  flex-direction: column;\n  gap: 4px;\n  padding: 8px 6px;\n}\n\n.dpui-palette-accent {\n  width: 20px;\n  height: 6px;\n  border-radius: 3px;\n}\n\n.dpui-palette-line {\n  width: 72%;\n  height: 3px;\n  border-radius: 2px;\n  opacity: 0.8;\n}\n\n.dpui-palette-lineShort {\n  width: 44%;\n  height: 3px;\n  border-radius: 2px;\n  opacity: 0.4;\n}\n\n.dpui-palette-label {\n  overflow: hidden;\n  font-size: 12px;\n  line-height: 18px;\n  color: var(--dsw-alias-label-secondary);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.dpui-palette-cardActive .dpui-palette-label {\n  color: var(--dsw-alias-label-primary);\n}\n\n/* Ground rows (frosted glass slider, wallpaper picker): the General section's\n   two-column row, reused from the palette head classes. */\n.dpui-palette-row {\n  display: flex;\n  align-items: center;\n  gap: 16px;\n  padding: 16px 0;\n  border-bottom: 0.5px solid var(--dsw-alias-border-l2);\n}\n\n.dpui-palette-slider {\n  flex: none;\n  width: 180px;\n  height: 20px;\n  accent-color: var(--dsw-alias-brand-primary);\n  cursor: pointer;\n}\n\n.dpui-palette-chipRow {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n\n.dpui-palette-chip {\n  padding: 5px 12px;\n  border: 1px solid var(--dsw-alias-border-l3);\n  border-radius: var(--dsw-radius-md);\n  background: var(--dsw-alias-bg-layer-1);\n  color: var(--dsw-alias-label-secondary);\n  font-size: 12px;\n  line-height: 18px;\n  cursor: pointer;\n}\n\n.dpui-palette-chip:hover {\n  border-color: var(--dsw-alias-border-l4);\n  color: var(--dsw-alias-label-primary);\n}\n\n.dpui-palette-chipActive {\n  border-color: var(--dsw-alias-brand-primary);\n  color: var(--dsw-alias-brand-text);\n  font-weight: 500;\n}\n\n/* Wallpaper picker: a swatch grid under its own head, so sixteen presets read\n   as pictures rather than as a paragraph of chips. Sizes ride the palette\n   cards above it \u2014 same flex basis, same label scale, same active ring. */\n.dpui-palette-groundBlock {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  padding: 16px 0;\n  border-bottom: 0.5px solid var(--dsw-alias-border-l2);\n}\n\n.dpui-palette-groundGrid {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n\n.dpui-palette-groundCard {\n  flex: 1 1 108px;\n  min-width: 108px;\n  max-width: 176px;\n}\n\n/* 16:10 rather than a fixed 56px: a wallpaper preview should be shaped like a\n   wallpaper, not like the mini window above it. */\n.dpui-palette-groundSwatch {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  aspect-ratio: 16 / 10;\n  height: auto;\n  border: 0.5px solid var(--dsw-alias-border-l3);\n  border-radius: var(--dsw-radius-md);\n  background-position: center;\n  background-size: cover;\n  background-repeat: no-repeat;\n}\n\n.dpui-palette-cardActive .dpui-palette-groundSwatch,\n.dpui-palette-card:focus-visible .dpui-palette-groundSwatch {\n  outline: 2px solid var(--dsw-alias-brand-primary);\n  outline-offset: 1px;\n}\n\n/* No wallpaper: a quiet empty plate, not a colour the eye mistakes for a preset. */\n.dpui-palette-groundSwatchNone {\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.dpui-palette-groundSwatchCustom {\n  aspect-ratio: 16 / 10;\n  height: auto;\n  border: 0.5px dashed var(--dsw-alias-border-l3);\n  border-radius: var(--dsw-radius-md);\n  background: transparent;\n  font-size: 16px;\n  line-height: 1;\n  text-align: center;\n  color: var(--dsw-alias-label-tertiary);\n}\n\n/* Group captions inside the picker: they carry the only structure sixteen\n   swatches need, so they stay quieter than the block titles above them. */\n.dpui-palette-groundGroupLabel {\n  margin-top: -4px;\n  font-size: 12px;\n  line-height: 18px;\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.dpui-palette-groundGroups {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n}\n";
   document.head.append(style);
 }
 var palette_default = new Proxy({}, { get: (_target, key) => typeof key === "string" ? "dpui-palette-" + key : void 0 });
@@ -784,14 +784,29 @@ var import_jsx_runtime3 = require("react/jsx-runtime");
 var GLASS_KEY = "dsh-plugin-ui.glass";
 var WALLPAPER_KEY = "dsh-plugin-ui.wallpaper";
 var CUSTOM_KEY = "dsh-plugin-ui.wallpaper.custom";
+var ROTATE_KEY = "dsh-plugin-ui.wallpaper.every";
+var ROTATED_AT_KEY = "dsh-plugin-ui.wallpaper.rotatedAt";
+var ROTATE_CHOICES = [
+  [0, "palette.rotateOff"],
+  [30, "palette.rotate30m"],
+  [60, "palette.rotate1h"],
+  [360, "palette.rotate6h"],
+  [720, "palette.rotate12h"],
+  [1440, "palette.rotate1d"],
+  [10080, "palette.rotate1w"]
+];
 function stored() {
   const glass = Number(localStorage.getItem(GLASS_KEY) ?? "0.5");
   const wallpaper = localStorage.getItem(WALLPAPER_KEY) ?? "none";
   const custom = localStorage.getItem(CUSTOM_KEY) ?? "";
+  const every = Number(localStorage.getItem(ROTATE_KEY) ?? "0");
+  const rotatedAt = Number(localStorage.getItem(ROTATED_AT_KEY) ?? "0");
   return {
     glass: Number.isFinite(glass) ? Math.min(Math.max(glass, 0), 1) : 0.5,
     wallpaper,
-    custom
+    custom,
+    every: Number.isFinite(every) && every > 0 ? every : 0,
+    rotatedAt: Number.isFinite(rotatedAt) ? rotatedAt : 0
   };
 }
 function wallpaperUrl(state) {
@@ -812,6 +827,7 @@ function apply(state) {
 }
 function createGroundController() {
   let current = stored();
+  let timer;
   const listeners = /* @__PURE__ */ new Set();
   const notify = () => {
     for (const listener of listeners) listener();
@@ -822,8 +838,22 @@ function createGroundController() {
     localStorage.setItem(WALLPAPER_KEY, next.wallpaper);
     if (next.custom === "") localStorage.removeItem(CUSTOM_KEY);
     else localStorage.setItem(CUSTOM_KEY, next.custom);
+    if (next.every > 0) localStorage.setItem(ROTATE_KEY, String(next.every));
+    else localStorage.removeItem(ROTATE_KEY);
+    localStorage.setItem(ROTATED_AT_KEY, String(next.rotatedAt));
     apply(next);
     notify();
+  };
+  const advance = () => {
+    const ids = WALLPAPERS.map((preset) => preset.id);
+    const at = ids.indexOf(current.wallpaper);
+    write({ ...current, wallpaper: ids[(at + 1) % ids.length], rotatedAt: Date.now() });
+  };
+  const tick = () => {
+    if (current.every <= 0) return;
+    if (current.wallpaper === "none") return;
+    if (Date.now() - current.rotatedAt < current.every * 6e4) return;
+    advance();
   };
   return {
     get: () => current,
@@ -831,10 +861,18 @@ function createGroundController() {
       write({ ...current, glass: opacity });
     },
     setWallpaper(id) {
-      write({ ...current, wallpaper: id });
+      write({ ...current, wallpaper: id, rotatedAt: Date.now() });
     },
     setCustom(dataUrl) {
-      write({ ...current, wallpaper: dataUrl === "" ? "none" : "custom", custom: dataUrl });
+      write({
+        ...current,
+        wallpaper: dataUrl === "" ? "none" : "custom",
+        custom: dataUrl,
+        rotatedAt: Date.now()
+      });
+    },
+    setEvery(minutes) {
+      write({ ...current, every: minutes, rotatedAt: Date.now() });
     },
     subscribe(listener) {
       listeners.add(listener);
@@ -844,7 +882,10 @@ function createGroundController() {
     },
     install() {
       apply(current);
+      tick();
+      timer = setInterval(tick, 3e4);
       return () => {
+        clearInterval(timer);
         document.body.removeAttribute("data-dsh-glass");
       };
     }
@@ -869,15 +910,32 @@ function GroundSettings({ controller, ctx, t }) {
     reader.readAsDataURL(file);
     event.target.value = "";
   };
-  const presets = [
-    { id: "none", label: t("palette.wallpaperNone"), image: void 0 },
-    ...WALLPAPERS.map((w) => ({
-      id: w.id,
-      label: w.label,
-      image: w.css === void 0 ? `url(${w.dataUrl})` : w.css
-    }))
-  ];
   const custom = state.wallpaper === "custom" && state.custom !== "";
+  const gradients = WALLPAPERS.filter((preset) => preset.css !== void 0);
+  const photos = WALLPAPERS.filter((preset) => preset.css === void 0);
+  const swatch = (id, label, image, active) => /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(
+    "button",
+    {
+      type: "button",
+      role: "radio",
+      "aria-checked": active,
+      className: clsx(palette_default.card, palette_default.groundCard, active && palette_default.cardActive),
+      onClick: () => {
+        controller.setWallpaper(id);
+      },
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+          "span",
+          {
+            className: clsx(palette_default.groundSwatch, image === void 0 && palette_default.groundSwatchNone),
+            style: image === void 0 ? void 0 : { backgroundImage: image }
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { className: palette_default.label, children: label })
+      ]
+    },
+    id
+  );
   return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: palette_default.section, children: [
     /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: palette_default.row, children: [
       /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: palette_default.head, children: [
@@ -905,46 +963,47 @@ function GroundSettings({ controller, ctx, t }) {
         /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: palette_default.title, children: t("palette.wallpaper") }),
         /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: palette_default.desc, children: t("palette.wallpaperHint") })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: palette_default.groundGrid, role: "radiogroup", "aria-label": t("palette.wallpaper"), children: [
-        presets.map((preset) => {
-          const active = state.wallpaper === preset.id;
-          return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(
-            "button",
-            {
-              type: "button",
-              role: "radio",
-              "aria-checked": active,
-              className: clsx(palette_default.card, active && palette_default.cardActive),
-              onClick: () => {
-                controller.setWallpaper(preset.id);
-              },
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
-                  "span",
-                  {
-                    className: clsx(palette_default.groundSwatch, preset.image === void 0 && palette_default.groundSwatchNone),
-                    style: preset.image === void 0 ? void 0 : { backgroundImage: preset.image }
-                  }
-                ),
-                /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { className: palette_default.label, children: preset.label })
-              ]
-            },
-            preset.id
-          );
-        }),
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("label", { className: clsx(palette_default.card, custom && palette_default.cardActive), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
-            "span",
-            {
-              className: clsx(palette_default.groundSwatch, !custom && palette_default.groundSwatchCustom),
-              style: custom ? { backgroundImage: `url(${state.custom})` } : void 0,
-              children: custom ? null : "+"
-            }
-          ),
-          /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { className: palette_default.label, children: custom ? t("palette.wallpaperCustomSet") : t("palette.wallpaperCustom") }),
-          /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("input", { type: "file", accept: "image/*", hidden: true, onChange: pickCustom })
-        ] })
+      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: palette_default.groundGroups, role: "radiogroup", "aria-label": t("palette.wallpaper"), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: palette_default.groundGrid, children: [
+          swatch("none", t("palette.wallpaperNone"), void 0, state.wallpaper === "none"),
+          /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("label", { className: clsx(palette_default.card, palette_default.groundCard, custom && palette_default.cardActive), children: [
+            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+              "span",
+              {
+                className: clsx(palette_default.groundSwatch, !custom && palette_default.groundSwatchCustom),
+                style: custom ? { backgroundImage: `url(${state.custom})` } : void 0,
+                children: custom ? null : "+"
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { className: palette_default.label, children: custom ? t("palette.wallpaperCustomSet") : t("palette.wallpaperCustom") }),
+            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("input", { type: "file", accept: "image/*", hidden: true, onChange: pickCustom })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: palette_default.groundGroupLabel, children: t("palette.wallpaperGroupColor") }),
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: palette_default.groundGrid, children: gradients.map((preset) => swatch(preset.id, preset.label, preset.css, state.wallpaper === preset.id)) }),
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: palette_default.groundGroupLabel, children: t("palette.wallpaperGroupPhoto") }),
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: palette_default.groundGrid, children: photos.map((preset) => swatch(preset.id, preset.label, `url(${preset.dataUrl})`, state.wallpaper === preset.id)) })
       ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: palette_default.row, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: palette_default.head, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: palette_default.title, children: t("palette.rotate") }),
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: palette_default.desc, children: t("palette.rotateHint") })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: palette_default.chipRow, role: "radiogroup", "aria-label": t("palette.rotate"), children: ROTATE_CHOICES.map(([minutes, key]) => /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+        "button",
+        {
+          type: "button",
+          role: "radio",
+          "aria-checked": state.every === minutes,
+          className: clsx(palette_default.chip, state.every === minutes && palette_default.chipActive),
+          onClick: () => {
+            controller.setEvery(minutes);
+          },
+          children: t(key)
+        },
+        minutes
+      )) })
     ] })
   ] });
 }
@@ -1216,16 +1275,21 @@ html:has(body[data-dsh-glass]) [class*="_rightbarCol"] [class*="_root"],
 html:has(body[data-dsh-glass]) [class*="_bottomRow"] {
   background: transparent !important;
 }
+/* The mac sidebar keeps its own material \u2014 a sidebar fill warmed by the brand \u2014
+   but its alpha rides the same curve as the centre's, so one slider means one
+   transparency on both sides. This rule previously multiplied the slider in
+   directly, which made the sidebar opaque exactly where the centre was
+   transparent: the two sides crossed over around the middle of the track. */
 html:has(body[data-dsh-glass])[data-platform='darwin'] body[data-dsh-palette] [class*="_sidebarCol"] {
   background: linear-gradient(
       to bottom,
-      rgb(from var(--dsw-alias-brand-primary) r g b / 0.1),
+      rgb(from var(--dsw-alias-brand-primary) r g b / calc((1 - var(--dpui-glass-opacity, 0.5)) * 0.1)),
       rgb(from var(--dsw-alias-brand-primary) r g b / 0) 35%,
       rgb(from var(--dsw-alias-brand-primary) r g b / 0) 68%,
-      rgb(from var(--dsw-alias-brand-primary) r g b / 0.09)
+      rgb(from var(--dsw-alias-brand-primary) r g b / calc((1 - var(--dpui-glass-opacity, 0.5)) * 0.09))
     ),
     color-mix(in srgb,
-      color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) calc(var(--dpui-glass-opacity, 0.5) * 72%),
+      color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) calc((1 - var(--dpui-glass-opacity, 0.5)) * 100%),
       transparent) !important;
 }
 
@@ -2239,8 +2303,19 @@ var zh = {
   "palette.wallpaperNone": "\u65E0",
   "palette.wallpaperCustom": "\u81EA\u5B9A\u4E49\u2026",
   "palette.wallpaperCustomSet": "\u81EA\u5B9A\u4E49 \u2713",
-  "palette.glassHint": "\u4E24\u4FA7\u5361\u7247\u7684\u78E8\u7802\u5F3A\u5EA6\uFF1B0 \u4E3A\u4E0D\u900F\u660E",
+  "palette.glassHint": "\u5DE6\u53F3\u4E24\u4FA7\u540C\u4E00\u6863\u900F\u660E\u5EA6\uFF1B0 \u4E3A\u4E0D\u900F\u660E\uFF0C1 \u4E3A\u5B8C\u5168\u900F\u51FA",
   "palette.wallpaperHint": "\u94FA\u5728\u4E24\u5F20\u5361\u7247\u4E0B\u65B9\u7684\u5E95\u677F\u753B\u9762",
+  "palette.rotate": "\u81EA\u52A8\u66F4\u6362",
+  "palette.rotateHint": "\u6309\u95F4\u9694\u81EA\u52A8\u8F6E\u6362\u4E0A\u9762\u7684\u58C1\u7EB8",
+  "palette.rotateOff": "\u5173\u95ED",
+  "palette.rotate30m": "\u6BCF 30 \u5206\u949F",
+  "palette.rotate1h": "\u6BCF\u5C0F\u65F6",
+  "palette.rotate6h": "\u6BCF 6 \u5C0F\u65F6",
+  "palette.rotate12h": "\u6BCF 12 \u5C0F\u65F6",
+  "palette.rotate1d": "\u6BCF\u5929",
+  "palette.rotate1w": "\u6BCF\u5468",
+  "palette.wallpaperGroupColor": "\u6E10\u53D8",
+  "palette.wallpaperGroupPhoto": "\u7167\u7247",
   "account.quickActionsTitle": "\u8D26\u53F7\u884C\u5FEB\u6377\u64CD\u4F5C",
   "palette.title": "\u76AE\u80A4\u914D\u8272",
   "palette.hint": "\u53EA\u66FF\u6362\u989C\u8272\uFF1B\u5E03\u5C40\u4E0E\u7EC4\u4EF6\u4FDD\u6301\u63D2\u4EF6\u8BBE\u8BA1\uFF0C\u660E\u6697\u4ECD\u8DDF\u968F\u5E94\u7528\u5F53\u524D\u7684\u6D45\u8272/\u6DF1\u8272",
@@ -2305,8 +2380,19 @@ var en = {
   "palette.wallpaperNone": "None",
   "palette.wallpaperCustom": "Custom\u2026",
   "palette.wallpaperCustomSet": "Custom \u2713",
-  "palette.glassHint": "Frost strength of both cards; 0 is opaque",
+  "palette.glassHint": "One transparency for both sides; 0 is opaque, 1 shows the ground",
   "palette.wallpaperHint": "The ground behind both floating cards",
+  "palette.rotate": "Auto change",
+  "palette.rotateHint": "Cycle the wallpapers above on an interval",
+  "palette.rotateOff": "Off",
+  "palette.rotate30m": "Every 30 min",
+  "palette.rotate1h": "Hourly",
+  "palette.rotate6h": "Every 6 hours",
+  "palette.rotate12h": "Every 12 hours",
+  "palette.rotate1d": "Daily",
+  "palette.rotate1w": "Weekly",
+  "palette.wallpaperGroupColor": "Gradients",
+  "palette.wallpaperGroupPhoto": "Photos",
   "account.allSettings": "All settings\u2026",
   "account.quickActionsTitle": "Account row quick actions",
   "palette.title": "Skin palette",

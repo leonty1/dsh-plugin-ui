@@ -180,11 +180,20 @@
   gap: 8px;
 }
 
+.groundCard {
+  flex: 1 1 108px;
+  min-width: 108px;
+  max-width: 176px;
+}
+
+/* 16:10 rather than a fixed 56px: a wallpaper preview should be shaped like a
+   wallpaper, not like the mini window above it. */
 .groundSwatch {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 56px;
+  aspect-ratio: 16 / 10;
+  height: auto;
   border: 0.5px solid var(--dsw-alias-border-l3);
   border-radius: var(--dsw-radius-md);
   background-position: center;
@@ -204,7 +213,8 @@
 }
 
 .groundSwatchCustom {
-  height: 56px;
+  aspect-ratio: 16 / 10;
+  height: auto;
   border: 0.5px dashed var(--dsw-alias-border-l3);
   border-radius: var(--dsw-radius-md);
   background: transparent;
@@ -212,4 +222,19 @@
   line-height: 1;
   text-align: center;
   color: var(--dsw-alias-label-tertiary);
+}
+
+/* Group captions inside the picker: they carry the only structure sixteen
+   swatches need, so they stay quieter than the block titles above them. */
+.groundGroupLabel {
+  margin-top: -4px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.groundGroups {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }

@@ -264,16 +264,21 @@ html:has(body[data-dsh-glass]) [class*="_rightbarCol"] [class*="_root"],
 html:has(body[data-dsh-glass]) [class*="_bottomRow"] {
   background: transparent !important;
 }
+/* The mac sidebar keeps its own material — a sidebar fill warmed by the brand —
+   but its alpha rides the same curve as the centre's, so one slider means one
+   transparency on both sides. This rule previously multiplied the slider in
+   directly, which made the sidebar opaque exactly where the centre was
+   transparent: the two sides crossed over around the middle of the track. */
 html:has(body[data-dsh-glass])[data-platform='darwin'] body[data-dsh-palette] [class*="_sidebarCol"] {
   background: linear-gradient(
       to bottom,
-      rgb(from var(--dsw-alias-brand-primary) r g b / 0.1),
+      rgb(from var(--dsw-alias-brand-primary) r g b / calc((1 - var(--dpui-glass-opacity, 0.5)) * 0.1)),
       rgb(from var(--dsw-alias-brand-primary) r g b / 0) 35%,
       rgb(from var(--dsw-alias-brand-primary) r g b / 0) 68%,
-      rgb(from var(--dsw-alias-brand-primary) r g b / 0.09)
+      rgb(from var(--dsw-alias-brand-primary) r g b / calc((1 - var(--dpui-glass-opacity, 0.5)) * 0.09))
     ),
     color-mix(in srgb,
-      color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) calc(var(--dpui-glass-opacity, 0.5) * 72%),
+      color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) calc((1 - var(--dpui-glass-opacity, 0.5)) * 100%),
       transparent) !important;
 }
 
