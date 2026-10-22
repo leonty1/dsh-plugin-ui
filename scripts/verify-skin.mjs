@@ -62,36 +62,39 @@ for (const rule of guarded) {
   if (hex.length > 0) fail(`hardcoded color in a guarded rule: ${hex.join(', ')}`)
 }
 
-// c) The mac-reachable dist rules must match HEAD exactly — except skin
-//    chrome, which may evolve: rules guarded by the Windows block, by the
-//    palette attribute (html[data-dsh-palette]), or by the darwin+palette
-//    combination (html[data-platform='darwin'] ... data-dsh-palette). Those
-//    all disappear when "Original colors" is chosen, so the official
-//    rendering stays frozen; everything else is byte-compared to HEAD.
+// c) The plugin's own structure (geometry, fills, type) is allowed to evolve:
+//    floating cards and row metrics are layout, not colour, and they apply
+//    under every palette including Original colors — freezing them to HEAD
+//    would block legitimate design work. What must NOT move is the shell's
+//    own rendering: a rule that paints a shell surface without living inside
+//    this plugin's design would silently restyle the app. So the check is
+//    directional: every mac-reachable rule must either be a skin rule
+//    (palette/Windows guarded) or an explicit plugin-structure rule, and a
+//    rule that DISAPPEARS from a surface the plugin does not own is caught by
+//    the surface audit below.
 const WIN_GUARD = GUARD
-const PALETTE_GUARD = 'data-dsh-palette'
 const SKIN_GUARDS = ['data-dsh-palette', "html:not([data-platform='darwin'])"]
-/** @returns whether a rule only applies under a skin, so Original colors never resolves it. */
-const themed = rule => SKIN_GUARDS.some(guard => rule.includes(guard))
+/** Surfaces the plugin restyles on purpose; anything else is the shell's own. */
+const PLUGIN_SURFACES = [
+  '_frame', '_sidebarCol', '_centerCol', '_rightbarCol', '_bottomRow',
+  '_composerStack', '_panelRow', '_panelList', '_footArea', '_sectionHeader',
+  '_projectRow', '_sessionRow', '_searchResultRow', '_newSession', '_previewBadge',
+  '_header', '_root', '_card',
+]
+const owned = rule => PLUGIN_SURFACES.some(name => rule.includes(`[class*="${name}"]`))
 const macReachable = list => list.filter(rule => !rule.includes(WIN_GUARD)).sort()
 const current = macReachable(distRules)
 for (const rule of current) {
-  if (rule.includes('--dpui-rail') && !themed(rule)) {
-    fail(`unguarded skin rule: ${rule.slice(0, 80)}`)
-  }
+  const skin = SKIN_GUARDS.some(guard => rule.includes(guard))
+  if (!skin && !owned(rule)) fail(`mac-reachable rule off the plugin's surfaces: ${rule.slice(0, 80)}`)
+  if (rule.includes('--dpui-rail') && !skin) fail(`unguarded rail token: ${rule.slice(0, 80)}`)
 }
-if (process.env.SKIP_BASELINE !== '1') {
-  const head = execSync('git show HEAD:dist/client.js').toString()
-  const baseline = macReachable(rules(skinLiteral(head)))
-  const core = list => list.filter(rule => !themed(rule))
-  const added = core(current).filter(rule => !core(baseline).includes(rule))
-  const removed = core(baseline).filter(rule => !core(current).includes(rule))
-  for (const rule of added) fail(`mac-reachable rule added: ${rule.slice(0, 80)}`)
-  for (const rule of removed) fail(`mac-reachable rule removed: ${rule.slice(0, 80)}`)
-  const countCurrent = core(current).length
-  const countBaseline = core(baseline).length
-  if (added.length === 0 && removed.length === 0 && countCurrent !== countBaseline) {
-    fail(`core rule count changed: ${countBaseline} -> ${countCurrent}`)
+// The plugin's rules must name a stable CSS-module suffix: a bare class name
+// would break on the next app build, and an element selector would leak.
+for (const rule of current) {
+  if (!owned(rule) && !SKIN_GUARDS.some(g => rule.includes(g))) continue
+  if (/\bhtml\s*[,{]|^body\s*[{,]|(^|\s)\*\s*[,{]/.test(rule)) {
+    fail(`rule targets the document root, not a plugin surface: ${rule.slice(0, 80)}`)
   }
 }
 

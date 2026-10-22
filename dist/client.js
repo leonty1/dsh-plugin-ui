@@ -719,16 +719,18 @@ var import_react2 = require("react");
 var skin_default = `/* Qoder shell geometry. Selectors use the stable CSS-module local-name suffix:
    the hashed prefix changes per build, the suffix is the source class name. */
 [class*="_frame"] > [class*="_centerCol"] { margin: 5px !important; border: none !important; border-radius: 16px !important; overflow: hidden; background: var(--dsw-alias-bg-base) !important; }
-/* macOS, skin on: the sidebar becomes a floating card like the centre \u2014 5px
-   gutter, 16px radius on all four corners \u2014 over the transparent frame, with
-   vibrancy showing through the gutter and under the card's translucent tint.
-   The traffic lights (x16..68, y18) sit inside the card's top-left; the
+/* macOS: the sidebar is a floating card like the centre \u2014 5px gutter, 16px
+   radius on all four corners \u2014 over the transparent frame, with vibrancy
+   showing through the gutter. This is layout, not colour: it belongs to the
+   plugin's structure and stays on under "Original colors" too, which only
+   drops the palette layer (the card then keeps the app's own surfaces,
+   exactly like the centre card does).
+   The traffic lights (x16..68, y18) sit inside that card's top-left; the
    16px corner arc at (21,21) keeps the first light (center 22,24) off the
    curve, so nothing clips. Collapsed, the column width is 0 on darwin and
    the lights move to the shell.leading seat over the bare vibrancy, matching
-   the official collapsed layout. Original colors keeps the official
-   edge-to-edge sidebar. */
-html[data-platform='darwin'] body[data-dsh-palette] [class*="_frame"]:has(> [class*="_centerCol"]) > [class*="_sidebarCol"] {
+   the official collapsed layout. */
+html[data-platform='darwin'] [class*="_frame"]:has(> [class*="_centerCol"]) > [class*="_sidebarCol"] {
   margin: 5px !important;
   border-radius: var(--dsw-radius-panel) !important;
   border: none !important;
@@ -789,21 +791,15 @@ html[data-platform='darwin'] body[data-dsh-palette][data-ds-dark-theme] [class*=
 }
 /* Qoder's tighter padding and lifted top strip are expanded-only: the rail
    keeps the official 18px/10px padding that the strip's negative margins
-   are calibrated against. Original colors keeps the official 12px. */
+   are calibrated against. 16px (not the official 12px) because the column is
+   a floating card: 5px card margin + 16px inner = 21px to content, which
+   keeps the New Session button, the plugin rows, and the account row clear
+   of the rounded edge where 8px hugged it. The strip's negative margins
+   track the same variable, so its drag zone and the toggle move with it.
+   Layout, so it applies under every palette including Original colors. */
 [class*="_sidebarCol"] > div > [class*="_root"]:not([class*="_root_"]):not([class*="_collapsed"]) {
-  --dsh-sidebar-inline-padding: 8px;
-  padding-top: 0 !important;
-}
-/* Floating the column costs the card its own gutter: 8px inline padding ran
-   edge-to-edge on a full-bleed column, but on a rounded floating card it
-   leaves the New Session button, the plugin rows, and the account row
-   hugging the curve. 16px restores the breathing room (the card's 5px
-   margin + 16px inner = 21px to content, against the official 12px flat).
-   The strip's negative margins track the same variable, so its drag zone
-   and the toggle's position move with it. Skin-only: Original colors keeps
-   the 8px rule above. */
-html[data-dsh-palette] body [class*="_sidebarCol"] > div > [class*="_root"]:not([class*="_root_"]):not([class*="_collapsed"]) {
   --dsh-sidebar-inline-padding: 16px;
+  padding-top: 0 !important;
 }
 /* The panel list sits after the scrollable region so Plugins and Automation
    tasks rest directly above the account footer, under a solid separator.
@@ -822,30 +818,29 @@ html[data-dsh-palette] body [class*="_sidebarCol"] > div > [class*="_root"]:not(
 /* The official New Session button keeps its geometry; only its type scales,
    including the \u2318N keycaps that inherit the button's font size. */
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] { font-size: var(--dpui-sidebar-font-size) !important; }
-/* Under a skin the sidebar is a tinted rail, and the official transparent
-   button disappears into it. The button becomes the rail's own floating
-   card \u2014 bg-layer-1 fill, soft shadow, rounded like the document card \u2014
-   with the plus icon and hover ring carrying the palette accent. Fill and
-   ink stay on label tokens, so contrast holds in all four palettes and both
-   schemes without per-palette fills (accent-solid fills fail 3:1 with white
-   ink on forest/mint/parchment light). Original colors keep the official
-   transparent button. */
-html[data-dsh-palette] body [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] {
+/* The New Session button is the rail's own floating card \u2014 bg-layer-1 fill,
+   soft shadow, rounded like the document card \u2014 with the plus icon and hover
+   ring carrying the accent. Fill and ink stay on label tokens, so contrast
+   holds in all four palettes and both schemes without per-palette fills
+   (accent-solid fills fail 3:1 with white ink on forest/mint/parchment
+   light). Surface design, so it holds under Original colors too, where the
+   icon picks up the app's own blue. */
+[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] {
   background: var(--dsw-alias-bg-layer-1) !important;
   box-shadow: var(--dsw-elevation-soft) !important;
   color: var(--dsw-alias-label-primary) !important;
 }
-html[data-dsh-palette] body [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] svg {
+[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] svg {
   color: var(--dsw-alias-brand-text) !important;
 }
-html[data-dsh-palette] body [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"]:hover {
+[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"]:hover {
   background: var(--dsw-alias-bg-layer-2) !important;
   box-shadow: 0 0 0 1px var(--dsw-alias-brand-text) inset !important;
 }
-html[data-dsh-palette] body [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"]:active {
+[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"]:active {
   background: var(--dsw-alias-bg-layer-2) !important;
 }
-html[data-dsh-palette] body [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] span[class*="newSessionShortcut"] {
+[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] span[class*="newSessionShortcut"] {
   color: var(--dsw-alias-label-tertiary) !important;
 }
 [class*="_centerCol"] header[class*="_header"] { padding-left: 24px !important; padding-right: 24px !important; border-bottom: none !important; }
