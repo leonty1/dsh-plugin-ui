@@ -772,7 +772,6 @@ var import_jsx_runtime3 = require("react/jsx-runtime");
 var GLASS_KEY = "dsh-plugin-ui.glass";
 var WALLPAPER_KEY = "dsh-plugin-ui.wallpaper";
 var CUSTOM_KEY = "dsh-plugin-ui.wallpaper.custom";
-var GROUND_PRESETS = [{ id: "none", label: "None" }, ...WALLPAPERS.map((w) => ({ id: w.id, label: w.label }))];
 function stored() {
   const glass = Number(localStorage.getItem(GLASS_KEY) ?? "0.5");
   const wallpaper = localStorage.getItem(WALLPAPER_KEY) ?? "none";
@@ -838,8 +837,7 @@ function createGroundController() {
     }
   };
 }
-function GroundSettings({ controller, ctx }) {
-  void ctx;
+function GroundSettings({ controller, ctx, t }) {
   const [state, setState] = (0, import_react2.useState)(() => controller.get());
   (0, import_react2.useEffect)(() => {
     const update = () => {
@@ -858,9 +856,13 @@ function GroundSettings({ controller, ctx }) {
     reader.readAsDataURL(file);
     event.target.value = "";
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: clsx("dpui-ground-section"), children: [
+  const presets = [
+    { id: "none", label: t("palette.wallpaperNone") },
+    ...WALLPAPERS.map((w) => ({ id: w.id, label: w.label }))
+  ];
+  return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "dpui-ground-section", children: [
     /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("label", { className: "dpui-ground-row", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { className: "dpui-ground-label", children: "\u6BDB\u73BB\u7483" }),
+      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { className: "dpui-ground-label", children: t("account.glass") }),
       /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
         "input",
         {
@@ -869,14 +871,16 @@ function GroundSettings({ controller, ctx }) {
           max: "1",
           step: "0.05",
           value: state.glass,
+          "aria-label": t("account.glass"),
           onChange: (event) => {
             controller.setGlass(Number(event.target.value));
           }
         }
       )
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "dpui-ground-row", role: "radiogroup", "aria-label": "\u58C1\u7EB8", children: [
-      GROUND_PRESETS.map((preset) => /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "dpui-ground-row", role: "radiogroup", "aria-label": t("palette.wallpaper"), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { className: "dpui-ground-label", children: t("palette.wallpaper") }),
+      presets.map((preset) => /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
         "button",
         {
           type: "button",
@@ -891,7 +895,7 @@ function GroundSettings({ controller, ctx }) {
         preset.id
       )),
       /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("label", { className: clsx("dpui-ground-chip", state.wallpaper === "custom" && "dpui-ground-chipActive"), children: [
-        state.wallpaper === "custom" ? "\u81EA\u5B9A\u4E49 \u2713" : "\u81EA\u5B9A\u4E49\u2026",
+        state.wallpaper === "custom" ? t("palette.wallpaperCustomSet") : t("palette.wallpaperCustom"),
         /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("input", { type: "file", accept: "image/*", hidden: true, onChange: pickCustom })
       ] })
     ] })
@@ -1301,7 +1305,7 @@ function useColorScheme(ctx) {
   }, [ctx]);
   return scheme;
 }
-function PaletteSettings({ t, controller, ground, ctx }) {
+function PaletteSettings({ t, controller, ground: ground2, ctx }) {
   const [pair, setPair] = (0, import_react3.useState)(() => controller.get());
   const scheme = useColorScheme(ctx);
   (0, import_react3.useEffect)(() => {
@@ -1350,26 +1354,33 @@ function PaletteSettings({ t, controller, ground, ctx }) {
         id
       );
     }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(GroundSettings, { controller: ground, ctx })
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(GroundSettings, { controller: ground2, ctx, t })
   ] });
 }
 
 // src/client/quick-settings.jsx
 var import_jsx_runtime5 = require("react/jsx-runtime");
 var SIZE_CHOICES = [[12, "account.sizeSmall"], [14, "account.sizeMedium"], [16, "account.sizeLarge"]];
+var GLASS_CHOICES = [
+  [0, "account.glassOff"],
+  [0.35, "account.glassLow"],
+  [0.6, "account.glassMedium"],
+  [0.85, "account.glassHigh"]
+];
 function quickSettingsView(ctx, palette) {
   const theme = ctx.theme.getTheme();
   return {
     locale: ctx.locale.getSnapshot(),
     preference: theme.preference,
     textSize: theme.fontSizes.text,
-    palette: palette?.get()
+    palette: palette?.get(),
+    glass: ground?.get().glass
   };
 }
 function marked(label, selected) {
   return selected ? `\u2713 ${label}` : label;
 }
-function quickSettingsItems(view, t) {
+function quickSettingsItems(view, t, ground2) {
   const language = view.locale.locales.map((item) => ({
     id: `locale:${item.id}`,
     label: marked(item.label, item.id === view.locale.active)
@@ -1397,6 +1408,15 @@ function quickSettingsItems(view, t) {
       icon: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_dsh_client_ui_primitives3.IconSparkleMedium, { size: 16 }),
       submenu: palettes
     }],
+    ...ground2 === void 0 ? [] : [{
+      id: "glass",
+      label: t("account.glass"),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_dsh_client_ui_primitives3.IconEnhanceOutlineMedium, { size: 16 }),
+      submenu: GLASS_CHOICES.map(([value, key]) => ({
+        id: `glass:${value}`,
+        label: marked(t(key), view.glass === value)
+      }))
+    }],
     { id: "text-size", label: t("account.textSize"), icon: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_dsh_client_ui_primitives3.IconEnhanceOutlineMedium, { size: 16 }), submenu: sizes },
     {
       id: "all-settings",
@@ -1405,7 +1425,7 @@ function quickSettingsItems(view, t) {
     }
   ];
 }
-function applyQuickSetting(ctx, id, palette) {
+function applyQuickSetting(ctx, id, palette, ground2) {
   if (id.startsWith("mode:")) {
     ctx.theme.setTheme(id.slice("mode:".length));
     return true;
@@ -1421,6 +1441,10 @@ function applyQuickSetting(ctx, id, palette) {
   }
   if (id.startsWith("locale:")) {
     ctx.locale.setLocale(id.slice("locale:".length));
+    return true;
+  }
+  if (id.startsWith("glass:") && ground2 !== void 0) {
+    ground2.setGlass(Number(id.slice("glass:".length)));
     return true;
   }
   return false;
@@ -1655,7 +1679,7 @@ function QuickActionSeat({ seat, t, view, onQuickSelect, onAllSettings, onBuilti
         portal: true,
         autoFocus: true,
         listClassName: account_default.list,
-        items: quickSettingsItems(view, t),
+        items: quickSettingsItems(view, t, groundState),
         onClose: () => {
           setOpen(false);
         },
@@ -1841,11 +1865,18 @@ function AccountMenu({
   uiWorkspace,
   layout,
   palette,
+  ground: ground2,
   renderSlot
 }) {
   const seats = useStore((state) => state.seats);
   const account = useSnapshot(accountStore);
   const view = useQuickView(ctx, palette);
+  const groundState2 = (0, import_react5.useSyncExternalStore)(
+    ground2 ? ground2.subscribe : () => () => {
+    },
+    ground2 ? ground2.get : () => null,
+    ground2 ? ground2.get : () => null
+  );
   const anchor = (0, import_react5.useRef)(null);
   const trigger = (0, import_react5.useRef)(null);
   const [open, setOpen] = (0, import_react5.useState)(false);
@@ -1862,7 +1893,7 @@ function AccountMenu({
     settingsWasOpen.current = settingsOpen;
   }, [accountStore, settingsOpen]);
   const quickSelect = (id) => {
-    applyQuickSetting(ctx, id, palette);
+    applyQuickSetting(ctx, id, palette, ground2);
   };
   const openSettingsPage = () => {
     setOpen(false);
@@ -2160,6 +2191,15 @@ var zh = {
   "account.sizeMedium": "\u4E2D",
   "account.sizeLarge": "\u5927",
   "account.allSettings": "\u5168\u90E8\u8BBE\u7F6E\u2026",
+  "account.glass": "\u6BDB\u73BB\u7483\u6548\u679C",
+  "account.glassOff": "\u5173\u95ED",
+  "account.glassLow": "\u8F7B",
+  "account.glassMedium": "\u4E2D",
+  "account.glassHigh": "\u5F3A",
+  "palette.wallpaper": "\u5E95\u677F\u58C1\u7EB8",
+  "palette.wallpaperNone": "\u65E0",
+  "palette.wallpaperCustom": "\u81EA\u5B9A\u4E49\u2026",
+  "palette.wallpaperCustomSet": "\u81EA\u5B9A\u4E49 \u2713",
   "account.quickActionsTitle": "\u8D26\u53F7\u884C\u5FEB\u6377\u64CD\u4F5C",
   "palette.title": "\u76AE\u80A4\u914D\u8272",
   "palette.hint": "\u53EA\u66FF\u6362\u989C\u8272\uFF1B\u5E03\u5C40\u4E0E\u7EC4\u4EF6\u4FDD\u6301\u63D2\u4EF6\u8BBE\u8BA1\uFF0C\u660E\u6697\u4ECD\u8DDF\u968F\u5E94\u7528\u5F53\u524D\u7684\u6D45\u8272/\u6DF1\u8272",
@@ -2215,6 +2255,15 @@ var en = {
   "account.sizeSmall": "Small",
   "account.sizeMedium": "Medium",
   "account.sizeLarge": "Large",
+  "account.glass": "Frosted glass",
+  "account.glassOff": "Off",
+  "account.glassLow": "Light",
+  "account.glassMedium": "Medium",
+  "account.glassHigh": "Strong",
+  "palette.wallpaper": "Ground wallpaper",
+  "palette.wallpaperNone": "None",
+  "palette.wallpaperCustom": "Custom\u2026",
+  "palette.wallpaperCustomSet": "Custom \u2713",
   "account.allSettings": "All settings\u2026",
   "account.quickActionsTitle": "Account row quick actions",
   "palette.title": "Skin palette",
@@ -2309,15 +2358,15 @@ function apply2(ctx) {
     "dsh-plugin-ui: model dictionaries"
   );
   const palette = createPaletteController(ctx);
+  const ground2 = createGroundController();
   ctx.effect(() => palette.install(), "dsh-plugin-ui: palette layer");
-  const ground = createGroundController();
-  ctx.effect(() => ground.install(), "dsh-plugin-ui: ground layer");
+  ctx.effect(() => ground2.install(), "dsh-plugin-ui: ground layer");
   ctx.slots.inject("settings.general.item", () => ctx.slots.register({
     name: "settings.general.item",
     id: "plugin-ui.palette",
     order: 10.5,
     locale: UI_NS,
-    inject: () => ({ controller: palette, ground, ctx })
+    inject: () => ({ controller: palette, ground: ground2, ctx })
   }, PaletteSettings));
   ctx.inject(["slots", "modelDirectories", "sessions", "remote", "remote.session"], (scope) => {
     const models = scope.modelDirectories;
@@ -2356,6 +2405,7 @@ function apply2(ctx) {
         ctx: scope,
         accountStore,
         palette,
+        ground: ground2,
         uiWorkspace: scope.get("uiWorkspace"),
         layout: scope.get("layout")
       })

@@ -10,9 +10,6 @@ const GLASS_KEY = 'dsh-plugin-ui.glass'
 const WALLPAPER_KEY = 'dsh-plugin-ui.wallpaper'
 const CUSTOM_KEY = 'dsh-plugin-ui.wallpaper.custom'
 
-/** Built-in wallpaper choices; the custom entry rides on top when set. */
-export const GROUND_PRESETS = [{ id: 'none', label: 'None' }, ...WALLPAPERS.map(w => ({ id: w.id, label: w.label }))]
-
 /** @returns the persisted ground settings, with defaults for anything absent. */
 function stored() {
   const glass = Number(localStorage.getItem(GLASS_KEY) ?? '0.5')
@@ -88,8 +85,7 @@ export function createGroundController() {
  * @param props - ground controller, dictionary, and client context.
  * @returns the ground settings rows.
  */
-export function GroundSettings({ controller, ctx }) {
-  void ctx
+export function GroundSettings({ controller, ctx, t }) {
   const [state, setState] = useState(() => controller.get())
   useEffect(() => {
     const update = () => { setState(controller.get()) }
@@ -104,14 +100,18 @@ export function GroundSettings({ controller, ctx }) {
     reader.readAsDataURL(file)
     event.target.value = ''
   }
-  return <div className={clsx('dpui-ground-section')}>
+  const presets = [{ id: 'none', label: t('palette.wallpaperNone') },
+    ...WALLPAPERS.map(w => ({ id: w.id, label: w.label }))]
+  return <div className="dpui-ground-section">
     <label className="dpui-ground-row">
-      <span className="dpui-ground-label">毛玻璃</span>
+      <span className="dpui-ground-label">{t('account.glass')}</span>
       <input type="range" min="0" max="1" step="0.05" value={state.glass}
+        aria-label={t('account.glass')}
         onChange={event => { controller.setGlass(Number(event.target.value)) }} />
     </label>
-    <div className="dpui-ground-row" role="radiogroup" aria-label="壁纸">
-      {GROUND_PRESETS.map(preset => (
+    <div className="dpui-ground-row" role="radiogroup" aria-label={t('palette.wallpaper')}>
+      <span className="dpui-ground-label">{t('palette.wallpaper')}</span>
+      {presets.map(preset => (
         <button key={preset.id} type="button" role="radio"
           aria-checked={state.wallpaper === preset.id}
           className={clsx('dpui-ground-chip', state.wallpaper === preset.id && 'dpui-ground-chipActive')}
@@ -120,7 +120,7 @@ export function GroundSettings({ controller, ctx }) {
         </button>
       ))}
       <label className={clsx('dpui-ground-chip', state.wallpaper === 'custom' && 'dpui-ground-chipActive')}>
-        {state.wallpaper === 'custom' ? '自定义 ✓' : '自定义…'}
+        {state.wallpaper === 'custom' ? t('palette.wallpaperCustomSet') : t('palette.wallpaperCustom')}
         <input type="file" accept="image/*" hidden onChange={pickCustom} />
       </label>
     </div>

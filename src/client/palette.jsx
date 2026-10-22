@@ -172,6 +172,6 @@ export function PaletteSettings({ t, controller, ground, ctx }) {
         </button>
       })}
     </div>
-    <GroundSettings controller={ground} ctx={ctx} />
+    <GroundSettings controller={ground} ctx={ctx} t={t} />
   </div>
 }

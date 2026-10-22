@@ -136,7 +136,7 @@ function QuickActionSeat({ seat, t, view, onQuickSelect, onAllSettings, onBuilti
   if (seat === 'settings') {
     return <Menu open={open} side="top" align="end" portal autoFocus
       listClassName={css.list}
-      items={quickSettingsItems(view, t)}
+      items={quickSettingsItems(view, t, groundState)}
       onClose={() => { setOpen(false) }}
       onSelect={(id) => {
         if (id === 'all-settings') { setOpen(false); onAllSettings() }
@@ -274,11 +274,18 @@ function SignOutDialog({ t, running, busy, close, confirm }) {
  */
 export function AccountMenu({
   t, ctx, useStore, actions, wide, settingsShortcut, openSettings, accountStore, settingsOpen,
-  uiWorkspace, layout, palette, renderSlot,
+  uiWorkspace, layout, palette, ground, renderSlot,
 }) {
   const seats = useStore(state => state.seats)
   const account = useSnapshot(accountStore)
   const view = useQuickView(ctx, palette)
+  // The glass row follows the ground controller so the checkmark tracks any
+  // writer (this menu or the settings page).
+  const groundState = useSyncExternalStore(
+    ground ? ground.subscribe : () => () => {},
+    ground ? ground.get : () => null,
+    ground ? ground.get : () => null,
+  )
   const anchor = useRef(null)
   const trigger = useRef(null)
   const [open, setOpen] = useState(false)
@@ -294,7 +301,7 @@ export function AccountMenu({
     if (settingsOpen && !settingsWasOpen.current) void accountStore.refresh()
     settingsWasOpen.current = settingsOpen
   }, [accountStore, settingsOpen])
-  const quickSelect = id => { applyQuickSetting(ctx, id, palette) }
+  const quickSelect = id => { applyQuickSetting(ctx, id, palette, ground) }
   const openSettingsPage = () => {
     setOpen(false)
     queueMicrotask(() => { trigger.current?.focus({ preventScroll: true }) })

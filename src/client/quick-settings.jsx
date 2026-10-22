@@ -10,6 +10,14 @@ import { paletteLabel } from './palette.jsx'
 /** Pixel sizes the quick menu offers, each with its dictionary key. */
 export const SIZE_CHOICES = [[12, 'account.sizeSmall'], [14, 'account.sizeMedium'], [16, 'account.sizeLarge']]
 
+/** Frosted-glass levels the quick menu offers: opacity fraction + label key. */
+export const GLASS_CHOICES = [
+  [0, 'account.glassOff'],
+  [0.35, 'account.glassLow'],
+  [0.6, 'account.glassMedium'],
+  [0.85, 'account.glassHigh'],
+]
+
 /** The current value of each group. */
 export function quickSettingsView(ctx, palette) {
   const theme = ctx.theme.getTheme()
@@ -18,6 +26,7 @@ export function quickSettingsView(ctx, palette) {
     preference: theme.preference,
     textSize: theme.fontSizes.text,
     palette: palette?.get(),
+    glass: ground?.get().glass,
   }
 }
 
@@ -33,7 +42,7 @@ function marked(label, selected) {
  * @param t - plugin dictionary copy.
  * @returns the group rows plus the entry into the full dialog.
  */
-export function quickSettingsItems(view, t) {
+export function quickSettingsItems(view, t, ground) {
   const language = view.locale.locales.map(item => ({
     id: `locale:${item.id}`,
     label: marked(item.label, item.id === view.locale.active),
@@ -60,6 +69,13 @@ export function quickSettingsItems(view, t) {
     ...(view.palette === undefined ? [] : [{
       id: 'palette', label: t('palette.title'), icon: <IconSparkleMedium size={16} />, submenu: palettes,
     }]),
+    ...(ground === undefined ? [] : [{
+      id: 'glass', label: t('account.glass'), icon: <IconEnhanceOutlineMedium size={16} />,
+      submenu: GLASS_CHOICES.map(([value, key]) => ({
+        id: `glass:${value}`,
+        label: marked(t(key), view.glass === value),
+      })),
+    }]),
     { id: 'text-size', label: t('account.textSize'), icon: <IconEnhanceOutlineMedium size={16} />, submenu: sizes },
     {
       id: 'all-settings',
@@ -76,7 +92,7 @@ export function quickSettingsItems(view, t) {
  * @param palette - palette controller behind the Appearance cards.
  * @returns whether the row named a quick setting; unowned ids stay the caller's.
  */
-export function applyQuickSetting(ctx, id, palette) {
+export function applyQuickSetting(ctx, id, palette, ground) {
   if (id.startsWith('mode:')) {
     ctx.theme.setTheme(id.slice('mode:'.length))
     return true
@@ -92,6 +108,10 @@ export function applyQuickSetting(ctx, id, palette) {
   }
   if (id.startsWith('locale:')) {
     ctx.locale.setLocale(id.slice('locale:'.length))
+    return true
+  }
+  if (id.startsWith('glass:') && ground !== undefined) {
+    ground.setGlass(Number(id.slice('glass:'.length)))
     return true
   }
   return false

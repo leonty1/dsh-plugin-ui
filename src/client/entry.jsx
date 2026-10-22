@@ -26,8 +26,8 @@ export function apply(ctx) {
     'dsh-plugin-ui: model dictionaries')
 
   const palette = createPaletteController(ctx)
-  ctx.effect(() => palette.install(), 'dsh-plugin-ui: palette layer')
   const ground = createGroundController()
+  ctx.effect(() => palette.install(), 'dsh-plugin-ui: palette layer')
   ctx.effect(() => ground.install(), 'dsh-plugin-ui: ground layer')
   ctx.slots.inject('settings.general.item', () => ctx.slots.register({
     name: 'settings.general.item', id: 'plugin-ui.palette', order: 10.5,
@@ -66,7 +66,7 @@ export function apply(ctx) {
       name: 'settings.launcher', locale: UI_NS, store: quickActions, priority: -1,
       children: { [QUICK_ACTION_SLOT]: { kind: 'list', scope: 'root' } },
       inject: () => ({
-        ctx: scope, accountStore, palette,
+        ctx: scope, accountStore, palette, ground,
         uiWorkspace: scope.get('uiWorkspace'), layout: scope.get('layout'),
       }),
     }, AccountMenu))
