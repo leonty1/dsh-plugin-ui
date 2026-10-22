@@ -23,11 +23,16 @@ function stored() {
   }
 }
 
-/** @returns the CSS url() value for the active wallpaper, or none. */
+/**
+ * @returns the CSS background-image value for the active wallpaper, or none.
+ * Photo presets carry a data URL; gradient presets carry the image value
+ * itself, so `url()` only wraps the former.
+ */
 function wallpaperUrl(state) {
   if (state.wallpaper === 'custom' && state.custom !== '') return `url(${state.custom})`
   const preset = WALLPAPERS.find(w => w.id === state.wallpaper)
-  return preset === undefined ? 'none' : `url(${preset.dataUrl})`
+  if (preset === undefined) return 'none'
+  return preset.css === undefined ? `url(${preset.dataUrl})` : preset.css
 }
 
 /** Publish the ground as body-scoped variables; skin.css consumes them. */
@@ -101,12 +106,17 @@ export function GroundSettings({ controller, ctx, t }) {
     reader.readAsDataURL(file)
     event.target.value = ''
   }
-  const presets = [{ id: 'none', label: t('palette.wallpaperNone') },
-    ...WALLPAPERS.map(w => ({ id: w.id, label: w.label }))]
-  // Two rows in the General section's own two-column rhythm: label/description
-  // on the left (the palette section's .head classes), control on the right,
-  // hairline separators between. No custom classes — reusing the palette
-  // section's module keeps the type scale, colour, and spacing identical.
+  const presets = [{ id: 'none', label: t('palette.wallpaperNone'), image: undefined },
+    ...WALLPAPERS.map(w => ({
+      id: w.id,
+      label: w.label,
+      image: w.css === undefined ? `url(${w.dataUrl})` : w.css,
+    }))]
+  // Two blocks: the glass slider keeps the section's two-column rhythm, while
+  // the wallpaper grid sits under its own head the way the palette grid above
+  // it does — sixteen swatches read as pictures, and a right-hand column could
+  // not hold them at the palette cards' own scale.
+  const custom = state.wallpaper === 'custom' && state.custom !== ''
   return <div className={css.section}>
     <div className={css.row}>
       <div className={css.head}>
@@ -117,22 +127,28 @@ export function GroundSettings({ controller, ctx, t }) {
         aria-label={t('account.glass')}
         onChange={event => { controller.setGlass(Number(event.target.value)) }} />
     </div>
-    <div className={css.row}>
+    <div className={css.groundBlock}>
       <div className={css.head}>
         <div className={css.title}>{t('palette.wallpaper')}</div>
         <div className={css.desc}>{t('palette.wallpaperHint')}</div>
       </div>
-      <div className={css.chipRow} role="radiogroup" aria-label={t('palette.wallpaper')}>
-        {presets.map(preset => (
-          <button key={preset.id} type="button" role="radio"
-            aria-checked={state.wallpaper === preset.id}
-            className={clsx(css.chip, state.wallpaper === preset.id && css.chipActive)}
+      <div className={css.groundGrid} role="radiogroup" aria-label={t('palette.wallpaper')}>
+        {presets.map(preset => {
+          const active = state.wallpaper === preset.id
+          return <button key={preset.id} type="button" role="radio" aria-checked={active}
+            className={clsx(css.card, active && css.cardActive)}
             onClick={() => { controller.setWallpaper(preset.id) }}>
-            {preset.label}
+            <span className={clsx(css.groundSwatch, preset.image === undefined && css.groundSwatchNone)}
+              style={preset.image === undefined ? undefined : { backgroundImage: preset.image }} />
+            <span className={css.label}>{preset.label}</span>
           </button>
-        ))}
-        <label className={clsx(css.chip, state.wallpaper === 'custom' && css.chipActive)}>
-          {state.wallpaper === 'custom' ? t('palette.wallpaperCustomSet') : t('palette.wallpaperCustom')}
+        })}
+        <label className={clsx(css.card, custom && css.cardActive)}>
+          <span className={clsx(css.groundSwatch, !custom && css.groundSwatchCustom)}
+            style={custom ? { backgroundImage: `url(${state.custom})` } : undefined}>
+            {custom ? null : '+'}
+          </span>
+          <span className={css.label}>{custom ? t('palette.wallpaperCustomSet') : t('palette.wallpaperCustom')}</span>
           <input type="file" accept="image/*" hidden onChange={pickCustom} />
         </label>
       </div>

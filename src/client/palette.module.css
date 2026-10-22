@@ -162,3 +162,54 @@
   color: var(--dsw-alias-brand-text);
   font-weight: 500;
 }
+
+/* Wallpaper picker: a swatch grid under its own head, so sixteen presets read
+   as pictures rather than as a paragraph of chips. Sizes ride the palette
+   cards above it — same flex basis, same label scale, same active ring. */
+.groundBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 0.5px solid var(--dsw-alias-border-l2);
+}
+
+.groundGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.groundSwatch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 56px;
+  border: 0.5px solid var(--dsw-alias-border-l3);
+  border-radius: var(--dsw-radius-md);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.cardActive .groundSwatch,
+.card:focus-visible .groundSwatch {
+  outline: 2px solid var(--dsw-alias-brand-primary);
+  outline-offset: 1px;
+}
+
+/* No wallpaper: a quiet empty plate, not a colour the eye mistakes for a preset. */
+.groundSwatchNone {
+  background: var(--dsw-alias-bg-layer-2);
+}
+
+.groundSwatchCustom {
+  height: 56px;
+  border: 0.5px dashed var(--dsw-alias-border-l3);
+  border-radius: var(--dsw-radius-md);
+  background: transparent;
+  font-size: 16px;
+  line-height: 1;
+  text-align: center;
+  color: var(--dsw-alias-label-tertiary);
+}

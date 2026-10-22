@@ -1,8 +1,9 @@
 /** Produce dist artifacts from source and the Qoder design baseline; dist is committed. */
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { build } from 'esbuild'
+import { WALLPAPER_PRESETS } from './wallpapers.mjs'
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)))
 const source = JSON.parse(readFileSync(join(root, 'design', 'dsh-theme-definitions.json'), 'utf8'))
@@ -75,15 +76,16 @@ const STRUCTURE = {
 /** @font-face rules with inlined subsets: plugin files are not served over the web route. */
 const fontFace = ['400', '500', '600'].map(weight => `@font-face{font-family:Inter;font-style:normal;font-weight:${weight};font-display:swap;src:url(data:font/woff2;base64,${readFileSync(join(root, 'assets', 'fonts', `inter-latin-${weight}.woff2`)).toString('base64')})}`).join('')
 
-/** Wallpapers for the sidebar/workspace ground, inlined as data URLs (plugin files are not served). */
+/** Wallpapers for the sidebar/workspace ground: photos inlined as data URLs
+ * (plugin files are not served), gradients carried as plain CSS. */
 const WALLPAPER_DIR = join(root, 'assets', 'wallpapers')
-const wallpapers = existsSync(WALLPAPER_DIR)
-  ? readdirSync(WALLPAPER_DIR).filter(file => file.endsWith('.jpg')).sort().map(file => ({
-    id: file.replace(/\.jpg$/, ''),
-    label: file.replace(/\.jpg$/, '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-    dataUrl: `data:image/jpeg;base64,${readFileSync(join(WALLPAPER_DIR, file)).toString('base64')}`,
-  }))
-  : []
+const wallpapers = WALLPAPER_PRESETS.map(preset => preset.file === undefined
+  ? { id: preset.id, label: preset.label, css: preset.css }
+  : {
+      id: preset.id,
+      label: preset.label,
+      dataUrl: `data:image/jpeg;base64,${readFileSync(join(WALLPAPER_DIR, preset.file)).toString('base64')}`,
+    })
 
 const layers = PALETTES.map(([pair, lightId, darkId]) => {
   const light = source[`qoder-${lightId}`]
