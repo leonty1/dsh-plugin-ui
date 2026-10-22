@@ -397,81 +397,71 @@
   }
 }
 
-/* Water-drop suction after a pick.
-   The card is pulled into the composer's model-name window and turns into a
-   drop on the way: the top edge tapers into a neck while the foot keeps its
-   width, so the silhouette goes card -> trapezoid -> drop -> thread. This is
-   why the effect uses clip-path polygons instead of inset(): inset can only
-   shrink a rectangle, and a rectangle never reads as liquid.
+/* Genie collapse (Dock-minimise style).
+   During the fold the real cards hide; GENIE_SLICES absolutely-positioned
+   copies of each card's box take over. Every slice clips itself to one
+   horizontal band of the card (--dpui-band-top/bottom) and runs the same
+   pull animation with a phase delay proportional to its index: the BOTTOM
+   band (nearest the composer) starts first, and the top bands follow, so
+   the card appears to be poured into the button below it.
 
-   Every keyframe is the SAME five-vertex closed contour (top-left,
-   top-right, bottom-right, bottom-left, back to top-left). Equal vertex
-   counts are what let the browser interpolate the silhouette vertex by
-   vertex; a mismatch makes it snap instead of morph.
+   Each slice's keyframes do three things at once:
+   - travel: translate toward the trigger by the measured vector,
+   - squash: scale toward the trigger's width/height,
+   - roll up: its own band thins (clip inset closes) as its delay expires.
 
-   Timing (520ms, ease-in so the pull gathers speed):
-     0%    the card as it is
-     14%   anticipation: a 4px lift and a 1.012 swell
-     34%   the neck has formed, the foot is still full width
-     72%   a narrow drop, most of the distance covered
-     100%  a thread inside the window, then gone */
-.menuFold,
-.detailFold {
-  transform-origin: center bottom;
-  will-change: transform, clip-path, opacity;
-  animation: dpui-card-drop 520ms cubic-bezier(0.62, 0, 0.86, 0.28) forwards;
+   Because the geometry is measured per fold and the phases are pure delays,
+   the whole effect is a handful of compositor-friendly transform/clip
+   animations with zero layout work. */
+.menuHidden {
+  visibility: hidden !important;
 }
 
-@keyframes dpui-card-drop {
+.genieSlice {
+  position: fixed;
+  z-index: 1101;
+  border-radius: var(--dsw-radius-md);
+  background: var(--dsw-alias-bg-layer-1);
+  box-shadow: var(--dsw-elevation-soft);
+  clip-path: inset(var(--dpui-band-top) 0 var(--dpui-band-bottom) 0);
+  will-change: transform, clip-path, opacity;
+  animation: dpui-genie-pull var(--dpui-fold-ms) cubic-bezier(0.62, 0, 0.86, 0.28) forwards;
+  pointer-events: none;
+}
+
+@keyframes dpui-genie-pull {
   0% {
     opacity: 1;
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 0);
+    clip-path: inset(var(--dpui-band-top) 0 var(--dpui-band-bottom) 0);
     transform: translate(0, 0) scale(1, 1);
   }
-  /* Anticipation: the card lifts and swells a hair before the pull bites. */
-  14% {
-    opacity: 1;
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 0);
-    transform: translate(calc(var(--dpui-fold-dx, 0px) * -0.012), -4px) scale(1.012, 1.012);
+  /* The slice stretches toward the button while its band thins: the top edge
+     moves down faster than the bottom edge, so the slice pours. */
+  55% {
+    opacity: 0.85;
+    clip-path: inset(calc(var(--dpui-band-top) + (var(--dpui-band-bottom) * -0.5) + 12%), 6%, 12%, 6%);
+    transform: translate(calc(var(--dpui-fold-dx, 0px) * 0.45), calc(var(--dpui-fold-dy, 0px) * 0.45))
+      scale(calc(1 - (1 - var(--dpui-fold-sx, 1)) * 0.45), calc(1 - (1 - var(--dpui-fold-sy, 1)) * 0.45));
   }
-  /* The neck forms; the foot stays put, which is what makes it a drop. */
-  34% {
-    opacity: 1;
-    clip-path: polygon(34% 4%, 66% 4%, 96% 100%, 4% 100%, 34% 4%);
-    transform: translate(calc(var(--dpui-fold-dx, 0px) * 0.04), calc(var(--dpui-fold-dy, 0px) * 0.04))
-      scale(calc(1 - (1 - var(--dpui-fold-sx, 1)) * 0.05), calc(1 - (1 - var(--dpui-fold-sy, 1)) * 0.05));
-  }
-  /* The drop proper: a narrow neck over a gathered foot, well into the dive. */
-  72% {
-    opacity: 0.8;
-    clip-path: polygon(44% 10%, 56% 10%, 84% 96%, 16% 96%, 44% 10%);
-    transform: translate(calc(var(--dpui-fold-dx, 0px) * 0.82), calc(var(--dpui-fold-dy, 0px) * 0.82))
-      scale(calc(1 - (1 - var(--dpui-fold-sx, 1)) * 0.82), calc(1 - (1 - var(--dpui-fold-sy, 1)) * 0.82));
-  }
-  /* A thread on its way in, for the last beat of travel. */
-  88% {
-    opacity: 0.35;
-    clip-path: polygon(46% 22%, 54% 22%, 62% 94%, 38% 94%, 46% 22%);
-    transform: translate(calc(var(--dpui-fold-dx, 0px) * 0.96), calc(var(--dpui-fold-dy, 0px) * 0.96))
-      scale(calc(1 - (1 - var(--dpui-fold-sx, 1)) * 0.96), calc(1 - (1 - var(--dpui-fold-sy, 1)) * 0.96));
+  /* Down the funnel: nearly at the button, band almost closed. */
+  80% {
+    opacity: 0.45;
+    clip-path: inset(calc(var(--dpui-band-top) + var(--dpui-band-bottom) + 30%), 20%, 24%, 20%);
+    transform: translate(calc(var(--dpui-fold-dx, 0px) * 0.85), calc(var(--dpui-fold-dy, 0px) * 0.85))
+      scale(calc(1 - (1 - var(--dpui-fold-sx, 1)) * 0.85), calc(1 - (1 - var(--dpui-fold-sy, 1)) * 0.85));
   }
   to {
     opacity: 0;
-    clip-path: polygon(49% 48%, 51% 48%, 51% 52%, 49% 52%, 49% 48%);
-    /* 0.85 of the window, so it reads as having gone inside rather than on it. */
+    clip-path: inset(50% 50% 50% 50%);
     transform: translate(var(--dpui-fold-dx, 0px), var(--dpui-fold-dy, 0px))
-      scale(calc(var(--dpui-fold-sx, 0.2) * 0.85), calc(var(--dpui-fold-sy, 0.2) * 0.85));
+      scale(var(--dpui-fold-sx, 0.2), var(--dpui-fold-sy, 0.2));
   }
 }
 
-/* The window answers the pull: one short dip as the drop lands in it. */
-.triggerPulse {
-  animation: dpui-trigger-pulse 300ms ease-out 1;
-}
-
-@keyframes dpui-trigger-pulse {
-  0%, 100% { transform: scale(1); }
-  35% { transform: scale(0.93); }
+@media (prefers-reduced-motion: reduce) {
+  .genieSlice {
+    animation: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

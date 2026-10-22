@@ -116,6 +116,9 @@ function samePoint(current: CSSProperties | null, left: number, top: number): bo
 /** Unplaced portal card: hidden but laid out at a fixed origin so offsetWidth/offsetHeight are real (Menu primitive's measure pass). */
 const MEASURE_STYLE: CSSProperties = { visibility: 'hidden', left: 0, top: 0 }
 
+/** Slices in the genie collapse; more slices = smoother wave, more nodes. */
+const GENIE_SLICES = 8
+
 /** One card's measured roll-up geometry, as produced by the fold measurement. */
 interface FoldGeometry {
   dx: number
@@ -144,6 +147,28 @@ function foldStyle(base: CSSProperties | null, fold: FoldGeometry): CSSPropertie
     '--dpui-fold-sy': fold.sy,
     '--dpui-fold-w': `${fold.w}px`,
     '--dpui-fold-h': `${fold.h}px`,
+    '--dpui-fold-ms': `${FOLD_MS}ms`,
+  } as CSSProperties
+}
+
+/**
+ * Style for one genie slice. The index sets both the horizontal band the
+ * slice shows (a clip-path inset) and its phase delay, so the bottom of the
+ * card is swallowed first and the top follows - the wave that makes the
+ * collapse read as liquid rather than as one shrinking box.
+ * @param index - slice index, 0 = top band of the card.
+ * @param base - the card's resting placement.
+ * @param fold - the geometry measured for this fold.
+ * @returns placement, band clip, and phase variables for the slice.
+ */
+function sliceStyle(index: number, base: CSSProperties | null, fold: FoldGeometry): CSSProperties {
+  const bandTop = index * (100 / GENIE_SLICES)
+  return {
+    ...foldStyle(base, fold),
+    '--dpui-band-top': `${bandTop}%`,
+    '--dpui-band-bottom': `${100 - bandTop - 100 / GENIE_SLICES}%`,
+    '--dpui-slice-phase': index / GENIE_SLICES,
+    animationDelay: `${Math.round((index / GENIE_SLICES) * FOLD_MS * 0.55)}ms`,
   } as CSSProperties
 }
 
@@ -384,11 +409,25 @@ export function ModelSelect(
   // one, and scrolling would slide a different row into the next click.
   const pointerPicked = useRef(false)
 
+  // Opening restores the list's own scroll position: the user remembers where
+  // the rows were, so reopening at the middle keeps the middle in view rather
+  // than snapping to the selected row. Only keyboard entry needs the selected
+  // row visible, and that arrives through the focus path, not here.
+  const savedScroll = useRef(0)
   useLayoutEffect(() => {
-    if (open && activeModelIndex >= 0 && !pointerPicked.current) {
+    if (!open) savedScroll.current = groupsRef.current?.scrollTop ?? savedScroll.current
+  }, [open])
+  useLayoutEffect(() => {
+    if (open && savedScroll.current > 0) {
+      groupsRef.current?.scrollTo({ top: savedScroll.current })
+      savedScroll.current = 0
+    }
+  }, [open, filteredGroups])
+  useLayoutEffect(() => {
+    if (open && activeModelIndex >= 0 && !pointerPicked.current && highlightedIndex !== null) {
       itemRefs.current[activeModelIndex]?.scrollIntoView({ block: 'nearest' })
     }
-  }, [open, activeModelIndex, visibleModels])
+  }, [open, activeModelIndex, visibleModels, highlightedIndex])
 
   // Portaled placement (the Menu primitive's portal rules: fixed from the
   // anchor rect, measured before paint, clamped inside the viewport): above
@@ -704,7 +743,7 @@ export function ModelSelect(
         <MenuSurface
           ref={menuRef}
           id={`${id}-menu`}
-          className={clsx(css.menu, fold === 'fold' && css.menuFold)}
+          className={clsx(css.menu, fold === 'fold' && css.menuHidden)}
           style={fold === 'fold' && foldGeometry !== null ? foldStyle(menuPos, foldGeometry) : menuPos ?? MEASURE_STYLE}
           role="group"
           aria-label={t('menu.aria')}
@@ -818,12 +857,23 @@ export function ModelSelect(
         </MenuSurface>,
         document.body,
       )}
+      {/* The genie layer: GENIE_SLICES copies of the card's box, each clipped
+          to one horizontal band and phased so the bottom is swallowed first.
+          Rendered only during the fold; the real menu is hidden underneath. */}
+      {fold === 'fold' && foldGeometry !== null && createPortal(
+        <>
+          {Array.from({ length: GENIE_SLICES }, (_, index) => (
+            <div key={index} className={css.genieSlice} style={sliceStyle(index, menuPos, foldGeometry)} />
+          ))}
+        </>,
+        document.body,
+      )}
       {/* The effort card states the levels the previewed model actually
             advertises; content and anchor both follow the hovered row. */}
       {open && shownChoice !== undefined && createPortal(
         <MenuSurface
           ref={detailRef}
-          className={clsx(css.detail, fold === 'fold' && css.detailFold)}
+          className={clsx(css.detail, fold === 'fold' && css.menuHidden)}
           style={fold === 'fold' && foldGeometry !== null ? foldStyle(detailPos, foldGeometry) : detailPos ?? MEASURE_STYLE}
           role="group"
           aria-label={t('menu.effort')}
