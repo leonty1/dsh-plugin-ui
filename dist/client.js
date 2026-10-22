@@ -796,6 +796,32 @@ html[data-platform='darwin'] body[data-dsh-palette][data-ds-dark-theme] [class*=
 /* The official New Session button keeps its geometry; only its type scales,
    including the \u2318N keycaps that inherit the button's font size. */
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] { font-size: var(--dpui-sidebar-font-size) !important; }
+/* Under a skin the sidebar is a tinted rail, and the official transparent
+   button disappears into it. The button becomes the rail's own floating
+   card \u2014 bg-layer-1 fill, soft shadow, rounded like the document card \u2014
+   with the plus icon and hover ring carrying the palette accent. Fill and
+   ink stay on label tokens, so contrast holds in all four palettes and both
+   schemes without per-palette fills (accent-solid fills fail 3:1 with white
+   ink on forest/mint/parchment light). Original colors keep the official
+   transparent button. */
+html[data-dsh-palette] body [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] {
+  background: var(--dsw-alias-bg-layer-1) !important;
+  box-shadow: var(--dsw-elevation-soft) !important;
+  color: var(--dsw-alias-label-primary) !important;
+}
+html[data-dsh-palette] body [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] svg {
+  color: var(--dsw-alias-brand-text) !important;
+}
+html[data-dsh-palette] body [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"]:hover {
+  background: var(--dsw-alias-bg-layer-2) !important;
+  box-shadow: 0 0 0 1px var(--dsw-alias-brand-text) inset !important;
+}
+html[data-dsh-palette] body [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"]:active {
+  background: var(--dsw-alias-bg-layer-2) !important;
+}
+html[data-dsh-palette] body [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] span[class*="newSessionShortcut"] {
+  color: var(--dsw-alias-label-tertiary) !important;
+}
 [class*="_centerCol"] header[class*="_header"] { padding-left: 24px !important; padding-right: 24px !important; border-bottom: none !important; }
 [class*="_composerStack"] [class*="_card"] { background: var(--dsw-alias-bg-layer-1) !important; border-radius: 16px !important; }
 

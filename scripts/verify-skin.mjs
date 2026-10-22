@@ -62,18 +62,32 @@ for (const rule of guarded) {
   if (hex.length > 0) fail(`hardcoded color in a guarded rule: ${hex.join(', ')}`)
 }
 
-// c) The mac-reachable dist rules must match HEAD exactly.
-const macReachable = list => list.filter(rule => !rule.includes(GUARD)).sort()
+// c) The mac-reachable dist rules must match HEAD exactly — except rules
+//    under the palette guard (html[data-dsh-palette]): those are the skin's
+//    shared chrome and may evolve, but they must still carry that guard, so
+//    "Original colors" keeps the official rendering.
+const WIN_GUARD = GUARD
+const PALETTE_GUARD = 'html[data-dsh-palette]'
+const macReachable = list => list.filter(rule => !rule.includes(WIN_GUARD)).sort()
 const current = macReachable(distRules)
+for (const rule of current) {
+  if (rule.includes('--dpui-rail') && !rule.includes(PALETTE_GUARD) && !rule.includes(WIN_GUARD)) {
+    fail(`unguarded skin rule: ${rule.slice(0, 80)}`)
+  }
+}
 if (process.env.SKIP_BASELINE !== '1') {
   const head = execSync('git show HEAD:dist/client.js').toString()
   const baseline = macReachable(rules(skinLiteral(head)))
-  const added = current.filter(rule => !baseline.includes(rule))
-  const removed = baseline.filter(rule => !current.includes(rule))
+  const themed = rule => rule.includes(PALETTE_GUARD)
+  const core = list => list.filter(rule => !themed(rule))
+  const added = core(current).filter(rule => !core(baseline).includes(rule))
+  const removed = core(baseline).filter(rule => !core(current).includes(rule))
   for (const rule of added) fail(`mac-reachable rule added: ${rule.slice(0, 80)}`)
   for (const rule of removed) fail(`mac-reachable rule removed: ${rule.slice(0, 80)}`)
-  if (added.length === 0 && removed.length === 0 && current.length !== baseline.length) {
-    fail(`mac-reachable rule count changed: ${baseline.length} -> ${current.length}`)
+  const countCurrent = core(current).length
+  const countBaseline = core(baseline).length
+  if (added.length === 0 && removed.length === 0 && countCurrent !== countBaseline) {
+    fail(`core rule count changed: ${countBaseline} -> ${countCurrent}`)
   }
 }
 
