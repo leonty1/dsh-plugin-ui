@@ -397,68 +397,74 @@
   }
 }
 
-/* Suction collapse after a pick.
-   The card is pulled into the composer's model-name window — the trigger
-   button itself. foldInto() supplies the exact centre-to-centre vector and
-   the width/height ratio into that button, so the card finishes as a scale
-   copy of the window it is landing in rather than drifting near it.
+/* Water-drop suction after a pick.
+   The card is pulled into the composer's model-name window and turns into a
+   drop on the way: the top edge tapers into a neck while the foot keeps its
+   width, so the silhouette goes card -> trapezoid -> drop -> thread. This is
+   why the effect uses clip-path polygons instead of inset(): inset can only
+   shrink a rectangle, and a rectangle never reads as liquid.
 
-   The motion is deliberately unhurried (520ms): the suction has to be read,
-   not glimpsed. Four beats:
+   Every keyframe is the SAME five-vertex closed contour (top-left,
+   top-right, bottom-right, bottom-left, back to top-left). Equal vertex
+   counts are what let the browser interpolate the silhouette vertex by
+   vertex; a mismatch makes it snap instead of morph.
 
-     0%    resting, full size
-     14%   anticipation — a 4px lift and a 1.01 swell while the edges give
-     34%   still gathering, almost no travel (the pull is winding up)
-     72%   the dive, most of the distance in this stretch
-     100%  swallowed by the trigger, clipped to nothing
-
-   transform-origin sits at the bottom edge facing the composer, so the
-   surface collapses toward the window it disappears into. */
+   Timing (520ms, ease-in so the pull gathers speed):
+     0%    the card as it is
+     14%   anticipation: a 4px lift and a 1.012 swell
+     34%   the neck has formed, the foot is still full width
+     72%   a narrow drop, most of the distance covered
+     100%  a thread inside the window, then gone */
 .menuFold,
 .detailFold {
   transform-origin: center bottom;
   will-change: transform, clip-path, opacity;
-  animation: dpui-card-suck 520ms cubic-bezier(0.62, 0, 0.86, 0.28) forwards;
+  animation: dpui-card-drop 520ms cubic-bezier(0.62, 0, 0.86, 0.28) forwards;
 }
 
-@keyframes dpui-card-suck {
+@keyframes dpui-card-drop {
   0% {
     opacity: 1;
-    clip-path: inset(0 0 0 0 round 0);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 0);
     transform: translate(0, 0) scale(1, 1);
   }
-  /* Anticipation: the card lifts a hair and swells as the pull takes hold. */
+  /* Anticipation: the card lifts and swells a hair before the pull bites. */
   14% {
     opacity: 1;
-    clip-path: inset(0 0 1% 0 round 0);
-    transform: translate(calc(var(--dpui-fold-dx, 0px) * -0.012), calc(-4px))
-      scale(1.012, 1.012);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 0);
+    transform: translate(calc(var(--dpui-fold-dx, 0px) * -0.012), -4px) scale(1.012, 1.012);
   }
-  /* Winding up: edges give a little, the card has barely started to move. */
+  /* The neck forms; the foot stays put, which is what makes it a drop. */
   34% {
     opacity: 1;
-    clip-path: inset(3% 3% 3% 3% round 3px);
-    transform: translate(calc(var(--dpui-fold-dx, 0px) * 0.03), calc(var(--dpui-fold-dy, 0px) * 0.03))
+    clip-path: polygon(34% 4%, 66% 4%, 96% 100%, 4% 100%, 34% 4%);
+    transform: translate(calc(var(--dpui-fold-dx, 0px) * 0.04), calc(var(--dpui-fold-dy, 0px) * 0.04))
       scale(calc(1 - (1 - var(--dpui-fold-sx, 1)) * 0.05), calc(1 - (1 - var(--dpui-fold-sy, 1)) * 0.05));
   }
-  /* The dive: four fifths of the way into the window, surface half eaten. */
+  /* The drop proper: a narrow neck over a gathered foot, well into the dive. */
   72% {
     opacity: 0.8;
-    clip-path: inset(18% 24% 18% 24% round 8px);
+    clip-path: polygon(44% 10%, 56% 10%, 84% 96%, 16% 96%, 44% 10%);
     transform: translate(calc(var(--dpui-fold-dx, 0px) * 0.82), calc(var(--dpui-fold-dy, 0px) * 0.82))
       scale(calc(1 - (1 - var(--dpui-fold-sx, 1)) * 0.82), calc(1 - (1 - var(--dpui-fold-sy, 1)) * 0.82));
   }
+  /* A thread on its way in, for the last beat of travel. */
+  88% {
+    opacity: 0.35;
+    clip-path: polygon(46% 22%, 54% 22%, 62% 94%, 38% 94%, 46% 22%);
+    transform: translate(calc(var(--dpui-fold-dx, 0px) * 0.96), calc(var(--dpui-fold-dy, 0px) * 0.96))
+      scale(calc(1 - (1 - var(--dpui-fold-sx, 1)) * 0.96), calc(1 - (1 - var(--dpui-fold-sy, 1)) * 0.96));
+  }
   to {
     opacity: 0;
-    clip-path: inset(50% 50% 50% 50% round 10px);
-    /* Lands at the trigger's own size, then a touch smaller, so it reads as
-       having gone inside the window rather than resting on it. */
+    clip-path: polygon(49% 48%, 51% 48%, 51% 52%, 49% 52%, 49% 48%);
+    /* 0.85 of the window, so it reads as having gone inside rather than on it. */
     transform: translate(var(--dpui-fold-dx, 0px), var(--dpui-fold-dy, 0px))
       scale(calc(var(--dpui-fold-sx, 0.2) * 0.85), calc(var(--dpui-fold-sy, 0.2) * 0.85));
   }
 }
 
-/* The window answers the pull: one short dip as the card lands in it. */
+/* The window answers the pull: one short dip as the drop lands in it. */
 .triggerPulse {
   animation: dpui-trigger-pulse 300ms ease-out 1;
 }
