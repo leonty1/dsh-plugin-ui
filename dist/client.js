@@ -1664,7 +1664,7 @@ function LogoutIcon() {
     }
   ) });
 }
-function QuickActionSeat({ seat, t, view, onQuickSelect, onAllSettings, onBuiltin, renderSlot }) {
+function QuickActionSeat({ seat, t, view, groundState, onQuickSelect, onAllSettings, onBuiltin, renderSlot }) {
   const [open, setOpen] = (0, import_react5.useState)(false);
   if (seat === null || seat === void 0) {
     return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("span", { className: account_default.seatSpacer, "aria-hidden": "true" });
@@ -1871,7 +1871,7 @@ function AccountMenu({
   const seats = useStore((state) => state.seats);
   const account = useSnapshot(accountStore);
   const view = useQuickView(ctx, palette);
-  const groundState2 = (0, import_react5.useSyncExternalStore)(
+  const groundState = (0, import_react5.useSyncExternalStore)(
     ground2 ? ground2.subscribe : () => () => {
     },
     ground2 ? ground2.get : () => null,
@@ -2007,6 +2007,7 @@ function AccountMenu({
               seats,
               t,
               view,
+              groundState,
               renderSlot,
               onQuickSelect: quickSelect,
               onAllSettings: openSettingsPage,

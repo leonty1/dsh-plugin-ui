@@ -128,7 +128,7 @@ function LogoutIcon() {
  * One configurable seat: the quick-settings menu, a built-in action, an
  * external slot contribution, or an empty column.
  */
-function QuickActionSeat({ seat, t, view, onQuickSelect, onAllSettings, onBuiltin, renderSlot }) {
+function QuickActionSeat({ seat, t, view, groundState, onQuickSelect, onAllSettings, onBuiltin, renderSlot }) {
   const [open, setOpen] = useState(false)
   if (seat === null || seat === undefined) {
     return <span className={css.seatSpacer} aria-hidden="true" />
@@ -373,7 +373,7 @@ export function AccountMenu({
             : <IconEllipsisOutlineMedium size={14} />}
           {wide && <span className={css.label}>{label}</span>}
         </button>
-        {wide && <QuickActionsRow seats={seats} t={t} view={view} renderSlot={renderSlot}
+        {wide && <QuickActionsRow seats={seats} t={t} view={view} groundState={groundState} renderSlot={renderSlot}
           onQuickSelect={quickSelect} onAllSettings={openSettingsPage} onBuiltin={runBuiltin} />}
       </div>}
       items={items}
