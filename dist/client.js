@@ -728,7 +728,7 @@ var skin_default = `/* Qoder shell geometry. Selectors use the stable CSS-module
    the lights move to the shell.leading seat over the bare vibrancy, matching
    the official collapsed layout. Original colors keeps the official
    edge-to-edge sidebar. */
-html[data-platform='darwin'][data-dsh-palette] [class*="_frame"]:has(> [class*="_centerCol"]) > [class*="_sidebarCol"] {
+html[data-platform='darwin'] body[data-dsh-palette] [class*="_frame"]:has(> [class*="_centerCol"]) > [class*="_sidebarCol"] {
   margin: 5px !important;
   border-radius: var(--dsw-radius-panel) !important;
   border: none !important;
