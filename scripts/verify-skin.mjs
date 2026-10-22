@@ -62,12 +62,14 @@ for (const rule of guarded) {
   if (hex.length > 0) fail(`hardcoded color in a guarded rule: ${hex.join(', ')}`)
 }
 
-// c) The mac-reachable dist rules must match HEAD exactly — except rules
-//    under the palette guard (html[data-dsh-palette]): those are the skin's
-//    shared chrome and may evolve, but they must still carry that guard, so
-//    "Original colors" keeps the official rendering.
+// c) The mac-reachable dist rules must match HEAD exactly — except skin
+//    chrome, which may evolve: rules guarded by the Windows block, by the
+//    palette attribute (html[data-dsh-palette]), or by the darwin+palette
+//    combination (html[data-platform='darwin'] ... data-dsh-palette). Those
+//    all disappear when "Original colors" is chosen, so the official
+//    rendering stays frozen; everything else is byte-compared to HEAD.
 const WIN_GUARD = GUARD
-const PALETTE_GUARD = 'html[data-dsh-palette]'
+const PALETTE_GUARD = 'data-dsh-palette'
 const macReachable = list => list.filter(rule => !rule.includes(WIN_GUARD)).sort()
 const current = macReachable(distRules)
 for (const rule of current) {

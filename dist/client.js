@@ -719,6 +719,21 @@ var import_react2 = require("react");
 var skin_default = `/* Qoder shell geometry. Selectors use the stable CSS-module local-name suffix:
    the hashed prefix changes per build, the suffix is the source class name. */
 [class*="_frame"] > [class*="_centerCol"] { margin: 5px !important; border: none !important; border-radius: 16px !important; overflow: hidden; background: var(--dsw-alias-bg-base) !important; }
+/* macOS, skin on: the sidebar becomes a floating card like the centre \u2014 5px
+   gutter, 16px radius on all four corners \u2014 over the transparent frame, with
+   vibrancy showing through the gutter and under the card's translucent tint.
+   The traffic lights (x16..68, y18) sit inside the card's top-left; the
+   16px corner arc at (21,21) keeps the first light (center 22,24) off the
+   curve, so nothing clips. Collapsed, the column width is 0 on darwin and
+   the lights move to the shell.leading seat over the bare vibrancy, matching
+   the official collapsed layout. Original colors keeps the official
+   edge-to-edge sidebar. */
+html[data-platform='darwin'][data-dsh-palette] [class*="_frame"]:has(> [class*="_centerCol"]) > [class*="_sidebarCol"] {
+  margin: 5px !important;
+  border-radius: var(--dsw-radius-panel) !important;
+  border: none !important;
+  overflow: hidden !important;
+}
 /* The local name _frame is not unique: the window grid and the chat view's own
    root share it, so the window frame is pinned by the column it lays out. */
 html:not([data-platform='darwin']) [class*="_frame"]:has(> [class*="_centerCol"]) { background: var(--dsw-specific-sidebar-fill) !important; }
