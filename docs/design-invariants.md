@@ -139,7 +139,9 @@ pnpm check          # 构建 + 语法 + 皮肤契约 + 类型检查
 | 底板 / 会话根 | 完全透出（滑条控制） | `_frame`、`_centerCol`、`_root` |
 | 侧栏 | 同配方，**重一档**（`--dpui-sidebar-elevation` 0.12，blur 30px） | `_sidebarCol` |
 | 承载文字的表面 | 卡片海拔：底板 + 0.28，夹在 [0.78, 0.96] | `[data-composer-card]`、`_bubble`、`_fileCard`、`_markdown` 内联代码、`_newSession` |
-| 代码块 / 菜单 / 弹窗 / toast / 输入框下渐变条 | 保持原样 | 不加规则 |
+| 模糊的轻重排序 | `_newSession` 最重（`滑条 × 34px + 12px` 地板，用户要求「更不清晰」）＞ `.md-code-block`（30px + 10px）＞ `_bubble`/`_fileCard`（30px + 8px）＞ 两列（30px / 22px × 滑条，无地板）；alpha 全部仍在卡片/侧栏曲线上，对比度审计不受影响 | 各表面的 `backdrop-filter` |
+| 强调孤岛（代码段、特殊字段体、上下文行、命令卡） | 同一卡片海拔，经 `_centerCol` 上的 `--dsw-alias-markdown-code-block`（及 banner token）重定义结霜；基色在 `_frame` 上快照，避免同元素自引用环 | 「很白的实块」按用户要求全部进毛玻璃（v0.1.36） |
+| 菜单 / 弹窗 / toast / 输入框下渐变条 | 保持原样 | 不加规则（浮层透底 = 读不清） |
 
 卡片曲线 `--dpui-frost-alpha = min(0.96, max(0.78, (1-滑条) + 0.28))`：
 卡片永远比身后的底板「高一层」，但高得有限——最高不到纯不透明（留 4% 透出，
@@ -151,10 +153,14 @@ pnpm check          # 构建 + 语法 + 皮肤契约 + 类型检查
 1. **地板由实测得出**，不是审美取值。当前 0.78 来自 `contrast-check.mjs`
    的最差用例（需要 0.755 才够 4.8:1）。觉得「再透一点更好看」时，先跑审计；
    审计的曲线是从 skin.css 读回来的，改了变量它自动跟着验。
-2. **代码块不能透**：shiki 把 `--shiki-background` 内联进样式，每一处语法色
-   都是按那个底色挑的，透出底板等于让代码掉对比度。内联代码片（`code`）可以透，
-   但选择器必须排除块级代码——`code:not([data-code-block-content] code)`，
-   否则 `!important` 会压过 shiki 的内联样式，语法配色全错。
+2. **代码块的结霜是产品决策，不是默认**：历史上「代码块不能透」是因为
+   shiki 按不透明底色挑语法配色。v0.1.36 起用户明确要求代码段与特殊字段体
+   一起结霜，透的幅度被卡片地板 0.78 夹住，`contrast-check` 对
+   `codeBlock`/`codeBanner` 以 label-primary 验到 AA（最差 4.64:1）——但
+   **shiki 语法色本身不在审计内**（如浅色注释色本来就低于 AA），透底只会
+   再降一点。若日后觉得代码掉对比度，先收紧代码的 alpha 曲线，而不是整个
+   撤掉结霜。内联代码片的规则仍排除块级代码（`code:not([data-code-block-content] code)`），
+   否则会和 token 结霜叠加双重混合。
 3. **浮层不能透**：菜单、弹窗、toast 一旦让底板透过来，就等于读不清。
 
 「无壁纸」只作用于**底板这一层**：没有画面可铺，`--dpui-ground-image`

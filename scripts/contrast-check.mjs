@@ -46,6 +46,8 @@ const SURFACES = [
   { name: 'bubble', token: '--dsw-specific-bubble', column: 'center' },
   { name: 'fileCard', token: '--dsw-specific-input-major', column: 'center' },
   { name: 'codeChip', token: '--dsw-alias-markdown-inline-code', column: 'center' },
+  { name: 'codeBlock', token: '--dsw-alias-markdown-code-block', column: 'center' },
+  { name: 'codeBanner', token: '--dsw-alias-markdown-code-block-banner', column: 'center' },
   { name: 'newSession', token: '--dsw-alias-bg-layer-1', column: 'sidebar' },
 ]
 const OPACITIES = [0, 0.25, 0.5, 0.75, 1]

@@ -1120,7 +1120,7 @@ html[data-platform='darwin'] body[data-dsh-palette][data-ds-dark-theme] [class*=
    icon picks up the app's own blue. */
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] {
   background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) 72%, transparent) !important;
-  backdrop-filter: blur(14px) saturate(1.3);
+  backdrop-filter: blur(24px) saturate(1.35);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dsw-alias-label-primary) 8%, transparent) !important;
   color: var(--dsw-alias-label-primary) !important;
 }
@@ -1138,12 +1138,20 @@ html[data-platform='darwin'] body[data-dsh-palette][data-ds-dark-theme] [class*=
   color: var(--dsw-alias-label-tertiary) !important;
 }
 /* On the glass ground the button climbs to the card elevation: slightly more
-   solid than the sidebar behind it, blurred with the same recipe, so it reads
-   as a control resting on the panel rather than a sticker on the wallpaper.
-   Hover stays at least as solid as rest at every slider position. */
+   solid than the sidebar behind it, so it reads as a control resting on the
+   panel rather than a sticker on the wallpaper. Hover stays at least as
+   solid as rest at every slider position.
+   Blur rides a heavier curve than any other surface \u2014 the sidebar's own 30px
+   recipe scaled up plus a floor \u2014 because the button floats on the rail as a
+   small chip: what shows through it must stay milky at every slider notch,
+   never a legible miniature of the wallpaper (the user asked for a less
+   clear frost). The floor keeps it frosted even at the solid end, where the
+   96% fill already hides the ground; the extra blur only softens the last
+   4%. Alpha stays on the measured card curve, so contrast-check is
+   unaffected. */
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] {
   background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) calc(var(--dpui-frost-alpha, 0.78) * 100%), transparent) !important;
-  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 22px)) saturate(1.4);
+  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 34px + 12px)) saturate(1.4);
 }
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"]:hover {
   background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) calc(max(0.88, var(--dpui-frost-alpha, 0.78)) * 100%), transparent) !important;
@@ -1335,11 +1343,11 @@ html:has(body[data-dsh-glass])[data-platform='darwin'] body[data-dsh-palette] [c
    invalidates the whole declaration and the surface would drop to fully
    transparent, the one failure mode worse than an opaque one.
 
-   Deliberately not frosted: code blocks (shiki inlines its own background and
-   every syntax colour is picked against it \u2014 the chip rule below excludes
-   them for exactly that reason), and menus, dialogs and toasts (an overlay
-   that lets the ground through is an overlay you cannot read). The gradient
-   strip under the composer stays as the shell ships it. */
+   Deliberately not frosted: menus, dialogs and toasts (an overlay that lets
+   the ground through is an overlay you cannot read). Code segments and the
+   special-field bodies ARE frosted \u2014 see the emphasized-island rules below;
+   the user asked for exactly those to stop reading as opaque white blocks.
+   The gradient strip under the composer stays as the shell ships it. */
 html:has(body[data-dsh-glass]) [class*="_frame"] {
   --dpui-frost-floor: 0.78;
   --dpui-frost-elevation: 0.28;
@@ -1358,17 +1366,59 @@ html:has(body[data-dsh-glass]) [class*="_bubble"] {
   background: color-mix(in srgb,
     var(--dsw-specific-bubble) calc(var(--dpui-frost-alpha, 0.78) * 100%),
     transparent) !important;
-  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 22px)) saturate(1.4);
+  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 30px + 8px)) saturate(1.4);
 }
 html:has(body[data-dsh-glass]) [class*="_fileCard"] {
   background: color-mix(in srgb,
     var(--dsw-specific-input-major) calc(var(--dpui-frost-alpha, 0.78) * 100%),
     transparent) !important;
-  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 22px)) saturate(1.4);
+  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 30px + 8px)) saturate(1.4);
+}
+/* Emphasized islands: code segments and the special-field bodies (context
+   rows, command cards, tool rows, JSON blocks) all paint one token,
+   --dsw-alias-markdown-code-block (the code-card header has its own). Under
+   glass they were the last opaque white blocks on the wash \u2014 paint, not
+   glass \u2014 and the user asked for a heavier frost on exactly these.
+   Redefining the token on the workspace column frosts every consumer at
+   once through the ordinary cascade: each surface resolves the token at
+   itself and picks up the column's frosted value, while menus and dialogs
+   portaled outside the column keep the body's opaque one.
+   The mix's base colour is snapshotted one level up, on the frame: a var()
+   inside a custom property resolves where the declaration sits, so reading
+   the original token on the same element that redefines it would be a
+   self-cycle and invalidate both. Snapshotting on the parent keeps the exact
+   palette colour; the fallback is bg-layer-2, the same colour in all four
+   plugin palettes, so even a missing snapshot only drifts one step under
+   Original colors. */
+html:has(body[data-dsh-glass]) [class*="_frame"]:has(> [class*="_centerCol"]) {
+  --dpui-code-frost-base: var(--dsw-alias-markdown-code-block);
+  --dpui-code-banner-base: var(--dsw-alias-markdown-code-block-banner);
+}
+html:has(body[data-dsh-glass]) [class*="_centerCol"] {
+  --dsw-alias-markdown-code-block: color-mix(in srgb,
+    var(--dpui-code-frost-base, var(--dsw-alias-bg-layer-2)) calc(var(--dpui-frost-alpha, 0.78) * 100%),
+    transparent);
+  --dsw-alias-markdown-code-block-banner: color-mix(in srgb,
+    var(--dpui-code-banner-base, var(--dsw-alias-bg-layer-2)) calc(var(--dpui-frost-alpha, 0.78) * 100%),
+    transparent);
+}
+/* The code card itself carries the heaviest blur in the material after the
+   New Session chip: it is the largest emphasized island, so what shows
+   through it must be milk, not pattern. md-code-block is the renderer's own
+   global class \u2014 a literal the shell ships, so it survives builds the way a
+   hashed suffix cannot. The bannerWrap strip behind the language header
+   paints bg-base directly and would otherwise stay an opaque band across
+   the card's top. */
+html:has(body[data-dsh-glass]) .md-code-block {
+  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 30px + 10px)) saturate(1.4);
+}
+html:has(body[data-dsh-glass]) .md-code-block [class*="_bannerWrap"] {
+  background-color: color-mix(in srgb, var(--dsw-alias-bg-base) calc(var(--dpui-frost-alpha, 0.78) * 100%), transparent) !important;
 }
 /* Inline code chips are the last solid islands in the message text: little
    white tiles pasted on the wash. They ride the card alpha like every other
-   text-bearing surface. Block code is excluded \u2014 shiki owns its background. */
+   text-bearing surface. Block code is excluded here because it now frosts
+   through the token above; this rule would double-mix its background. */
 html:has(body[data-dsh-glass]) [class*="_markdown"] code:not([data-code-block-content] code) {
   background-color: color-mix(in srgb,
     var(--dsw-alias-markdown-inline-code) calc(var(--dpui-frost-alpha, 0.78) * 100%),
