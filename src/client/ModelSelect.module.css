@@ -397,31 +397,56 @@
   }
 }
 
-/* Apple-style collapse after a pick. The geometry is measured per fold
-   (ModelSelect.tsx foldInto): --dpui-fold-dx/dy carry the vector from the
-   card's centre to the trigger's, --dpui-fold-sx/sy the scale that fits the
-   trigger's size, so both cards fly into the button that received the
-   choice rather than drifting a fixed distance. The curve is Apple's sheet
-   dismissal ease — fast away, long soft settle — and the 260ms budget keeps
-   it a gesture, not a blink. */
+/* Rug-roll collapse after a pick.
+   Not a slab sliding away: the surface is clipped down to a horizontal strip
+   that thins as it travels, so the card reads as being rolled up from its
+   bottom edge and pulled into the trigger — the "flying carpet" fold. Two
+   things make that read work:
+
+   1. clip-path interpolates inset(top right bottom left) while the strip
+      keeps its full width for the first third and only then narrows, so the
+      shape collapses vertically before it narrows horizontally. A uniform
+      scale would just be a shrinking box.
+   2. the measured vector (--dpui-fold-dx/dy) carries the rolled strip to the
+      trigger's centre, while the scale shrinks toward the trigger's own size.
+      Both cards converge on the same point.
+
+   Geometry is written once per fold from ModelSelect.tsx, so the animation is
+   still a single compositor-friendly transform plus a clip. */
 .menuFold,
 .detailFold {
   transform-origin: center center;
-  animation: dpui-card-fold 260ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+  will-change: transform, clip-path, opacity;
+  animation: dpui-card-roll 340ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
 }
 
-@keyframes dpui-card-fold {
-  from {
+@keyframes dpui-card-roll {
+  0% {
     opacity: 1;
+    clip-path: inset(0 0 0 0 round 0);
     transform: translate(0, 0) scale(1, 1);
   }
-  60% {
-    opacity: 0.6;
+  /* The roll starts: the bottom edge lifts and the top follows, so the card
+     becomes a band around the middle of where it used to be. */
+  35% {
+    opacity: 0.95;
+    clip-path: inset(34% 0 34% 0 round 0);
+    transform: translate(calc(var(--dpui-fold-dx, 0px) * 0.22), calc(var(--dpui-fold-dy, 0px) * 0.18))
+      scale(calc(1 - (1 - var(--dpui-fold-sx, 1)) * 0.18), calc(1 - (1 - var(--dpui-fold-sy, 1)) * 0.5));
+  }
+  /* The band narrows from both sides while it travels: what is left is a
+     hairline heading for the button. */
+  70% {
+    opacity: 0.55;
+    clip-path: inset(44% 18% 44% 18% round 2px);
+    transform: translate(calc(var(--dpui-fold-dx, 0px) * 0.7), calc(var(--dpui-fold-dy, 0px) * 0.72))
+      scale(calc(1 - (1 - var(--dpui-fold-sx, 1)) * 0.72), calc(1 - (1 - var(--dpui-fold-sy, 1)) * 0.85));
   }
   to {
     opacity: 0;
-    transform: translate(var(--dpui-fold-dx, 14px), var(--dpui-fold-dy, 10px))
-      scale(var(--dpui-fold-sx, 0.94), var(--dpui-fold-sy, 0.94));
+    clip-path: inset(50% 50% 50% 50% round 2px);
+    transform: translate(var(--dpui-fold-dx, 0px), var(--dpui-fold-dy, 0px))
+      scale(var(--dpui-fold-sx, 0.5), var(--dpui-fold-sy, 0.5));
   }
 }
 

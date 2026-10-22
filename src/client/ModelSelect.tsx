@@ -105,7 +105,7 @@ const PLACE_GAP = 8
  * reads first, then the cards withdraw toward the composer.
  */
 const PICK_MS = 260
-const FOLD_MS = 260
+const FOLD_MS = 340
 
 /** @returns whether a placement already lands on this point (sub-pixel noise aside). */
 function samePoint(current: CSSProperties | null, left: number, top: number): boolean {
@@ -115,6 +115,37 @@ function samePoint(current: CSSProperties | null, left: number, top: number): bo
 
 /** Unplaced portal card: hidden but laid out at a fixed origin so offsetWidth/offsetHeight are real (Menu primitive's measure pass). */
 const MEASURE_STYLE: CSSProperties = { visibility: 'hidden', left: 0, top: 0 }
+
+/** One card's measured roll-up geometry, as produced by the fold measurement. */
+interface FoldGeometry {
+  dx: number
+  dy: number
+  sx: number
+  sy: number
+  w: number
+  h: number
+}
+
+/**
+ * Style for a card mid-collapse. The measured vector and size ratios ride as
+ * custom properties so the keyframes can read them as numbers, and the card's
+ * own size comes along so the clip can roll the surface up from full height
+ * to a hairline — a rug rolling, not a slab shrinking.
+ * @param base - the card's resting placement.
+ * @param fold - the geometry measured for this fold.
+ * @returns the placement plus the roll-up variables.
+ */
+function foldStyle(base: CSSProperties | null, fold: FoldGeometry): CSSProperties {
+  return {
+    ...base ?? {},
+    '--dpui-fold-dx': `${fold.dx}px`,
+    '--dpui-fold-dy': `${fold.dy}px`,
+    '--dpui-fold-sx': fold.sx,
+    '--dpui-fold-sy': fold.sy,
+    '--dpui-fold-w': `${fold.w}px`,
+    '--dpui-fold-h': `${fold.h}px`,
+  } as CSSProperties
+}
 
 /**
  * Render the composer model seat.
@@ -169,14 +200,17 @@ export function ModelSelect(
   const [fold, setFold] = useState<'idle' | 'pick' | 'fold'>('idle')
   // The level whose slide-in is playing; only that button gets the pick class.
   const [pickedEffort, setPickedEffort] = useState<string | undefined>(undefined)
-  // Apple-style collapse: measured geometry, not a fixed distance. Each card
-  // animates from where it actually sits into the trigger's rect, so the
-  // transform is computed per fold from live measurements. Zero = no card.
-  const [foldGeometry, setFoldGeometry] = useState<{ dx: number; dy: number; sx: number; sy: number } | null>(null)
+  // Rug-roll collapse: the card is not translated as a slab. It is clipped
+  // down to a narrow strip that keeps narrowing while it travels into the
+  // trigger, the way a rug rolls up as it is pulled. The measured geometry
+  // gives the strip somewhere to go; the clip does the rolling.
+  const [foldGeometry, setFoldGeometry] = useState<{
+    dx: number; dy: number; sx: number; sy: number; w: number; h: number
+  } | null>(null)
   const foldTimers = useRef<ReturnType<typeof setTimeout>[]>([])
 
-  /** @returns the transform that flies one card's centre into the trigger's centre. */
-  const foldInto = (card: HTMLElement | null): { dx: number; dy: number; sx: number; sy: number } | null => {
+  /** @returns the transform that rolls one card into the trigger's rect. */
+  const foldInto = (card: HTMLElement | null): { dx: number; dy: number; sx: number; sy: number; w: number; h: number } | null => {
     const trigger = triggerRef.current
     if (card === null || trigger === null) return null
     const from = card.getBoundingClientRect()
@@ -186,6 +220,8 @@ export function ModelSelect(
       dy: (to.top + to.height / 2) - (from.top + from.height / 2),
       sx: from.width > 0 ? to.width / from.width : 0,
       sy: from.height > 0 ? to.height / from.height : 0,
+      w: from.width,
+      h: from.height,
     }
   }
   const playFold = (): void => {
@@ -660,9 +696,7 @@ export function ModelSelect(
           ref={menuRef}
           id={`${id}-menu`}
           className={clsx(css.menu, fold === 'fold' && css.menuFold)}
-          style={fold === 'fold' && foldGeometry !== null
-            ? { ...menuPos, '--dpui-fold-dx': `${foldGeometry.dx}px`, '--dpui-fold-dy': `${foldGeometry.dy}px`, '--dpui-fold-sx': foldGeometry.sx, '--dpui-fold-sy': foldGeometry.sy } as CSSProperties
-            : menuPos ?? MEASURE_STYLE}
+          style={fold === 'fold' && foldGeometry !== null ? foldStyle(menuPos, foldGeometry) : menuPos ?? MEASURE_STYLE}
           role="group"
           aria-label={t('menu.aria')}
           aria-busy={state.status === 'loading' || busy}
@@ -781,9 +815,7 @@ export function ModelSelect(
         <MenuSurface
           ref={detailRef}
           className={clsx(css.detail, fold === 'fold' && css.detailFold)}
-          style={fold === 'fold' && foldGeometry !== null
-            ? { ...detailPos, '--dpui-fold-dx': `${foldGeometry.dx}px`, '--dpui-fold-dy': `${foldGeometry.dy}px`, '--dpui-fold-sx': foldGeometry.sx, '--dpui-fold-sy': foldGeometry.sy } as CSSProperties
-            : detailPos ?? MEASURE_STYLE}
+          style={fold === 'fold' && foldGeometry !== null ? foldStyle(detailPos, foldGeometry) : detailPos ?? MEASURE_STYLE}
           role="group"
           aria-label={t('menu.effort')}
           aria-busy={busy}
