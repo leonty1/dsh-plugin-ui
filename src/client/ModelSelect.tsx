@@ -105,7 +105,7 @@ const PLACE_GAP = 8
  * reads first, then the cards withdraw toward the composer.
  */
 const PICK_MS = 260
-const FOLD_MS = 340
+const FOLD_MS = 300
 
 /** @returns whether a placement already lands on this point (sub-pixel noise aside). */
 function samePoint(current: CSSProperties | null, left: number, top: number): boolean {

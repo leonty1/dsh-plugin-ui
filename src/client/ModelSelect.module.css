@@ -397,56 +397,53 @@
   }
 }
 
-/* Rug-roll collapse after a pick.
-   Not a slab sliding away: the surface is clipped down to a horizontal strip
-   that thins as it travels, so the card reads as being rolled up from its
-   bottom edge and pulled into the trigger — the "flying carpet" fold. Two
-   things make that read work:
+/* Suction collapse after a pick.
+   The card is pulled into the trigger the way a sheet of paper is pulled
+   into a vacuum nozzle: nothing moves for a beat, then it accelerates hard
+   into the button and is gone. Two choices carry that read:
 
-   1. clip-path interpolates inset(top right bottom left) while the strip
-      keeps its full width for the first third and only then narrows, so the
-      shape collapses vertically before it narrows horizontally. A uniform
-      scale would just be a shrinking box.
-   2. the measured vector (--dpui-fold-dx/dy) carries the rolled strip to the
-      trigger's centre, while the scale shrinks toward the trigger's own size.
-      Both cards converge on the same point.
+   1. The curve is ease-IN, not ease-out. Everything else in this file uses
+      a fast-start ease; suction has to gather speed, so the motion is
+      almost still for the first third and then dives.
+   2. The visible surface narrows from the outside in (clip-path inset on
+      all four sides) while the card shrinks toward the trigger's size — the
+      edges are what gets swallowed first.
 
-   Geometry is written once per fold from ModelSelect.tsx, so the animation is
-   still a single compositor-friendly transform plus a clip. */
+   Geometry comes from ModelSelect.tsx, measured once per pick. */
 .menuFold,
 .detailFold {
   transform-origin: center center;
   will-change: transform, clip-path, opacity;
-  animation: dpui-card-roll 340ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+  animation: dpui-card-suck 300ms cubic-bezier(0.55, 0, 0.85, 0.35) forwards;
 }
 
-@keyframes dpui-card-roll {
+@keyframes dpui-card-suck {
   0% {
     opacity: 1;
     clip-path: inset(0 0 0 0 round 0);
     transform: translate(0, 0) scale(1, 1);
   }
-  /* The roll starts: the bottom edge lifts and the top follows, so the card
-     becomes a band around the middle of where it used to be. */
-  35% {
-    opacity: 0.95;
-    clip-path: inset(34% 0 34% 0 round 0);
-    transform: translate(calc(var(--dpui-fold-dx, 0px) * 0.22), calc(var(--dpui-fold-dy, 0px) * 0.18))
-      scale(calc(1 - (1 - var(--dpui-fold-sx, 1)) * 0.18), calc(1 - (1 - var(--dpui-fold-sy, 1)) * 0.5));
+  /* Still almost where it was: the suction is gathering, the edges have just
+     started to give. Barely any travel — this is the hold before the pull. */
+  22% {
+    opacity: 1;
+    clip-path: inset(2% 2% 2% 2% round 2px);
+    transform: translate(calc(var(--dpui-fold-dx, 0px) * 0.04), calc(var(--dpui-fold-dy, 0px) * 0.04))
+      scale(calc(1 - (1 - var(--dpui-fold-sx, 1)) * 0.04), calc(1 - (1 - var(--dpui-fold-sy, 1)) * 0.04));
   }
-  /* The band narrows from both sides while it travels: what is left is a
-     hairline heading for the button. */
+  /* The dive: most of the distance covered here, the surface already half
+     swallowed by the clip. */
   70% {
-    opacity: 0.55;
-    clip-path: inset(44% 18% 44% 18% round 2px);
-    transform: translate(calc(var(--dpui-fold-dx, 0px) * 0.7), calc(var(--dpui-fold-dy, 0px) * 0.72))
-      scale(calc(1 - (1 - var(--dpui-fold-sx, 1)) * 0.72), calc(1 - (1 - var(--dpui-fold-sy, 1)) * 0.85));
+    opacity: 0.7;
+    clip-path: inset(16% 22% 16% 22% round 6px);
+    transform: translate(calc(var(--dpui-fold-dx, 0px) * 0.82), calc(var(--dpui-fold-dy, 0px) * 0.82))
+      scale(calc(1 - (1 - var(--dpui-fold-sx, 1)) * 0.82), calc(1 - (1 - var(--dpui-fold-sy, 1)) * 0.82));
   }
   to {
     opacity: 0;
-    clip-path: inset(50% 50% 50% 50% round 2px);
+    clip-path: inset(50% 50% 50% 50% round 8px);
     transform: translate(var(--dpui-fold-dx, 0px), var(--dpui-fold-dy, 0px))
-      scale(var(--dpui-fold-sx, 0.5), var(--dpui-fold-sy, 0.5));
+      scale(var(--dpui-fold-sx, 0.2), var(--dpui-fold-sy, 0.2));
   }
 }
 
