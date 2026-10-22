@@ -108,19 +108,20 @@ html[data-platform='darwin'] body[data-dsh-palette][data-ds-dark-theme] [class*=
    light). Surface design, so it holds under Original colors too, where the
    icon picks up the app's own blue. */
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] {
-  background: var(--dsw-alias-bg-layer-1) !important;
-  box-shadow: var(--dsw-elevation-soft) !important;
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) 72%, transparent) !important;
+  backdrop-filter: blur(14px) saturate(1.3);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dsw-alias-label-primary) 8%, transparent) !important;
   color: var(--dsw-alias-label-primary) !important;
 }
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] svg {
   color: var(--dsw-alias-brand-text) !important;
 }
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"]:hover {
-  background: var(--dsw-alias-bg-layer-2) !important;
-  box-shadow: 0 0 0 1px var(--dsw-alias-brand-text) inset !important;
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) 88%, transparent) !important;
+  box-shadow: inset 0 0 0 1px var(--dsw-alias-brand-text) !important;
 }
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"]:active {
-  background: var(--dsw-alias-bg-layer-2) !important;
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) 94%, transparent) !important;
 }
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] span[class*="newSessionShortcut"] {
   color: var(--dsw-alias-label-tertiary) !important;
@@ -265,23 +266,4 @@ html:has(body[data-dsh-glass])[data-platform='darwin'] body[data-dsh-palette] [c
       color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) calc(var(--dpui-glass-opacity, 0.5) * 72%),
       transparent) !important;
 }
-/* Settings rows for the ground section (plain classes: rendered through the
-   scoped-css Proxy, but these stay unhashed for simplicity). */
-.dpui-ground-section { display: flex; flex-direction: column; gap: 10px; }
-.dpui-ground-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.dpui-ground-label { min-width: 56px; }
-.dpui-ground-row input[type="range"] { flex: 1; min-width: 160px; }
-.dpui-ground-chip {
-  padding: 3px 10px;
-  border: 1px solid var(--dsw-alias-border-l3);
-  border-radius: var(--dsw-radius-md);
-  background: var(--dsw-alias-bg-layer-1);
-  color: var(--dsw-alias-label-secondary);
-  font-size: 12px;
-  cursor: pointer;
-}
-.dpui-ground-chipActive {
-  border-color: var(--dsw-alias-brand-primary);
-  color: var(--dsw-alias-brand-text);
-  font-weight: 500;
-}
+

@@ -4,6 +4,7 @@
  * variables on document.body. Layout is untouched — this is surface only. */
 import { useEffect, useState } from 'react'
 import clsx from './clsx.js'
+import css from './palette.module.css'
 import { WALLPAPERS } from './generated-palettes.js'
 
 const GLASS_KEY = 'dsh-plugin-ui.glass'
@@ -102,27 +103,39 @@ export function GroundSettings({ controller, ctx, t }) {
   }
   const presets = [{ id: 'none', label: t('palette.wallpaperNone') },
     ...WALLPAPERS.map(w => ({ id: w.id, label: w.label }))]
-  return <div className="dpui-ground-section">
-    <label className="dpui-ground-row">
-      <span className="dpui-ground-label">{t('account.glass')}</span>
-      <input type="range" min="0" max="1" step="0.05" value={state.glass}
+  // Two rows in the General section's own two-column rhythm: label/description
+  // on the left (the palette section's .head classes), control on the right,
+  // hairline separators between. No custom classes — reusing the palette
+  // section's module keeps the type scale, colour, and spacing identical.
+  return <div className={css.section}>
+    <div className={css.row}>
+      <div className={css.head}>
+        <div className={css.title}>{t('account.glass')}</div>
+        <div className={css.desc}>{t('palette.glassHint')}</div>
+      </div>
+      <input className={css.slider} type="range" min="0" max="1" step="0.05" value={state.glass}
         aria-label={t('account.glass')}
         onChange={event => { controller.setGlass(Number(event.target.value)) }} />
-    </label>
-    <div className="dpui-ground-row" role="radiogroup" aria-label={t('palette.wallpaper')}>
-      <span className="dpui-ground-label">{t('palette.wallpaper')}</span>
-      {presets.map(preset => (
-        <button key={preset.id} type="button" role="radio"
-          aria-checked={state.wallpaper === preset.id}
-          className={clsx('dpui-ground-chip', state.wallpaper === preset.id && 'dpui-ground-chipActive')}
-          onClick={() => { controller.setWallpaper(preset.id) }}>
-          {preset.label}
-        </button>
-      ))}
-      <label className={clsx('dpui-ground-chip', state.wallpaper === 'custom' && 'dpui-ground-chipActive')}>
-        {state.wallpaper === 'custom' ? t('palette.wallpaperCustomSet') : t('palette.wallpaperCustom')}
-        <input type="file" accept="image/*" hidden onChange={pickCustom} />
-      </label>
+    </div>
+    <div className={css.row}>
+      <div className={css.head}>
+        <div className={css.title}>{t('palette.wallpaper')}</div>
+        <div className={css.desc}>{t('palette.wallpaperHint')}</div>
+      </div>
+      <div className={css.chipRow} role="radiogroup" aria-label={t('palette.wallpaper')}>
+        {presets.map(preset => (
+          <button key={preset.id} type="button" role="radio"
+            aria-checked={state.wallpaper === preset.id}
+            className={clsx(css.chip, state.wallpaper === preset.id && css.chipActive)}
+            onClick={() => { controller.setWallpaper(preset.id) }}>
+            {preset.label}
+          </button>
+        ))}
+        <label className={clsx(css.chip, state.wallpaper === 'custom' && css.chipActive)}>
+          {state.wallpaper === 'custom' ? t('palette.wallpaperCustomSet') : t('palette.wallpaperCustom')}
+          <input type="file" accept="image/*" hidden onChange={pickCustom} />
+        </label>
+      </div>
     </div>
   </div>
 }

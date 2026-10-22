@@ -768,6 +768,18 @@ var import_react3 = require("react");
 
 // src/client/glass.jsx
 var import_react2 = require("react");
+
+// plugin-ui-css-module:/Users/tongyi/dsh-plugin-ui/src/client/palette.module.css
+var styleId2 = "dsh-plugin-ui-palette";
+if (typeof document !== "undefined" && document.getElementById(styleId2) === null) {
+  const style = document.createElement("style");
+  style.id = styleId2;
+  style.textContent = "/* Palette preview row: same row rhythm as the other General rows, with one\n   miniature window per choice so the colors are visible before applying. */\n.dpui-palette-section {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  padding: 16px 0;\n  border-bottom: 0.5px solid var(--dsw-alias-border-l2);\n}\n\n.dpui-palette-head {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.dpui-palette-title {\n  font-size: 14px;\n  font-weight: 400;\n  line-height: 22px;\n  color: var(--dsw-alias-label-primary);\n}\n\n.dpui-palette-desc {\n  font-size: 12px;\n  font-weight: 400;\n  line-height: 18px;\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.dpui-palette-grid {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n\n.dpui-palette-card {\n  display: flex;\n  flex: 1 1 92px;\n  flex-direction: column;\n  gap: 6px;\n  max-width: 148px;\n  min-width: 92px;\n  padding: 0;\n  border: 0;\n  background: transparent;\n  text-align: left;\n  cursor: pointer;\n}\n\n.dpui-palette-preview {\n  display: flex;\n  height: 56px;\n  overflow: hidden;\n  border: 0.5px solid;\n  border-radius: var(--dsw-radius-md);\n}\n\n.dpui-palette-card:hover .dpui-palette-preview {\n  filter: brightness(0.97);\n}\n\n.dpui-palette-cardActive .dpui-palette-preview,\n.dpui-palette-card:focus-visible .dpui-palette-preview {\n  outline: 2px solid var(--dsw-alias-brand-primary);\n  outline-offset: 1px;\n}\n\n.dpui-palette-side {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  flex: none;\n  width: 32%;\n  padding: 8px 6px;\n  border-right: 0.5px solid;\n}\n\n.dpui-palette-main {\n  display: flex;\n  flex: 1;\n  flex-direction: column;\n  gap: 4px;\n  padding: 8px 6px;\n}\n\n.dpui-palette-accent {\n  width: 20px;\n  height: 6px;\n  border-radius: 3px;\n}\n\n.dpui-palette-line {\n  width: 72%;\n  height: 3px;\n  border-radius: 2px;\n  opacity: 0.8;\n}\n\n.dpui-palette-lineShort {\n  width: 44%;\n  height: 3px;\n  border-radius: 2px;\n  opacity: 0.4;\n}\n\n.dpui-palette-label {\n  overflow: hidden;\n  font-size: 12px;\n  line-height: 18px;\n  color: var(--dsw-alias-label-secondary);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.dpui-palette-cardActive .dpui-palette-label {\n  color: var(--dsw-alias-label-primary);\n}\n\n/* Ground rows (frosted glass slider, wallpaper picker): the General section's\n   two-column row, reused from the palette head classes. */\n.dpui-palette-row {\n  display: flex;\n  align-items: center;\n  gap: 16px;\n  padding: 16px 0;\n  border-bottom: 0.5px solid var(--dsw-alias-border-l2);\n}\n\n.dpui-palette-slider {\n  flex: none;\n  width: 180px;\n  height: 20px;\n  accent-color: var(--dsw-alias-brand-primary);\n  cursor: pointer;\n}\n\n.dpui-palette-chipRow {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n\n.dpui-palette-chip {\n  padding: 5px 12px;\n  border: 1px solid var(--dsw-alias-border-l3);\n  border-radius: var(--dsw-radius-md);\n  background: var(--dsw-alias-bg-layer-1);\n  color: var(--dsw-alias-label-secondary);\n  font-size: 12px;\n  line-height: 18px;\n  cursor: pointer;\n}\n\n.dpui-palette-chip:hover {\n  border-color: var(--dsw-alias-border-l4);\n  color: var(--dsw-alias-label-primary);\n}\n\n.dpui-palette-chipActive {\n  border-color: var(--dsw-alias-brand-primary);\n  color: var(--dsw-alias-brand-text);\n  font-weight: 500;\n}\n";
+  document.head.append(style);
+}
+var palette_default = new Proxy({}, { get: (_target, key) => typeof key === "string" ? "dpui-palette-" + key : void 0 });
+
+// src/client/glass.jsx
 var import_jsx_runtime3 = require("react/jsx-runtime");
 var GLASS_KEY = "dsh-plugin-ui.glass";
 var WALLPAPER_KEY = "dsh-plugin-ui.wallpaper";
@@ -860,12 +872,16 @@ function GroundSettings({ controller, ctx, t }) {
     { id: "none", label: t("palette.wallpaperNone") },
     ...WALLPAPERS.map((w) => ({ id: w.id, label: w.label }))
   ];
-  return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "dpui-ground-section", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("label", { className: "dpui-ground-row", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { className: "dpui-ground-label", children: t("account.glass") }),
+  return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: palette_default.section, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: palette_default.row, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: palette_default.head, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: palette_default.title, children: t("account.glass") }),
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: palette_default.desc, children: t("palette.glassHint") })
+      ] }),
       /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
         "input",
         {
+          className: palette_default.slider,
           type: "range",
           min: "0",
           max: "1",
@@ -878,25 +894,30 @@ function GroundSettings({ controller, ctx, t }) {
         }
       )
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "dpui-ground-row", role: "radiogroup", "aria-label": t("palette.wallpaper"), children: [
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { className: "dpui-ground-label", children: t("palette.wallpaper") }),
-      presets.map((preset) => /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
-        "button",
-        {
-          type: "button",
-          role: "radio",
-          "aria-checked": state.wallpaper === preset.id,
-          className: clsx("dpui-ground-chip", state.wallpaper === preset.id && "dpui-ground-chipActive"),
-          onClick: () => {
-            controller.setWallpaper(preset.id);
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: palette_default.row, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: palette_default.head, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: palette_default.title, children: t("palette.wallpaper") }),
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: palette_default.desc, children: t("palette.wallpaperHint") })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: palette_default.chipRow, role: "radiogroup", "aria-label": t("palette.wallpaper"), children: [
+        presets.map((preset) => /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+          "button",
+          {
+            type: "button",
+            role: "radio",
+            "aria-checked": state.wallpaper === preset.id,
+            className: clsx(palette_default.chip, state.wallpaper === preset.id && palette_default.chipActive),
+            onClick: () => {
+              controller.setWallpaper(preset.id);
+            },
+            children: preset.label
           },
-          children: preset.label
-        },
-        preset.id
-      )),
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("label", { className: clsx("dpui-ground-chip", state.wallpaper === "custom" && "dpui-ground-chipActive"), children: [
-        state.wallpaper === "custom" ? t("palette.wallpaperCustomSet") : t("palette.wallpaperCustom"),
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("input", { type: "file", accept: "image/*", hidden: true, onChange: pickCustom })
+          preset.id
+        )),
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("label", { className: clsx(palette_default.chip, state.wallpaper === "custom" && palette_default.chipActive), children: [
+          state.wallpaper === "custom" ? t("palette.wallpaperCustomSet") : t("palette.wallpaperCustom"),
+          /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("input", { type: "file", accept: "image/*", hidden: true, onChange: pickCustom })
+        ] })
       ] })
     ] })
   ] });
@@ -1013,19 +1034,20 @@ html[data-platform='darwin'] body[data-dsh-palette][data-ds-dark-theme] [class*=
    light). Surface design, so it holds under Original colors too, where the
    icon picks up the app's own blue. */
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] {
-  background: var(--dsw-alias-bg-layer-1) !important;
-  box-shadow: var(--dsw-elevation-soft) !important;
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) 72%, transparent) !important;
+  backdrop-filter: blur(14px) saturate(1.3);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dsw-alias-label-primary) 8%, transparent) !important;
   color: var(--dsw-alias-label-primary) !important;
 }
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] svg {
   color: var(--dsw-alias-brand-text) !important;
 }
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"]:hover {
-  background: var(--dsw-alias-bg-layer-2) !important;
-  box-shadow: 0 0 0 1px var(--dsw-alias-brand-text) inset !important;
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) 88%, transparent) !important;
+  box-shadow: inset 0 0 0 1px var(--dsw-alias-brand-text) !important;
 }
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"]:active {
-  background: var(--dsw-alias-bg-layer-2) !important;
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) 94%, transparent) !important;
 }
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] span[class*="newSessionShortcut"] {
   color: var(--dsw-alias-label-tertiary) !important;
@@ -1170,37 +1192,8 @@ html:has(body[data-dsh-glass])[data-platform='darwin'] body[data-dsh-palette] [c
       color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) calc(var(--dpui-glass-opacity, 0.5) * 72%),
       transparent) !important;
 }
-/* Settings rows for the ground section (plain classes: rendered through the
-   scoped-css Proxy, but these stay unhashed for simplicity). */
-.dpui-ground-section { display: flex; flex-direction: column; gap: 10px; }
-.dpui-ground-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.dpui-ground-label { min-width: 56px; }
-.dpui-ground-row input[type="range"] { flex: 1; min-width: 160px; }
-.dpui-ground-chip {
-  padding: 3px 10px;
-  border: 1px solid var(--dsw-alias-border-l3);
-  border-radius: var(--dsw-radius-md);
-  background: var(--dsw-alias-bg-layer-1);
-  color: var(--dsw-alias-label-secondary);
-  font-size: 12px;
-  cursor: pointer;
-}
-.dpui-ground-chipActive {
-  border-color: var(--dsw-alias-brand-primary);
-  color: var(--dsw-alias-brand-text);
-  font-weight: 500;
-}
-`;
 
-// plugin-ui-css-module:/Users/tongyi/dsh-plugin-ui/src/client/palette.module.css
-var styleId2 = "dsh-plugin-ui-palette";
-if (typeof document !== "undefined" && document.getElementById(styleId2) === null) {
-  const style = document.createElement("style");
-  style.id = styleId2;
-  style.textContent = "/* Palette preview row: same row rhythm as the other General rows, with one\n   miniature window per choice so the colors are visible before applying. */\n.dpui-palette-section {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  padding: 16px 0;\n  border-bottom: 0.5px solid var(--dsw-alias-border-l2);\n}\n\n.dpui-palette-head {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.dpui-palette-title {\n  font-size: 14px;\n  font-weight: 400;\n  line-height: 22px;\n  color: var(--dsw-alias-label-primary);\n}\n\n.dpui-palette-desc {\n  font-size: 12px;\n  font-weight: 400;\n  line-height: 18px;\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.dpui-palette-grid {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n\n.dpui-palette-card {\n  display: flex;\n  flex: 1 1 92px;\n  flex-direction: column;\n  gap: 6px;\n  max-width: 148px;\n  min-width: 92px;\n  padding: 0;\n  border: 0;\n  background: transparent;\n  text-align: left;\n  cursor: pointer;\n}\n\n.dpui-palette-preview {\n  display: flex;\n  height: 56px;\n  overflow: hidden;\n  border: 0.5px solid;\n  border-radius: var(--dsw-radius-md);\n}\n\n.dpui-palette-card:hover .dpui-palette-preview {\n  filter: brightness(0.97);\n}\n\n.dpui-palette-cardActive .dpui-palette-preview,\n.dpui-palette-card:focus-visible .dpui-palette-preview {\n  outline: 2px solid var(--dsw-alias-brand-primary);\n  outline-offset: 1px;\n}\n\n.dpui-palette-side {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  flex: none;\n  width: 32%;\n  padding: 8px 6px;\n  border-right: 0.5px solid;\n}\n\n.dpui-palette-main {\n  display: flex;\n  flex: 1;\n  flex-direction: column;\n  gap: 4px;\n  padding: 8px 6px;\n}\n\n.dpui-palette-accent {\n  width: 20px;\n  height: 6px;\n  border-radius: 3px;\n}\n\n.dpui-palette-line {\n  width: 72%;\n  height: 3px;\n  border-radius: 2px;\n  opacity: 0.8;\n}\n\n.dpui-palette-lineShort {\n  width: 44%;\n  height: 3px;\n  border-radius: 2px;\n  opacity: 0.4;\n}\n\n.dpui-palette-label {\n  overflow: hidden;\n  font-size: 12px;\n  line-height: 18px;\n  color: var(--dsw-alias-label-secondary);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.dpui-palette-cardActive .dpui-palette-label {\n  color: var(--dsw-alias-label-primary);\n}\n";
-  document.head.append(style);
-}
-var palette_default = new Proxy({}, { get: (_target, key) => typeof key === "string" ? "dpui-palette-" + key : void 0 });
+`;
 
 // src/client/palette.jsx
 var import_jsx_runtime4 = require("react/jsx-runtime");
@@ -2201,6 +2194,8 @@ var zh = {
   "palette.wallpaperNone": "\u65E0",
   "palette.wallpaperCustom": "\u81EA\u5B9A\u4E49\u2026",
   "palette.wallpaperCustomSet": "\u81EA\u5B9A\u4E49 \u2713",
+  "palette.glassHint": "\u4E24\u4FA7\u5361\u7247\u7684\u78E8\u7802\u5F3A\u5EA6\uFF1B0 \u4E3A\u4E0D\u900F\u660E",
+  "palette.wallpaperHint": "\u94FA\u5728\u4E24\u5F20\u5361\u7247\u4E0B\u65B9\u7684\u5E95\u677F\u753B\u9762",
   "account.quickActionsTitle": "\u8D26\u53F7\u884C\u5FEB\u6377\u64CD\u4F5C",
   "palette.title": "\u76AE\u80A4\u914D\u8272",
   "palette.hint": "\u53EA\u66FF\u6362\u989C\u8272\uFF1B\u5E03\u5C40\u4E0E\u7EC4\u4EF6\u4FDD\u6301\u63D2\u4EF6\u8BBE\u8BA1\uFF0C\u660E\u6697\u4ECD\u8DDF\u968F\u5E94\u7528\u5F53\u524D\u7684\u6D45\u8272/\u6DF1\u8272",
@@ -2265,6 +2260,8 @@ var en = {
   "palette.wallpaperNone": "None",
   "palette.wallpaperCustom": "Custom\u2026",
   "palette.wallpaperCustomSet": "Custom \u2713",
+  "palette.glassHint": "Frost strength of both cards; 0 is opaque",
+  "palette.wallpaperHint": "The ground behind both floating cards",
   "account.allSettings": "All settings\u2026",
   "account.quickActionsTitle": "Account row quick actions",
   "palette.title": "Skin palette",
