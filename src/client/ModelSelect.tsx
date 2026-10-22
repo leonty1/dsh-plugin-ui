@@ -154,6 +154,21 @@ export function ModelSelect(
       : { provider, model })
   }
   const [detailPos, setDetailPos] = useState<CSSProperties | null>(null)
+  // 'idle' renders normally; 'pick' plays the level's slide-in; 'fold' plays
+  // the card's slide-away; the card unmounts after the fold. The sequence is
+  // a click's reaction, so timers fire once per pick and clear on unmount.
+  const [fold, setFold] = useState<'idle' | 'pick' | 'fold'>('idle')
+  // The level whose slide-in is playing; only that button gets the pick class.
+  const [pickedEffort, setPickedEffort] = useState<string | undefined>(undefined)
+  const foldTimers = useRef<ReturnType<typeof setTimeout>[]>([])
+  const playFold = (): void => {
+    for (const timer of foldTimers.current) clearTimeout(timer)
+    foldTimers.current = [
+      setTimeout(() => { setFold('fold') }, 160),
+      setTimeout(() => { setFold('idle'); close() }, 300),
+    ]
+  }
+  useEffect(() => () => { for (const timer of foldTimers.current) clearTimeout(timer) }, [])
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([])
   const id = useId()
 
@@ -376,6 +391,7 @@ export function ModelSelect(
     setHighlightedIndex(null)
     pointerPicked.current = false
     setPreview(null)
+    setFold('idle')
     if (currentChoice === undefined) focusIntent.current = 'first'
     setOpen(true)
     reload()
@@ -389,6 +405,7 @@ export function ModelSelect(
   const close = (restoreFocus = false): void => {
     setOpen(false)
     setPreview(null)
+    setFold('idle')
     if (restoreFocus) queueMicrotask(() => { triggerRef.current?.focus() })
   }
 
@@ -490,11 +507,12 @@ export function ModelSelect(
     close()
   }
 
-  // Every click on the card is the card's last decision, so the card closes on
-  // the click itself rather than on the Host's answer: the gesture ends where
-  // the pointer is, and the trigger's pending spinner carries the round trip.
-  // Nothing here waits on the network, so the list can never sit open for a
-  // beat and then disappear.
+  // Every click on the card is the card's last decision. The pick plays its
+  // slide-in on the level, then both cards fold away, and only then does the
+  // selection submit — the animation covers the round trip, so nothing waits
+  // on the network and nothing can sit open for a beat and then disappear.
+  // Folding runs on timers instead of an unmount handler because the fold is
+  // a React state: closing during it would drop the cards mid-animation.
   const settleSelection = (result: Awaited<ReturnType<ModelSelectInjected['select']>>): void => {
     if (result === undefined || result.ok) return
     const { error } = result
@@ -507,15 +525,9 @@ export function ModelSelect(
     })
   }
 
-  const submit = (selection: ModelSelection): void => {
+  const submitAfterFold = (selection: ModelSelection): void => {
     lastActionRef.current = 'select'
-    // Disabled option rows cannot retain focus while a selection is pending.
     setSelectionFocus(true)
-    // Collapse before submitting: one state change unmounts both portaled
-    // cards in the same commit, before the store publishes `pending`, so the
-    // close never races a re-render of the rows it is removing.
-    close()
-    triggerRef.current?.focus()
     void select(selection).then(settleSelection)
   }
 
@@ -524,7 +536,9 @@ export function ModelSelect(
       closeAfterSelection()
       return
     }
-    submit(selection)
+    setFold('pick')
+    playFold()
+    submitAfterFold(selection)
   }
 
   const chooseEffort = (effort: string | undefined): void => {
@@ -535,7 +549,10 @@ export function ModelSelect(
       closeAfterSelection()
       return
     }
-    submit({ provider, model, ...effort === undefined ? {} : { reasoningEffort: effort } })
+    setFold('pick')
+    setPickedEffort(effort)
+    playFold()
+    submitAfterFold({ provider, model, ...effort === undefined ? {} : { reasoningEffort: effort } })
   }
 
   const waiting = triggerChoice === undefined && state.status === 'loading'
@@ -606,7 +623,7 @@ export function ModelSelect(
         <MenuSurface
           ref={menuRef}
           id={`${id}-menu`}
-          className={css.menu}
+          className={clsx(css.menu, fold === 'fold' && css.menuFold)}
           style={menuPos ?? MEASURE_STYLE}
           role="group"
           aria-label={t('menu.aria')}
@@ -694,7 +711,7 @@ export function ModelSelect(
                         }}
                         key={model.id}
                         title={model.name}
-                        disabled={busy}
+                        disabled={busy || fold !== 'idle'}
                         onClick={() => { choose({ provider: group.id, model: model.id }) }}
                       >
                         <span className={css.optionCopy}>
@@ -725,7 +742,7 @@ export function ModelSelect(
       {open && shownChoice !== undefined && createPortal(
         <MenuSurface
           ref={detailRef}
-          className={css.detail}
+          className={clsx(css.detail, fold === 'fold' && css.detailFold)}
           style={detailPos ?? MEASURE_STYLE}
           role="group"
           aria-label={t('menu.effort')}
@@ -750,9 +767,13 @@ export function ModelSelect(
                     role="radio"
                     data-ring=""
                     aria-checked={active}
-                    className={clsx(css.segmentItem, active && css.segmentItemActive)}
+                    className={clsx(
+                      css.segmentItem,
+                      active && css.segmentItemActive,
+                      fold === 'pick' && level.effort === pickedEffort && css.segmentItemPicked,
+                    )}
                     key={level.key}
-                    disabled={busy}
+                    disabled={busy || fold !== 'idle'}
                     onClick={() => { chooseEffort(level.effort) }}
                   >
                     {pending !== null && pending.provider === shownChoice?.group.id

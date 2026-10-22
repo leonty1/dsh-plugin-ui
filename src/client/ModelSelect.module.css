@@ -375,6 +375,50 @@
   cursor: default;
 }
 
+/* The picked level announces itself before the card folds: the raised
+   surface slides in from the left with a settle, so the click reads as a
+   thumb moving along the track. Pairs with the card fold below; the budget
+   is pick 160ms + fold 140ms. */
+.segmentItemPicked {
+  animation: dpui-segment-slide 160ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+@keyframes dpui-segment-slide {
+  from {
+    clip-path: inset(0 100% 0 0);
+    transform: translateX(-6px);
+  }
+  60% {
+    transform: translateX(1px);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    transform: translateX(0);
+  }
+}
+
+/* Folding after a pick: the card slides back toward its trigger and fades.
+   Runs on both cards so they leave as one gesture. */
+.menuFold,
+.detailFold {
+  animation: dpui-card-fold 140ms ease-in forwards;
+}
+
+@keyframes dpui-card-fold {
+  to {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segmentItemPicked,
+  .menuFold,
+  .detailFold {
+    animation: none;
+  }
+}
+
 
 /* The effort card: the model in use, what the catalog says about it, and the
    levels it advertises. It shares the list card's surface (MenuSurface owns
