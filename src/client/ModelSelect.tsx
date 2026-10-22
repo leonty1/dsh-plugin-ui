@@ -99,6 +99,14 @@ const PLACE_MARGIN = 12
 /** Gap between the list card and the effort card, and above the trigger. */
 const PLACE_GAP = 8
 
+/**
+ * Durations of the post-pick gesture, mirroring the animations in
+ * ModelSelect.module.css (`dpui-segment-slide`, `dpui-card-fold`). The level
+ * reads first, then the cards withdraw toward the composer.
+ */
+const PICK_MS = 260
+const FOLD_MS = 220
+
 /** @returns whether a placement already lands on this point (sub-pixel noise aside). */
 function samePoint(current: CSSProperties | null, left: number, top: number): boolean {
   return current !== null && Math.abs((current.left as number) - left) < 0.5
@@ -155,8 +163,9 @@ export function ModelSelect(
   }
   const [detailPos, setDetailPos] = useState<CSSProperties | null>(null)
   // 'idle' renders normally; 'pick' plays the level's slide-in; 'fold' plays
-  // the card's slide-away; the card unmounts after the fold. The sequence is
-  // a click's reaction, so timers fire once per pick and clear on unmount.
+  // the card's collapse into the composer; the card unmounts after it. The
+  // two durations mirror ModelSelect.module.css: the pick animation must
+  // finish before the collapse starts, or the thumb gets cut off mid-travel.
   const [fold, setFold] = useState<'idle' | 'pick' | 'fold'>('idle')
   // The level whose slide-in is playing; only that button gets the pick class.
   const [pickedEffort, setPickedEffort] = useState<string | undefined>(undefined)
@@ -164,8 +173,8 @@ export function ModelSelect(
   const playFold = (): void => {
     for (const timer of foldTimers.current) clearTimeout(timer)
     foldTimers.current = [
-      setTimeout(() => { setFold('fold') }, 160),
-      setTimeout(() => { setFold('idle'); close() }, 300),
+      setTimeout(() => { setFold('fold') }, PICK_MS),
+      setTimeout(() => { setFold('idle'); close() }, PICK_MS + FOLD_MS),
     ]
   }
   useEffect(() => () => { for (const timer of foldTimers.current) clearTimeout(timer) }, [])
@@ -201,9 +210,14 @@ export function ModelSelect(
   const currentChoice = choices[selectedIndex]
   const reasoning = currentChoice?.model.reasoning
   const effectiveEffort = state.current?.reasoningEffort ?? reasoning?.defaultEffort
+  // The annotation card is a hover affordance: it appears when the pointer
+  // lands on a row and stays while it moves across the list. Opening the menu
+  // shows the list alone — the current model's description is already on the
+  // trigger and the effort row costs the list a whole column of width before
+  // the user has asked for it.
   const shownChoice = preview === null
-    ? currentChoice
-    : choices.find(choice => choice.group.id === preview.provider && choice.model.id === preview.model) ?? currentChoice
+    ? undefined
+    : choices.find(choice => choice.group.id === preview.provider && choice.model.id === preview.model)
   const shownReasoning = shownChoice?.model.reasoning
   const shownEffort = shownChoice === currentChoice
     ? effectiveEffort
@@ -353,7 +367,7 @@ export function ModelSelect(
   // Live rects keep a card resize from moving the list and keep the anchor
   // glued to the row while the list scrolls.
   useLayoutEffect(() => {
-    if (!open || menuPos === null) { setDetailPos(null); return }
+    if (!open || menuPos === null || preview === null) { setDetailPos(null); return }
     const place = (): void => {
       const list = menuRef.current?.getBoundingClientRect()
       /* v8 ignore next 2 -- the list is mounted and placed before this runs. */
@@ -363,11 +377,10 @@ export function ModelSelect(
       let dx = list.left - PLACE_GAP - dw
       if (dx < PLACE_MARGIN) dx = list.right + PLACE_GAP
       const x = Math.min(Math.max(dx, PLACE_MARGIN), window.innerWidth - dw - PLACE_MARGIN)
-      // The hovered row is the anchor; with no hover yet, the model in use —
-      // unless the current filter hides it, in which case the list decides.
-      const anchorIndex = preview !== null
-        ? visibleModels.findIndex(model => model.provider === preview.provider && model.model === preview.model)
-        : currentVisibleIndex
+      // The card is anchored to the row under the pointer: its top edge lines
+      // up with that row's top, so the annotation reads as belonging to it.
+      const anchorIndex = visibleModels.findIndex(model =>
+        model.provider === preview.provider && model.model === preview.model)
       const rowRect = anchorIndex >= 0 ? itemRefs.current[anchorIndex]?.getBoundingClientRect() : undefined
       const y = Math.min(Math.max(rowRect?.top ?? list.bottom - dh, PLACE_MARGIN), window.innerHeight - dh - PLACE_MARGIN)
       setDetailPos(current => samePoint(current, x, y) ? current : { left: x, top: y })
@@ -379,7 +392,7 @@ export function ModelSelect(
       window.removeEventListener('scroll', place, true)
       window.removeEventListener('resize', place)
     }
-  }, [open, menuPos, shownChoice, shownReasoning, preview, visibleModels, currentVisibleIndex])
+  }, [open, menuPos, shownChoice, shownReasoning, preview, visibleModels])
   /* jscpd:ignore-end */
 
   if (!available) return null
