@@ -60,8 +60,13 @@ The seat component fills a 30px × full-height cell with a transparent button an
 ```sh
 pnpm install
 pnpm build   # generate palettes and dist/
-pnpm check   # build + syntax check
+pnpm check   # build + syntax + skin contract + type check
 ```
+
+Before touching anything visual, read
+[docs/design-invariants.md](docs/design-invariants.md): "Original colors
+changes colour only, never layout" and the other rules there are enforced by
+`pnpm check`.
 
 ## Tested
 

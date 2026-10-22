@@ -62,6 +62,24 @@ for (const rule of guarded) {
   if (hex.length > 0) fail(`hardcoded color in a guarded rule: ${hex.join(', ')}`)
 }
 
+// b2) "Original colors" swaps the palette layer, never the layout (see
+//     docs/design-invariants.md §1). A palette-guarded rule that sets layout
+//     would make the design collapse when Original colors is chosen, so it is
+//     a hard failure. Colour-ish declarations are the only ones allowed there.
+const LAYOUT_PROPS = /^(margin|padding|width|height|gap|flex|grid|position|top|left|right|bottom|overflow|order|font-size|line-height|display|border-radius|border(-width|-top|-bottom|-left|-right)?$|inset)/
+for (const rule of source) {
+  if (!rule.includes('data-dsh-palette')) continue
+  const selector = rule.slice(0, rule.indexOf('{'))
+  // The mac tint rules only paint a background; they are colour by nature.
+  if (selector.includes("html[data-platform='darwin']")) continue
+  for (const declaration of rule.slice(rule.indexOf('{') + 1, rule.lastIndexOf('}')).split(';')) {
+    const property = declaration.split(':')[0].trim().toLowerCase()
+    if (property !== '' && LAYOUT_PROPS.test(property)) {
+      fail(`palette-guarded layout declaration "${property}" in: ${selector.trim().slice(0, 70)}`)
+    }
+  }
+}
+
 // c) The plugin's own structure (geometry, fills, type) is allowed to evolve:
 //    floating cards and row metrics are layout, not colour, and they apply
 //    under every palette including Original colors — freezing them to HEAD

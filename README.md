@@ -60,8 +60,11 @@ ctx.slots.inject('pluginUi.quickAction', () => ctx.slots.register({
 ```sh
 pnpm install
 pnpm build   # 生成配色与 dist/
-pnpm check   # 构建 + 语法检查
+pnpm check   # 构建 + 语法 + 皮肤契约 + 类型检查
 ```
+
+改外观前先读 [docs/design-invariants.md](docs/design-invariants.md)：其中
+「原色只换颜色、不换布局」等约定是硬性要求，`pnpm check` 会校验。
 
 ## 实测
 
