@@ -21,7 +21,7 @@ A palette skin for DeepSeek Harness: four skin palettes, a single-card model and
 - **Appearance**: four skin palettes (Forest / Mint / Bee / Parchment, each in light and dark), picked from preview cards under Appearance or from the “Skin palette” group in the quick settings menu; “Original colors” keeps the app's own colors while the plugin layout stays; a skin palette also tints the sidebar.
 - **Sidebar**: 5px main margin and 16px radius; workspace/session rows tightened to 30px and up; official brand row and New Session button kept; Plugins/Automation pinned above the account row with a solid divider.
 - **Text size**: sidebar text, including the account name, follows Text size (S/M/L = 12/14/16px) and New Session scales with it; the account row keeps the official 44px / 32px rows and 24px avatar.
-- **Model & effort**: one card shows the model list and effort levels (Off / Low / High / Max) with search, retry, and empty states; the Chinese UI localizes effort names.
+- **Model & effort**: one card shows the model list and effort levels (Off / Low / High / Max) with search, retry, and empty states; the Chinese UI localizes effort names. Hovering a row moves the description/effort card to that row and aligns its top edge with it; a click on either a model or an effort level confirms, so the card collapses at once and the trigger shows the new choice immediately, leaving only the spinner to cover the round trip.
 - **Account row (desktop)**: official 24px avatar / 44px row; signed out it is ⋯ + “More”; two configurable quick seats sit on the right.
 - **Account menu**: matches the official items (Settings, Contact us, sign in/out); quick settings open from the gear seat with language, color mode, Skin palette, text size, and All settings.
 

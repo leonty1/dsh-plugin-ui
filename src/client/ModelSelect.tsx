@@ -41,6 +41,22 @@ import type { ModelSelectInjected } from './model-contract.ts'
 import css from './ModelSelect.module.css'
 import { orderModelProviders } from './provider-order.ts'
 
+/**
+ * The plugin registers its composer-seat copy under its own namespace
+ * (`plugin-ui.model`), so the key union is declared here instead of borrowing
+ * the host's `model` namespace: this dictionary carries keys the host's does
+ * not (the effort levels and their hints), and merging into `model` itself
+ * would collide with ui-model-selection's declaration.
+ */
+declare module '@deepseek-ai/dsh-client-ui-slots' {
+  interface LocaleNamespaceMap {
+    'plugin-ui.model': import('./locales.js').ModelKey
+  }
+}
+
+/** The plugin's own seat copy: the framework `t` seat narrowed to our keys. */
+type ModelLocale = PropsLocale<'plugin-ui.model'>
+
 /** One dynamic effort row; undefined means preserve the provider default. */
 interface EffortChoice {
   key: string
@@ -48,25 +64,33 @@ interface EffortChoice {
   label: string
 }
 
-/** Reasoning-effort ids the plugin localizes; provider-specific ids keep their own names. */
-const KNOWN_EFFORTS = new Set(['off', 'none', 'minimal', 'low', 'medium', 'high', 'max'])
+/** Known effort ids, in the localized key form they carry in the dictionary. */
+const EFFORT_KEYS = ['off', 'none', 'minimal', 'low', 'medium', 'high', 'max'] as const
 
-/** @returns the lowercase dictionary key for a known effort id. */
-function knownEffort(id: string | undefined): string | undefined {
-  const key = id?.toLowerCase()
-  return key !== undefined && KNOWN_EFFORTS.has(key) ? key : undefined
+/** The localized label key for a known effort id, or undefined otherwise. */
+function effortLabelKey(id: string | undefined): `effort.${typeof EFFORT_KEYS[number]}` | undefined {
+  const key = id?.toLowerCase() as typeof EFFORT_KEYS[number] | undefined
+  return key !== undefined && (EFFORT_KEYS as readonly string[]).includes(key) ? `effort.${key}` : undefined
+}
+
+/** The localized hint key for a known effort id, or undefined otherwise. */
+function effortHintKey(id: string | undefined): `effort.hint.${typeof EFFORT_KEYS[number]}` | undefined {
+  const label = effortLabelKey(id)
+  if (label === undefined) return undefined
+  const suffix = label.slice('effort.'.length) as typeof EFFORT_KEYS[number]
+  return `effort.hint.${suffix}`
 }
 
 /** Localized level name, falling back to the provider's label. */
-function effortLabelFor(t: PropsLocale<'model'>['t'], id: string | undefined, fallback: string): string {
-  const key = knownEffort(id)
-  return key === undefined ? fallback : t(`effort.${key}`)
+function effortLabelFor(t: ModelLocale['t'], id: string | undefined, fallback: string): string {
+  const key = effortLabelKey(id)
+  return key === undefined ? fallback : t(key)
 }
 
 /** Localized one-line hint, falling back to the provider's description. */
-function effortHintFor(t: PropsLocale<'model'>['t'], id: string | undefined, fallback: string | undefined): string | undefined {
-  const key = knownEffort(id)
-  return key === undefined ? fallback : t(`effort.hint.${key}`)
+function effortHintFor(t: ModelLocale['t'], id: string | undefined, fallback: string | undefined): string | undefined {
+  const key = effortHintKey(id)
+  return key === undefined ? fallback : t(key)
 }
 
 /** Viewport clearance for both portaled cards. */
@@ -92,7 +116,7 @@ const MEASURE_STYLE: CSSProperties = { visibility: 'hidden', left: 0, top: 0 }
  */
 export function ModelSelect(
   { locked, available, directory, load, select, t }:
-  ModelSelectInjected & { locked: boolean } & PropsLocale<'model'>,
+  ModelSelectInjected & { locked: boolean } & ModelLocale,
 ) {
   const state = useSyncExternalStore(
     fn => directory.subscribe(fn),
@@ -121,6 +145,14 @@ export function ModelSelect(
   // itself is the next click target, and snapping back mid-reach would apply
   // the level to a different model than the one being read.
   const [preview, setPreview] = useState<{ provider: string; model: string } | null>(null)
+  // Pointer entry fires again for the same row whenever the cursor crosses a
+  // child element, and a fresh object would re-render the list every time.
+  // Compare by value so only a real row change reaches the render path.
+  const hoverRow = (provider: string, model: string): void => {
+    setPreview(current => current !== null && current.provider === provider && current.model === model
+      ? current
+      : { provider, model })
+  }
   const [detailPos, setDetailPos] = useState<CSSProperties | null>(null)
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([])
   const id = useId()
@@ -154,13 +186,6 @@ export function ModelSelect(
   const currentChoice = choices[selectedIndex]
   const reasoning = currentChoice?.model.reasoning
   const effectiveEffort = state.current?.reasoningEffort ?? reasoning?.defaultEffort
-  const effortLabel = currentChoice === undefined
-    ? undefined
-    : reasoning === undefined
-      ? state.retainedEffort
-      : effectiveEffort === undefined
-        ? t('effort.providerDefault')
-        : effortLabelFor(t, effectiveEffort, reasoning.efforts.find(level => level.id === effectiveEffort)?.name ?? effectiveEffort)
   const shownChoice = preview === null
     ? currentChoice
     : choices.find(choice => choice.group.id === preview.provider && choice.model.id === preview.model) ?? currentChoice
@@ -184,6 +209,27 @@ export function ModelSelect(
   const effortDescription = effortHintFor(t, shownEffort, providerDescription)
   const { pending } = state
   const busy = pending !== null
+  // The trigger reports what the user just picked, not what the Host has
+  // confirmed yet: `pending` carries the full selection and is published
+  // synchronously by the directory, while `current` only moves once the round
+  // trip lands. Without this the caption would flash the previous model for
+  // the length of the request right after the click that chose the new one.
+  const shownSelection = pending ?? state.current
+  const shownIndex = shownSelection === null
+    ? -1
+    : choices.findIndex(c => c.selection.provider === shownSelection.provider && c.selection.model === shownSelection.model)
+  const triggerChoice = choices[shownIndex] ?? currentChoice
+  const triggerReasoning = triggerChoice?.model.reasoning
+  const triggerEffort = shownSelection === null
+    ? undefined
+    : shownSelection.reasoningEffort ?? triggerReasoning?.defaultEffort
+  const triggerEffortLabel = triggerChoice === undefined
+    ? undefined
+    : triggerReasoning === undefined
+      ? state.retainedEffort
+      : triggerEffort === undefined
+        ? t('effort.providerDefault')
+        : effortLabelFor(t, triggerEffort, triggerReasoning.efforts.find(level => level.id === triggerEffort)?.name ?? triggerEffort)
 
   const reload = (): void => {
     lastActionRef.current = 'load'
@@ -444,18 +490,13 @@ export function ModelSelect(
     close()
   }
 
-  // A model change keeps the card open so the new model's effort row is the
-  // next click; an effort change is the card's last decision and settles closed.
-  const keepOpenAfterSettle = useRef(false)
-
+  // Every click on the card is the card's last decision, so the card closes on
+  // the click itself rather than on the Host's answer: the gesture ends where
+  // the pointer is, and the trigger's pending spinner carries the round trip.
+  // Nothing here waits on the network, so the list can never sit open for a
+  // beat and then disappear.
   const settleSelection = (result: Awaited<ReturnType<ModelSelectInjected['select']>>): void => {
-    if (result === undefined) return
-    if (result.ok) {
-      if (rootRef.current === null) return
-      if (keepOpenAfterSettle.current) { keepOpenAfterSettle.current = false; return }
-      closeAfterSelection()
-      return
-    }
+    if (result === undefined || result.ok) return
     const { error } = result
     toastSeq.current += 1
     setToast({
@@ -470,6 +511,10 @@ export function ModelSelect(
     lastActionRef.current = 'select'
     // Disabled option rows cannot retain focus while a selection is pending.
     setSelectionFocus(true)
+    // Collapse before submitting: one state change unmounts both portaled
+    // cards in the same commit, before the store publishes `pending`, so the
+    // close never races a re-render of the rows it is removing.
+    close()
     triggerRef.current?.focus()
     void select(selection).then(settleSelection)
   }
@@ -479,7 +524,6 @@ export function ModelSelect(
       closeAfterSelection()
       return
     }
-    keepOpenAfterSettle.current = true
     submit(selection)
   }
 
@@ -491,23 +535,22 @@ export function ModelSelect(
       closeAfterSelection()
       return
     }
-    keepOpenAfterSettle.current = false
     submit({ provider, model, ...effort === undefined ? {} : { reasoningEffort: effort } })
   }
 
-  const waiting = currentChoice === undefined && state.status === 'loading'
+  const waiting = triggerChoice === undefined && state.status === 'loading'
   const modelLabel = waiting
     ? t('trigger.loading')
-    : currentChoice?.model.name
+    : triggerChoice?.model.name
       ?? t('trigger.fallback')
-  const triggerLabel = effortLabel === undefined ? modelLabel : `${modelLabel} · ${effortLabel}`
+  const triggerLabel = triggerEffortLabel === undefined ? modelLabel : `${modelLabel} · ${triggerEffortLabel}`
   const triggerAria = waiting
     ? t('trigger.loading')
-    : currentChoice === undefined
+    : triggerChoice === undefined
       ? t('trigger.selectAria')
-      : effortLabel === undefined
+      : triggerEffortLabel === undefined
         ? t('trigger.aria', { model: modelLabel })
-        : t('trigger.ariaEffort', { model: modelLabel, effort: effortLabel })
+        : t('trigger.ariaEffort', { model: modelLabel, effort: triggerEffortLabel })
   itemRefs.current = []
   let itemIndex = 0
   let modelIndex = 0
@@ -550,7 +593,7 @@ export function ModelSelect(
       >
         <IconDataOutlineRegular className={css.triggerIcon} size={16} />
         <span className={css.triggerLabel}>{modelLabel}</span>
-        {effortLabel !== undefined && <span className={css.triggerEffort}>{effortLabel}</span>}
+        {triggerEffortLabel !== undefined && <span className={css.triggerEffort}>{triggerEffortLabel}</span>}
         {busy
           ? <StateDot state="ongoing" />
           : <IconChevronDownOutlineRegular className={clsx(css.chevron, open && css.chevronOpen)} />}
@@ -640,7 +683,7 @@ export function ModelSelect(
                         id={`${id}-model-${index}`}
                         tabIndex={showSearch ? -1 : 0}
                         onFocus={() => { setHighlightedIndex(index) }}
-                        onPointerEnter={() => { pointerPicked.current = true; setPreview({ provider: group.id, model: model.id }) }}
+                        onPointerEnter={() => { pointerPicked.current = true; hoverRow(group.id, model.id) }}
                         data-highlighted={index === activeModelIndex ? '' : undefined}
                         className={clsx(
                           css.option, css.modelOption, selected && css.selected, index === activeModelIndex && css.optionActive,

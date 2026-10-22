@@ -4,6 +4,7 @@ window.__ModuleLoader__.load({
     const module = { exports: {} }
     const exports = module.exports
     ;(function (module, exports, require) {
+"use strict";
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -60,18 +61,24 @@ function orderModelProviders(groups) {
 
 // src/client/ModelSelect.tsx
 var import_jsx_runtime = require("react/jsx-runtime");
-var KNOWN_EFFORTS = /* @__PURE__ */ new Set(["off", "none", "minimal", "low", "medium", "high", "max"]);
-function knownEffort(id) {
+var EFFORT_KEYS = ["off", "none", "minimal", "low", "medium", "high", "max"];
+function effortLabelKey(id) {
   const key = id?.toLowerCase();
-  return key !== void 0 && KNOWN_EFFORTS.has(key) ? key : void 0;
+  return key !== void 0 && EFFORT_KEYS.includes(key) ? `effort.${key}` : void 0;
+}
+function effortHintKey(id) {
+  const label = effortLabelKey(id);
+  if (label === void 0) return void 0;
+  const suffix = label.slice("effort.".length);
+  return `effort.hint.${suffix}`;
 }
 function effortLabelFor(t, id, fallback) {
-  const key = knownEffort(id);
-  return key === void 0 ? fallback : t(`effort.${key}`);
+  const key = effortLabelKey(id);
+  return key === void 0 ? fallback : t(key);
 }
 function effortHintFor(t, id, fallback) {
-  const key = knownEffort(id);
-  return key === void 0 ? fallback : t(`effort.hint.${key}`);
+  const key = effortHintKey(id);
+  return key === void 0 ? fallback : t(key);
 }
 var PLACE_MARGIN = 12;
 var PLACE_GAP = 8;
@@ -99,6 +106,9 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
   const groupsRef = (0, import_react.useRef)(null);
   const [menuPos, setMenuPos] = (0, import_react.useState)(null);
   const [preview, setPreview] = (0, import_react.useState)(null);
+  const hoverRow = (provider, model) => {
+    setPreview((current) => current !== null && current.provider === provider && current.model === model ? current : { provider, model });
+  };
   const [detailPos, setDetailPos] = (0, import_react.useState)(null);
   const itemRefs = (0, import_react.useRef)([]);
   const id = (0, import_react.useId)();
@@ -127,7 +137,6 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
   const currentChoice = choices[selectedIndex];
   const reasoning = currentChoice?.model.reasoning;
   const effectiveEffort = state.current?.reasoningEffort ?? reasoning?.defaultEffort;
-  const effortLabel = currentChoice === void 0 ? void 0 : reasoning === void 0 ? state.retainedEffort : effectiveEffort === void 0 ? t("effort.providerDefault") : effortLabelFor(t, effectiveEffort, reasoning.efforts.find((level) => level.id === effectiveEffort)?.name ?? effectiveEffort);
   const shownChoice = preview === null ? currentChoice : choices.find((choice) => choice.group.id === preview.provider && choice.model.id === preview.model) ?? currentChoice;
   const shownReasoning = shownChoice?.model.reasoning;
   const shownEffort = shownChoice === currentChoice ? effectiveEffort : shownReasoning?.defaultEffort;
@@ -143,6 +152,12 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
   const effortDescription = effortHintFor(t, shownEffort, providerDescription);
   const { pending } = state;
   const busy = pending !== null;
+  const shownSelection = pending ?? state.current;
+  const shownIndex = shownSelection === null ? -1 : choices.findIndex((c) => c.selection.provider === shownSelection.provider && c.selection.model === shownSelection.model);
+  const triggerChoice = choices[shownIndex] ?? currentChoice;
+  const triggerReasoning = triggerChoice?.model.reasoning;
+  const triggerEffort = shownSelection === null ? void 0 : shownSelection.reasoningEffort ?? triggerReasoning?.defaultEffort;
+  const triggerEffortLabel = triggerChoice === void 0 ? void 0 : triggerReasoning === void 0 ? state.retainedEffort : triggerEffort === void 0 ? t("effort.providerDefault") : effortLabelFor(t, triggerEffort, triggerReasoning.efforts.find((level) => level.id === triggerEffort)?.name ?? triggerEffort);
   const reload = () => {
     lastActionRef.current = "load";
     load();
@@ -336,18 +351,8 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
     if (event.relatedTarget instanceof Node && (rootRef.current?.contains(event.relatedTarget) === true || menuRef.current?.contains(event.relatedTarget) === true || detailRef.current?.contains(event.relatedTarget) === true)) return;
     close();
   };
-  const keepOpenAfterSettle = (0, import_react.useRef)(false);
   const settleSelection = (result) => {
-    if (result === void 0) return;
-    if (result.ok) {
-      if (rootRef.current === null) return;
-      if (keepOpenAfterSettle.current) {
-        keepOpenAfterSettle.current = false;
-        return;
-      }
-      closeAfterSelection();
-      return;
-    }
+    if (result === void 0 || result.ok) return;
     const { error } = result;
     toastSeq.current += 1;
     setToast({
@@ -358,6 +363,7 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
   const submit = (selection) => {
     lastActionRef.current = "select";
     setSelectionFocus(true);
+    close();
     triggerRef.current?.focus();
     void select(selection).then(settleSelection);
   };
@@ -366,7 +372,6 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
       closeAfterSelection();
       return;
     }
-    keepOpenAfterSettle.current = true;
     submit(selection);
   };
   const chooseEffort = (effort) => {
@@ -377,13 +382,12 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
       closeAfterSelection();
       return;
     }
-    keepOpenAfterSettle.current = false;
     submit({ provider, model, ...effort === void 0 ? {} : { reasoningEffort: effort } });
   };
-  const waiting = currentChoice === void 0 && state.status === "loading";
-  const modelLabel = waiting ? t("trigger.loading") : currentChoice?.model.name ?? t("trigger.fallback");
-  const triggerLabel = effortLabel === void 0 ? modelLabel : `${modelLabel} \xB7 ${effortLabel}`;
-  const triggerAria = waiting ? t("trigger.loading") : currentChoice === void 0 ? t("trigger.selectAria") : effortLabel === void 0 ? t("trigger.aria", { model: modelLabel }) : t("trigger.ariaEffort", { model: modelLabel, effort: effortLabel });
+  const waiting = triggerChoice === void 0 && state.status === "loading";
+  const modelLabel = waiting ? t("trigger.loading") : triggerChoice?.model.name ?? t("trigger.fallback");
+  const triggerLabel = triggerEffortLabel === void 0 ? modelLabel : `${modelLabel} \xB7 ${triggerEffortLabel}`;
+  const triggerAria = waiting ? t("trigger.loading") : triggerChoice === void 0 ? t("trigger.selectAria") : triggerEffortLabel === void 0 ? t("trigger.aria", { model: modelLabel }) : t("trigger.ariaEffort", { model: modelLabel, effort: triggerEffortLabel });
   itemRefs.current = [];
   let itemIndex = 0;
   let modelIndex = 0;
@@ -431,7 +435,7 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
             children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_dsh_client_ui_primitives2.IconDataOutlineRegular, { className: ModelSelect_default.triggerIcon, size: 16 }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: ModelSelect_default.triggerLabel, children: modelLabel }),
-              effortLabel !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: ModelSelect_default.triggerEffort, children: effortLabel }),
+              triggerEffortLabel !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: ModelSelect_default.triggerEffort, children: triggerEffortLabel }),
               busy ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_dsh_client_ui_primitives2.StateDot, { state: "ongoing" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_dsh_client_ui_primitives2.IconChevronDownOutlineRegular, { className: clsx(ModelSelect_default.chevron, open && ModelSelect_default.chevronOpen) })
             ]
           }
@@ -519,7 +523,7 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
                             },
                             onPointerEnter: () => {
                               pointerPicked.current = true;
-                              setPreview({ provider: group.id, model: model.id });
+                              hoverRow(group.id, model.id);
                             },
                             "data-highlighted": index === activeModelIndex ? "" : void 0,
                             className: clsx(

@@ -192,3 +192,13 @@ export const modelEn = {
   'search.empty': 'No matching models.',
   'empty.models': 'No models available.',
 }
+
+/**
+ * The composer-seat dictionary's key union, shared by both models above:
+ * both `modelZh` and `modelEn` must satisfy it, so a key added to one side
+ * is a compile error on the other. The `plugin-ui.model` namespace merge in
+ * ModelSelect.tsx reads this type.
+ * @typedef {keyof typeof modelZh} ModelKey
+ */
+export {}
+
