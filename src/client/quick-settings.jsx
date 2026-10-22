@@ -19,7 +19,7 @@ export const GLASS_CHOICES = [
 ]
 
 /** The current value of each group. */
-export function quickSettingsView(ctx, palette) {
+export function quickSettingsView(ctx, palette, ground) {
   const theme = ctx.theme.getTheme()
   return {
     locale: ctx.locale.getSnapshot(),
@@ -69,7 +69,7 @@ export function quickSettingsItems(view, t, ground) {
     ...(view.palette === undefined ? [] : [{
       id: 'palette', label: t('palette.title'), icon: <IconSparkleMedium size={16} />, submenu: palettes,
     }]),
-    ...(ground === undefined ? [] : [{
+    ...(ground === undefined || view.glass === undefined ? [] : [{
       id: 'glass', label: t('account.glass'), icon: <IconEnhanceOutlineMedium size={16} />,
       submenu: GLASS_CHOICES.map(([value, key]) => ({
         id: `glass:${value}`,

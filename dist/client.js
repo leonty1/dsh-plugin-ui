@@ -1298,7 +1298,7 @@ function useColorScheme(ctx) {
   }, [ctx]);
   return scheme;
 }
-function PaletteSettings({ t, controller, ground: ground2, ctx }) {
+function PaletteSettings({ t, controller, ground, ctx }) {
   const [pair, setPair] = (0, import_react3.useState)(() => controller.get());
   const scheme = useColorScheme(ctx);
   (0, import_react3.useEffect)(() => {
@@ -1347,7 +1347,7 @@ function PaletteSettings({ t, controller, ground: ground2, ctx }) {
         id
       );
     }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(GroundSettings, { controller: ground2, ctx, t })
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(GroundSettings, { controller: ground, ctx, t })
   ] });
 }
 
@@ -1360,7 +1360,7 @@ var GLASS_CHOICES = [
   [0.6, "account.glassMedium"],
   [0.85, "account.glassHigh"]
 ];
-function quickSettingsView(ctx, palette) {
+function quickSettingsView(ctx, palette, ground) {
   const theme = ctx.theme.getTheme();
   return {
     locale: ctx.locale.getSnapshot(),
@@ -1373,7 +1373,7 @@ function quickSettingsView(ctx, palette) {
 function marked(label, selected) {
   return selected ? `\u2713 ${label}` : label;
 }
-function quickSettingsItems(view, t, ground2) {
+function quickSettingsItems(view, t, ground) {
   const language = view.locale.locales.map((item) => ({
     id: `locale:${item.id}`,
     label: marked(item.label, item.id === view.locale.active)
@@ -1401,7 +1401,7 @@ function quickSettingsItems(view, t, ground2) {
       icon: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_dsh_client_ui_primitives3.IconSparkleMedium, { size: 16 }),
       submenu: palettes
     }],
-    ...ground2 === void 0 ? [] : [{
+    ...ground === void 0 || view.glass === void 0 ? [] : [{
       id: "glass",
       label: t("account.glass"),
       icon: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_dsh_client_ui_primitives3.IconEnhanceOutlineMedium, { size: 16 }),
@@ -1418,7 +1418,7 @@ function quickSettingsItems(view, t, ground2) {
     }
   ];
 }
-function applyQuickSetting(ctx, id, palette, ground2) {
+function applyQuickSetting(ctx, id, palette, ground) {
   if (id.startsWith("mode:")) {
     ctx.theme.setTheme(id.slice("mode:".length));
     return true;
@@ -1436,8 +1436,8 @@ function applyQuickSetting(ctx, id, palette, ground2) {
     ctx.locale.setLocale(id.slice("locale:".length));
     return true;
   }
-  if (id.startsWith("glass:") && ground2 !== void 0) {
-    ground2.setGlass(Number(id.slice("glass:".length)));
+  if (id.startsWith("glass:") && ground !== void 0) {
+    ground.setGlass(Number(id.slice("glass:".length)));
     return true;
   }
   return false;
@@ -1610,22 +1610,24 @@ function createAccountStore(ctx) {
 function useSnapshot(store) {
   return (0, import_react5.useSyncExternalStore)(store.subscribe, store.getSnapshot, store.getSnapshot);
 }
-function useQuickView(ctx, palette) {
-  const [view, setView] = (0, import_react5.useState)(() => quickSettingsView(ctx, palette));
+function useQuickView(ctx, palette, ground) {
+  const [view, setView] = (0, import_react5.useState)(() => quickSettingsView(ctx, palette, ground));
   (0, import_react5.useEffect)(() => {
     const update = () => {
-      setView(quickSettingsView(ctx, palette));
+      setView(quickSettingsView(ctx, palette, ground));
     };
     update();
     const offTheme = ctx.on("theme/change", update);
     const offLocale = ctx.locale.subscribe(update);
     const offPalette = palette?.subscribe(update);
+    const offGround = ground?.subscribe(update);
     return () => {
       offTheme?.();
       offLocale?.();
       offPalette?.();
+      offGround?.();
     };
-  }, [ctx, palette]);
+  }, [ctx, palette, ground]);
   return view;
 }
 function Avatar({ url }) {
@@ -1657,7 +1659,7 @@ function LogoutIcon() {
     }
   ) });
 }
-function QuickActionSeat({ seat, t, view, groundState, onQuickSelect, onAllSettings, onBuiltin, renderSlot }) {
+function QuickActionSeat({ seat, t, view, ground, onQuickSelect, onAllSettings, onBuiltin, renderSlot }) {
   const [open, setOpen] = (0, import_react5.useState)(false);
   if (seat === null || seat === void 0) {
     return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("span", { className: account_default.seatSpacer, "aria-hidden": "true" });
@@ -1672,7 +1674,7 @@ function QuickActionSeat({ seat, t, view, groundState, onQuickSelect, onAllSetti
         portal: true,
         autoFocus: true,
         listClassName: account_default.list,
-        items: quickSettingsItems(view, t, groundState),
+        items: quickSettingsItems(view, t, ground),
         onClose: () => {
           setOpen(false);
         },
@@ -1708,8 +1710,21 @@ function QuickActionSeat({ seat, t, view, groundState, onQuickSelect, onAllSetti
   }
   return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("span", { className: account_default.externalSeat, "data-quick-action": seat, children: renderSlot?.(QUICK_ACTION_SLOT, { size: 14 }, { only: seat }) });
 }
-function QuickActionsRow({ seats, ...seatProps }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("span", { className: account_default.seats, children: seats.map((seat, index) => /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(QuickActionSeat, { seat, ...seatProps }, index)) });
+function QuickActionsRow({ seats, t, view, ground, onQuickSelect, onAllSettings, onBuiltin, renderSlot }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("span", { className: account_default.seats, children: seats.map((seat, index) => /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+    QuickActionSeat,
+    {
+      seat,
+      t,
+      view,
+      ground,
+      onQuickSelect,
+      onAllSettings,
+      onBuiltin,
+      renderSlot
+    },
+    index
+  )) });
 }
 function SignInDialog({ t, account, store, close }) {
   const [busy, setBusy] = (0, import_react5.useState)(false);
@@ -1858,18 +1873,12 @@ function AccountMenu({
   uiWorkspace,
   layout,
   palette,
-  ground: ground2,
+  ground,
   renderSlot
 }) {
   const seats = useStore((state) => state.seats);
   const account = useSnapshot(accountStore);
-  const view = useQuickView(ctx, palette);
-  const groundState = (0, import_react5.useSyncExternalStore)(
-    ground2 ? ground2.subscribe : () => () => {
-    },
-    ground2 ? ground2.get : () => null,
-    ground2 ? ground2.get : () => null
-  );
+  const view = useQuickView(ctx, palette, ground);
   const anchor = (0, import_react5.useRef)(null);
   const trigger = (0, import_react5.useRef)(null);
   const [open, setOpen] = (0, import_react5.useState)(false);
@@ -1886,7 +1895,7 @@ function AccountMenu({
     settingsWasOpen.current = settingsOpen;
   }, [accountStore, settingsOpen]);
   const quickSelect = (id) => {
-    applyQuickSetting(ctx, id, palette, ground2);
+    applyQuickSetting(ctx, id, palette, ground);
   };
   const openSettingsPage = () => {
     setOpen(false);
@@ -2000,7 +2009,7 @@ function AccountMenu({
               seats,
               t,
               view,
-              groundState,
+              ground,
               renderSlot,
               onQuickSelect: quickSelect,
               onAllSettings: openSettingsPage,
@@ -2356,15 +2365,15 @@ function apply2(ctx) {
     "dsh-plugin-ui: model dictionaries"
   );
   const palette = createPaletteController(ctx);
-  const ground2 = createGroundController();
+  const ground = createGroundController();
   ctx.effect(() => palette.install(), "dsh-plugin-ui: palette layer");
-  ctx.effect(() => ground2.install(), "dsh-plugin-ui: ground layer");
+  ctx.effect(() => ground.install(), "dsh-plugin-ui: ground layer");
   ctx.slots.inject("settings.general.item", () => ctx.slots.register({
     name: "settings.general.item",
     id: "plugin-ui.palette",
     order: 10.5,
     locale: UI_NS,
-    inject: () => ({ controller: palette, ground: ground2, ctx })
+    inject: () => ({ controller: palette, ground, ctx })
   }, PaletteSettings));
   ctx.inject(["slots", "modelDirectories", "sessions", "remote", "remote.session"], (scope) => {
     const models = scope.modelDirectories;
@@ -2403,7 +2412,7 @@ function apply2(ctx) {
         ctx: scope,
         accountStore,
         palette,
-        ground: ground2,
+        ground,
         uiWorkspace: scope.get("uiWorkspace"),
         layout: scope.get("layout")
       })

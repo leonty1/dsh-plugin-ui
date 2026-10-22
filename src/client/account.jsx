@@ -90,16 +90,17 @@ function useSnapshot(store) {
 }
 
 /** Follow theme, locale, and palette writes made anywhere in the app. */
-function useQuickView(ctx, palette) {
-  const [view, setView] = useState(() => quickSettingsView(ctx, palette))
+function useQuickView(ctx, palette, ground) {
+  const [view, setView] = useState(() => quickSettingsView(ctx, palette, ground))
   useEffect(() => {
-    const update = () => { setView(quickSettingsView(ctx, palette)) }
+    const update = () => { setView(quickSettingsView(ctx, palette, ground)) }
     update()
     const offTheme = ctx.on('theme/change', update)
     const offLocale = ctx.locale.subscribe(update)
     const offPalette = palette?.subscribe(update)
-    return () => { offTheme?.(); offLocale?.(); offPalette?.() }
-  }, [ctx, palette])
+    const offGround = ground?.subscribe(update)
+    return () => { offTheme?.(); offLocale?.(); offPalette?.(); offGround?.() }
+  }, [ctx, palette, ground])
   return view
 }
 
@@ -128,7 +129,7 @@ function LogoutIcon() {
  * One configurable seat: the quick-settings menu, a built-in action, an
  * external slot contribution, or an empty column.
  */
-function QuickActionSeat({ seat, t, view, groundState, onQuickSelect, onAllSettings, onBuiltin, renderSlot }) {
+function QuickActionSeat({ seat, t, view, ground, onQuickSelect, onAllSettings, onBuiltin, renderSlot }) {
   const [open, setOpen] = useState(false)
   if (seat === null || seat === undefined) {
     return <span className={css.seatSpacer} aria-hidden="true" />
@@ -136,7 +137,7 @@ function QuickActionSeat({ seat, t, view, groundState, onQuickSelect, onAllSetti
   if (seat === 'settings') {
     return <Menu open={open} side="top" align="end" portal autoFocus
       listClassName={css.list}
-      items={quickSettingsItems(view, t, groundState)}
+      items={quickSettingsItems(view, t, ground)}
       onClose={() => { setOpen(false) }}
       onSelect={(id) => {
         if (id === 'all-settings') { setOpen(false); onAllSettings() }
@@ -162,10 +163,23 @@ function QuickActionSeat({ seat, t, view, groundState, onQuickSelect, onAllSetti
   </span>
 }
 
-/** The seat pair; each seat owns its menu so two settings seats stay independent. */
-function QuickActionsRow({ seats, ...seatProps }) {
+/** The seat pair; each seat owns its menu so two settings seats stay independent.
+ * Props are forwarded explicitly: a rest spread hides which values a seat
+ * depends on, and that opacity is what let two undefined-identifier bugs
+ * through unnoticed. */
+function QuickActionsRow({ seats, t, view, ground, onQuickSelect, onAllSettings, onBuiltin, renderSlot }) {
   return <span className={css.seats}>
-    {seats.map((seat, index) => <QuickActionSeat key={index} seat={seat} {...seatProps} />)}
+    {seats.map((seat, index) => <QuickActionSeat
+      key={index}
+      seat={seat}
+      t={t}
+      view={view}
+      ground={ground}
+      onQuickSelect={onQuickSelect}
+      onAllSettings={onAllSettings}
+      onBuiltin={onBuiltin}
+      renderSlot={renderSlot}
+    />)}
   </span>
 }
 
@@ -278,14 +292,7 @@ export function AccountMenu({
 }) {
   const seats = useStore(state => state.seats)
   const account = useSnapshot(accountStore)
-  const view = useQuickView(ctx, palette)
-  // The glass row follows the ground controller so the checkmark tracks any
-  // writer (this menu or the settings page).
-  const groundState = useSyncExternalStore(
-    ground ? ground.subscribe : () => () => {},
-    ground ? ground.get : () => null,
-    ground ? ground.get : () => null,
-  )
+  const view = useQuickView(ctx, palette, ground)
   const anchor = useRef(null)
   const trigger = useRef(null)
   const [open, setOpen] = useState(false)
@@ -373,7 +380,7 @@ export function AccountMenu({
             : <IconEllipsisOutlineMedium size={14} />}
           {wide && <span className={css.label}>{label}</span>}
         </button>
-        {wide && <QuickActionsRow seats={seats} t={t} view={view} groundState={groundState} renderSlot={renderSlot}
+        {wide && <QuickActionsRow seats={seats} t={t} view={view} ground={ground} renderSlot={renderSlot}
           onQuickSelect={quickSelect} onAllSettings={openSettingsPage} onBuiltin={runBuiltin} />}
       </div>}
       items={items}

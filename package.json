@@ -37,6 +37,7 @@
   },
   "scripts": {
     "build": "node scripts/build.mjs",
-    "check": "node scripts/build.mjs && node --check dist/client.js && node --check dist/index.js && node scripts/verify-skin.mjs && node scripts/typecheck.mjs"
+    "check": "node scripts/build.mjs && node --check dist/client.js && node --check dist/index.js && node scripts/verify-skin.mjs && node scripts/typecheck.mjs && node scripts/check-scope.mjs",
+    "check:scope": "node scripts/check-scope.mjs"
   }
 }
