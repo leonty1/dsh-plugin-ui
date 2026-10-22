@@ -397,24 +397,31 @@
   }
 }
 
-/* Collapsing after a pick: the card withdraws toward the composer — down and
-   right, the direction of the trigger it hands the choice back to — while it
-   shrinks and fades. Both cards run it together so they leave as one gesture
-   rather than two boxes blinking out. */
+/* Apple-style collapse after a pick. The geometry is measured per fold
+   (ModelSelect.tsx foldInto): --dpui-fold-dx/dy carry the vector from the
+   card's centre to the trigger's, --dpui-fold-sx/sy the scale that fits the
+   trigger's size, so both cards fly into the button that received the
+   choice rather than drifting a fixed distance. The curve is Apple's sheet
+   dismissal ease — fast away, long soft settle — and the 260ms budget keeps
+   it a gesture, not a blink. */
 .menuFold,
 .detailFold {
-  transform-origin: bottom right;
-  animation: dpui-card-fold 220ms cubic-bezier(0.4, 0, 0.6, 1) forwards;
+  transform-origin: center center;
+  animation: dpui-card-fold 260ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
 }
 
 @keyframes dpui-card-fold {
   from {
     opacity: 1;
-    transform: translate(0, 0) scale(1);
+    transform: translate(0, 0) scale(1, 1);
+  }
+  60% {
+    opacity: 0.6;
   }
   to {
     opacity: 0;
-    transform: translate(14px, 10px) scale(0.94);
+    transform: translate(var(--dpui-fold-dx, 14px), var(--dpui-fold-dy, 10px))
+      scale(var(--dpui-fold-sx, 0.94), var(--dpui-fold-sy, 0.94));
   }
 }
 

@@ -105,7 +105,7 @@ const PLACE_GAP = 8
  * reads first, then the cards withdraw toward the composer.
  */
 const PICK_MS = 260
-const FOLD_MS = 220
+const FOLD_MS = 260
 
 /** @returns whether a placement already lands on this point (sub-pixel noise aside). */
 function samePoint(current: CSSProperties | null, left: number, top: number): boolean {
@@ -169,12 +169,35 @@ export function ModelSelect(
   const [fold, setFold] = useState<'idle' | 'pick' | 'fold'>('idle')
   // The level whose slide-in is playing; only that button gets the pick class.
   const [pickedEffort, setPickedEffort] = useState<string | undefined>(undefined)
+  // Apple-style collapse: measured geometry, not a fixed distance. Each card
+  // animates from where it actually sits into the trigger's rect, so the
+  // transform is computed per fold from live measurements. Zero = no card.
+  const [foldGeometry, setFoldGeometry] = useState<{ dx: number; dy: number; sx: number; sy: number } | null>(null)
   const foldTimers = useRef<ReturnType<typeof setTimeout>[]>([])
+
+  /** @returns the transform that flies one card's centre into the trigger's centre. */
+  const foldInto = (card: HTMLElement | null): { dx: number; dy: number; sx: number; sy: number } | null => {
+    const trigger = triggerRef.current
+    if (card === null || trigger === null) return null
+    const from = card.getBoundingClientRect()
+    const to = trigger.getBoundingClientRect()
+    return {
+      dx: (to.left + to.width / 2) - (from.left + from.width / 2),
+      dy: (to.top + to.height / 2) - (from.top + from.height / 2),
+      sx: from.width > 0 ? to.width / from.width : 0,
+      sy: from.height > 0 ? to.height / from.height : 0,
+    }
+  }
   const playFold = (): void => {
     for (const timer of foldTimers.current) clearTimeout(timer)
     foldTimers.current = [
-      setTimeout(() => { setFold('fold') }, PICK_MS),
-      setTimeout(() => { setFold('idle'); close() }, PICK_MS + FOLD_MS),
+      setTimeout(() => {
+        // Measure before the fold class renders: the cards still sit where
+        // the user saw them, and the trigger is where the choice lands.
+        setFoldGeometry(foldInto(menuRef.current))
+        setFold('fold')
+      }, PICK_MS),
+      setTimeout(() => { setFold('idle'); setFoldGeometry(null); close() }, PICK_MS + FOLD_MS),
     ]
   }
   useEffect(() => () => { for (const timer of foldTimers.current) clearTimeout(timer) }, [])
@@ -637,7 +660,9 @@ export function ModelSelect(
           ref={menuRef}
           id={`${id}-menu`}
           className={clsx(css.menu, fold === 'fold' && css.menuFold)}
-          style={menuPos ?? MEASURE_STYLE}
+          style={fold === 'fold' && foldGeometry !== null
+            ? { ...menuPos, '--dpui-fold-dx': `${foldGeometry.dx}px`, '--dpui-fold-dy': `${foldGeometry.dy}px`, '--dpui-fold-sx': foldGeometry.sx, '--dpui-fold-sy': foldGeometry.sy } as CSSProperties
+            : menuPos ?? MEASURE_STYLE}
           role="group"
           aria-label={t('menu.aria')}
           aria-busy={state.status === 'loading' || busy}
@@ -756,7 +781,9 @@ export function ModelSelect(
         <MenuSurface
           ref={detailRef}
           className={clsx(css.detail, fold === 'fold' && css.detailFold)}
-          style={detailPos ?? MEASURE_STYLE}
+          style={fold === 'fold' && foldGeometry !== null
+            ? { ...detailPos, '--dpui-fold-dx': `${foldGeometry.dx}px`, '--dpui-fold-dy': `${foldGeometry.dy}px`, '--dpui-fold-sx': foldGeometry.sx, '--dpui-fold-sy': foldGeometry.sy } as CSSProperties
+            : detailPos ?? MEASURE_STYLE}
           role="group"
           aria-label={t('menu.effort')}
           aria-busy={busy}
