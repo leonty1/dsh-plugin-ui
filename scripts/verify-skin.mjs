@@ -70,17 +70,19 @@ for (const rule of guarded) {
 //    rendering stays frozen; everything else is byte-compared to HEAD.
 const WIN_GUARD = GUARD
 const PALETTE_GUARD = 'data-dsh-palette'
+const SKIN_GUARDS = ['data-dsh-palette', "html:not([data-platform='darwin'])"]
+/** @returns whether a rule only applies under a skin, so Original colors never resolves it. */
+const themed = rule => SKIN_GUARDS.some(guard => rule.includes(guard))
 const macReachable = list => list.filter(rule => !rule.includes(WIN_GUARD)).sort()
 const current = macReachable(distRules)
 for (const rule of current) {
-  if (rule.includes('--dpui-rail') && !rule.includes(PALETTE_GUARD) && !rule.includes(WIN_GUARD)) {
+  if (rule.includes('--dpui-rail') && !themed(rule)) {
     fail(`unguarded skin rule: ${rule.slice(0, 80)}`)
   }
 }
 if (process.env.SKIP_BASELINE !== '1') {
   const head = execSync('git show HEAD:dist/client.js').toString()
   const baseline = macReachable(rules(skinLiteral(head)))
-  const themed = rule => rule.includes(PALETTE_GUARD)
   const core = list => list.filter(rule => !themed(rule))
   const added = core(current).filter(rule => !core(baseline).includes(rule))
   const removed = core(baseline).filter(rule => !core(current).includes(rule))

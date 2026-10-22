@@ -789,10 +789,21 @@ html[data-platform='darwin'] body[data-dsh-palette][data-ds-dark-theme] [class*=
 }
 /* Qoder's tighter padding and lifted top strip are expanded-only: the rail
    keeps the official 18px/10px padding that the strip's negative margins
-   are calibrated against. */
+   are calibrated against. Original colors keeps the official 12px. */
 [class*="_sidebarCol"] > div > [class*="_root"]:not([class*="_root_"]):not([class*="_collapsed"]) {
   --dsh-sidebar-inline-padding: 8px;
   padding-top: 0 !important;
+}
+/* Floating the column costs the card its own gutter: 8px inline padding ran
+   edge-to-edge on a full-bleed column, but on a rounded floating card it
+   leaves the New Session button, the plugin rows, and the account row
+   hugging the curve. 16px restores the breathing room (the card's 5px
+   margin + 16px inner = 21px to content, against the official 12px flat).
+   The strip's negative margins track the same variable, so its drag zone
+   and the toggle's position move with it. Skin-only: Original colors keeps
+   the 8px rule above. */
+html[data-dsh-palette] body [class*="_sidebarCol"] > div > [class*="_root"]:not([class*="_root_"]):not([class*="_collapsed"]) {
+  --dsh-sidebar-inline-padding: 16px;
 }
 /* The panel list sits after the scrollable region so Plugins and Automation
    tasks rest directly above the account footer, under a solid separator.
