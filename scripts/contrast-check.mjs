@@ -21,19 +21,32 @@ const source = readFileSync(join(root, 'src/client/generated-palettes.js'), 'utf
 const declaration = source.slice(source.indexOf('PALETTE_LAYERS'), source.indexOf('PALETTE_NAMES'))
 const PALETTE_LAYERS = JSON.parse(declaration.slice(declaration.indexOf('{'), declaration.lastIndexOf('}') + 1))
 
-/** Surfaces the ground may lighten. The floor is read back out of skin.css so
- *  this audit always tests the value that actually ships. */
+/** Surfaces the ground may lighten. Every number is read back out of skin.css,
+ *  so this audit always tests the curve that actually ships. */
 const skin = readFileSync(join(root, 'src/client/skin.css'), 'utf8')
-const declared = /--dpui-frost-floor:\s*([0-9.]+)/.exec(skin)
-if (declared === null) {
-  console.error('contrast-check: skin.css declares no --dpui-frost-floor')
-  process.exit(1)
+const declared = {}
+for (const m of skin.matchAll(/--dpui-(frost-floor|frost-elevation|frost-ceiling|sidebar-elevation):\s*([0-9.]+)/g)) {
+  declared[m[1]] = Number(m[2])
 }
-const FLOOR = Number(declared[1])
+for (const key of ['frost-floor', 'frost-elevation', 'frost-ceiling', 'sidebar-elevation']) {
+  if (declared[key] === undefined) {
+    console.error(`contrast-check: skin.css declares no --dpui-${key}`)
+    process.exit(1)
+  }
+}
+/** The card curve: plate alpha plus one elevation, clamped to [floor, ceiling]. */
+const cardAlpha = opacity =>
+  Math.min(declared['frost-ceiling'],
+    Math.max(declared['frost-floor'], (1 - opacity) + declared['frost-elevation']))
+/** The sidebar column rides its own, heavier elevation. */
+const sidebarAlpha = opacity =>
+  Math.min(1, (1 - opacity) + declared['sidebar-elevation'])
 const SURFACES = [
-  { name: 'composer', token: '--dsw-specific-input-major', floor: FLOOR },
-  { name: 'bubble', token: '--dsw-specific-bubble', floor: FLOOR },
-  { name: 'fileCard', token: '--dsw-specific-input-major', floor: FLOOR },
+  { name: 'composer', token: '--dsw-specific-input-major', column: 'center' },
+  { name: 'bubble', token: '--dsw-specific-bubble', column: 'center' },
+  { name: 'fileCard', token: '--dsw-specific-input-major', column: 'center' },
+  { name: 'codeChip', token: '--dsw-alias-markdown-inline-code', column: 'center' },
+  { name: 'newSession', token: '--dsw-alias-bg-layer-1', column: 'sidebar' },
 ]
 const OPACITIES = [0, 0.25, 0.5, 0.75, 1]
 const GROUNDS = [[255, 255, 255], [0, 0, 0]]
@@ -58,9 +71,6 @@ const contrast = (a, b) => {
   const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x)
   return (hi + 0.05) / (lo + 0.05)
 }
-/** The same curve skin.css applies: opaque at 0, the floor at 1. */
-const surfaceAlpha = (floor, opacity) => floor + (1 - opacity) * (1 - floor)
-
 let worst = { ratio: Infinity }
 const rows = []
 for (const [layer, tokens] of Object.entries(PALETTE_LAYERS)) {
@@ -74,8 +84,9 @@ for (const [layer, tokens] of Object.entries(PALETTE_LAYERS)) {
       let layerWorst = { ratio: Infinity }
       for (const opacity of OPACITIES) {
         for (const ground of GROUNDS) {
-          const column = over(base, 1 - opacity, ground)
-          const card = over(fill, surfaceAlpha(surface.floor, opacity), column)
+          const plateAlpha = surface.column === 'sidebar' ? sidebarAlpha(opacity) : 1 - opacity
+          const column = over(base, plateAlpha, ground)
+          const card = over(fill, cardAlpha(opacity), column)
           const ratio = contrast(text, card)
           const at = { ratio, layer, mode, surface: surface.name, opacity,
             ground: ground[0] === 255 ? 'white' : 'black' }

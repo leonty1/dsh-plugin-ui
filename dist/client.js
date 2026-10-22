@@ -1137,6 +1137,17 @@ html[data-platform='darwin'] body[data-dsh-palette][data-ds-dark-theme] [class*=
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] span[class*="newSessionShortcut"] {
   color: var(--dsw-alias-label-tertiary) !important;
 }
+/* On the glass ground the button climbs to the card elevation: slightly more
+   solid than the sidebar behind it, blurred with the same recipe, so it reads
+   as a control resting on the panel rather than a sticker on the wallpaper.
+   Hover stays at least as solid as rest at every slider position. */
+html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] {
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) calc(var(--dpui-frost-alpha, 0.78) * 100%), transparent) !important;
+  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 22px)) saturate(1.4);
+}
+html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"]:hover {
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) calc(max(0.88, var(--dpui-frost-alpha, 0.78)) * 100%), transparent) !important;
+}
 [class*="_centerCol"] header[class*="_header"] { padding-left: 24px !important; padding-right: 24px !important; border-bottom: none !important; }
 [class*="_composerStack"] [class*="_card"] { background: var(--dsw-alias-bg-layer-1) !important; border-radius: 16px !important; }
 
@@ -1264,11 +1275,21 @@ html:has(body[data-dsh-glass]) [class*="_frame"]:has(> [class*="_centerCol"]) {
    picking "none" must never force them clear. Never wrap CSS words in backticks
    in this file: the skin is inlined into a template literal in the bundle, and a
    backtick truncates every reader that stops at the first one. */
-html:has(body[data-dsh-glass]) [class*="_sidebarCol"],
+/* The two columns share one recipe but not one weight. The workspace is where
+   long text is read and it clears with the slider; the sidebar is navigation,
+   so it frosts one step heavier \u2014 more fill and a wider blur, the denser grain
+   the user asked for. Both still empty out toward the top of the track; the
+   sidebar simply starts and stays one notch denser via --dpui-sidebar-alpha. */
 html:has(body[data-dsh-glass]) [class*="_centerCol"] {
   backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 22px)) saturate(1.4) !important;
   background: color-mix(in srgb,
     var(--dsw-alias-bg-base) calc((1 - var(--dpui-glass-opacity, 0.5)) * 100%),
+    transparent) !important;
+}
+html:has(body[data-dsh-glass]) [class*="_sidebarCol"] {
+  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 30px)) saturate(1.4) !important;
+  background: color-mix(in srgb,
+    var(--dsw-alias-bg-base) calc(var(--dpui-sidebar-alpha, 0.62) * 100%),
     transparent) !important;
 }
 /* The workspace paints its base twice: the centre column, then the
@@ -1289,53 +1310,68 @@ html:has(body[data-dsh-glass]) [class*="_bottomRow"] {
 html:has(body[data-dsh-glass])[data-platform='darwin'] body[data-dsh-palette] [class*="_sidebarCol"] {
   background: linear-gradient(
       to bottom,
-      rgb(from var(--dsw-alias-brand-primary) r g b / calc((1 - var(--dpui-glass-opacity, 0.5)) * 0.1)),
+      rgb(from var(--dsw-alias-brand-primary) r g b / calc(var(--dpui-sidebar-alpha, 0.62) * 0.1)),
       rgb(from var(--dsw-alias-brand-primary) r g b / 0) 35%,
       rgb(from var(--dsw-alias-brand-primary) r g b / 0) 68%,
-      rgb(from var(--dsw-alias-brand-primary) r g b / calc((1 - var(--dpui-glass-opacity, 0.5)) * 0.09))
+      rgb(from var(--dsw-alias-brand-primary) r g b / calc(var(--dpui-sidebar-alpha, 0.62) * 0.09))
     ),
     color-mix(in srgb,
-      color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) calc((1 - var(--dpui-glass-opacity, 0.5)) * 100%),
+      color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) calc(var(--dpui-sidebar-alpha, 0.62) * 100%),
       transparent) !important;
 }
 
-/* Surfaces that carry text stay surfaces: the ground shows through the empty
-   canvas, not through the things you read. Their fills mix toward transparent
-   only down to one floor, so the slider lightens a card without taking its text
-   with it.
+/* One material system, three elevations. The ground shows through the empty
+   canvas; surfaces that carry text stay surfaces, mixing toward transparent
+   only as far as their elevation above the plate allows. A card is never more
+   solid than plate + 0.28, and never fully opaque: at the ceiling it keeps 4
+   percent of the plate showing, so even the densest card belongs to the same
+   wash as its surroundings.
 
-   The floor is measured, not guessed. scripts/contrast-check.mjs composites
+   The curve is measured, not guessed. scripts/contrast-check.mjs composites
    these very rules across every palette, both modes, every slider notch, and a
    ground that is pure white on one side and pure black on the other; the worst
-   case in the audit needs 0.755 for 4.8:1, so the floor is 0.78. The var()
-   fallback repeats that number on purpose: without one an unknown custom
-   property invalidates the whole declaration and the card would drop to fully
-   transparent, which is the one failure mode worse than an opaque card. One floor for
-   all three because the binding constraint is the same everywhere \u2014 the lightest
-   body text against the most extreme ground \u2014 and per-surface tiers would only
-   have pretended to differ.
+   case needs 0.755 for 4.8:1, so the floor is 0.78. The var() fallbacks repeat
+   the floors on purpose: without a fallback an unknown custom property
+   invalidates the whole declaration and the surface would drop to fully
+   transparent, the one failure mode worse than an opaque one.
 
    Deliberately not frosted: code blocks (shiki inlines its own background and
-   every syntax colour is picked against it), and menus, dialogs and toasts (an
-   overlay that lets the ground through is an overlay you cannot read). */
+   every syntax colour is picked against it \u2014 the chip rule below excludes
+   them for exactly that reason), and menus, dialogs and toasts (an overlay
+   that lets the ground through is an overlay you cannot read). The gradient
+   strip under the composer stays as the shell ships it. */
 html:has(body[data-dsh-glass]) [class*="_frame"] {
   --dpui-frost-floor: 0.78;
+  --dpui-frost-elevation: 0.28;
+  --dpui-frost-ceiling: 0.96;
+  --dpui-sidebar-elevation: 0.12;
+  --dpui-frost-alpha: calc(min(var(--dpui-frost-ceiling), max(var(--dpui-frost-floor), (1 - var(--dpui-glass-opacity, 0.5)) + var(--dpui-frost-elevation))));
+  --dpui-sidebar-alpha: calc(min(1, (1 - var(--dpui-glass-opacity, 0.5)) + var(--dpui-sidebar-elevation)));
 }
 html:has(body[data-dsh-glass]) [data-composer-card] {
   background: color-mix(in srgb,
-    var(--dsw-specific-input-major) calc((var(--dpui-frost-floor, 0.78) + (1 - var(--dpui-glass-opacity, 0.5)) * (1 - var(--dpui-frost-floor, 0.78))) * 100%),
+    var(--dsw-specific-input-major) calc(var(--dpui-frost-alpha, 0.78) * 100%),
     transparent) !important;
-  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 18px)) saturate(1.25);
+  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 22px)) saturate(1.4);
 }
 html:has(body[data-dsh-glass]) [class*="_bubble"] {
   background: color-mix(in srgb,
-    var(--dsw-specific-bubble) calc((var(--dpui-frost-floor, 0.78) + (1 - var(--dpui-glass-opacity, 0.5)) * (1 - var(--dpui-frost-floor, 0.78))) * 100%),
+    var(--dsw-specific-bubble) calc(var(--dpui-frost-alpha, 0.78) * 100%),
     transparent) !important;
-  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 18px)) saturate(1.25);
+  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 22px)) saturate(1.4);
 }
 html:has(body[data-dsh-glass]) [class*="_fileCard"] {
   background: color-mix(in srgb,
-    var(--dsw-specific-input-major) calc((var(--dpui-frost-floor, 0.78) + (1 - var(--dpui-glass-opacity, 0.5)) * (1 - var(--dpui-frost-floor, 0.78))) * 100%),
+    var(--dsw-specific-input-major) calc(var(--dpui-frost-alpha, 0.78) * 100%),
+    transparent) !important;
+  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 22px)) saturate(1.4);
+}
+/* Inline code chips are the last solid islands in the message text: little
+   white tiles pasted on the wash. They ride the card alpha like every other
+   text-bearing surface. Block code is excluded \u2014 shiki owns its background. */
+html:has(body[data-dsh-glass]) [class*="_markdown"] code:not([data-code-block-content] code) {
+  background-color: color-mix(in srgb,
+    var(--dsw-alias-markdown-inline-code) calc(var(--dpui-frost-alpha, 0.78) * 100%),
     transparent) !important;
 }
 `;

@@ -122,7 +122,7 @@ const PLUGIN_SURFACES = [
  *  ground lightens their fill, so they need an entry even though the shell owns
  *  them. Named by data-* hook where the host offers one — those survive a build,
  *  while its class names are hashed per release. */
-const GLASS_SURFACES = ['[data-composer-card]', '[class*="_bubble"]', '[class*="_fileCard"]']
+const GLASS_SURFACES = ['[data-composer-card]', '[class*="_bubble"]', '[class*="_fileCard"]', '[class*="_markdown"]']
 const GROUND_GUARD = 'data-dsh-glass'
 const owned = rule =>
   PLUGIN_SURFACES.some(name => rule.includes(`[class*="${name}"]`))
