@@ -105,7 +105,7 @@ const PLACE_GAP = 8
  * reads first, then the cards withdraw toward the composer.
  */
 const PICK_MS = 260
-const FOLD_MS = 300
+const FOLD_MS = 320
 
 /** @returns whether a placement already lands on this point (sub-pixel noise aside). */
 function samePoint(current: CSSProperties | null, left: number, top: number): boolean {
@@ -201,23 +201,37 @@ export function ModelSelect(
   // The level whose slide-in is playing; only that button gets the pick class.
   const [pickedEffort, setPickedEffort] = useState<string | undefined>(undefined)
   // Rug-roll collapse: the card is not translated as a slab. It is clipped
-  // down to a narrow strip that keeps narrowing while it travels into the
-  // trigger, the way a rug rolls up as it is pulled. The measured geometry
-  // gives the strip somewhere to go; the clip does the rolling.
+  // Suction collapse: the card is pulled down into the composer's model
+  // button, the way a sheet is pulled into a slot. The measured geometry
+  // supplies the target; the direction is biased downward (see foldInto) so
+  // every row reads as falling into the input box rather than drifting
+  // sideways toward wherever the trigger happens to sit.
   const [foldGeometry, setFoldGeometry] = useState<{
     dx: number; dy: number; sx: number; sy: number; w: number; h: number
   } | null>(null)
   const foldTimers = useRef<ReturnType<typeof setTimeout>[]>([])
 
-  /** @returns the transform that rolls one card into the trigger's rect. */
+  /**
+   * @param card - the list card being collapsed.
+   * @returns the vector and scale that pull one card into the trigger. The
+   *   horizontal component is damped and the vertical one biased downward, so
+   *   the motion always reads as being swallowed by the composer below.
+   */
   const foldInto = (card: HTMLElement | null): { dx: number; dy: number; sx: number; sy: number; w: number; h: number } | null => {
     const trigger = triggerRef.current
     if (card === null || trigger === null) return null
     const from = card.getBoundingClientRect()
     const to = trigger.getBoundingClientRect()
+    let dx = (to.left + to.width / 2) - (from.left + from.width / 2)
+    let dy = (to.top + to.height / 2) - (from.top + from.height / 2)
+    // Damp the sideways drift and guarantee a downward pull of at least half
+    // the card's height: the menu opens upward out of the composer, so the
+    // gesture has to end by dropping back into it.
+    dx *= 0.55
+    dy = Math.max(dy, from.height * 0.55) + 24
     return {
-      dx: (to.left + to.width / 2) - (from.left + from.width / 2),
-      dy: (to.top + to.height / 2) - (from.top + from.height / 2),
+      dx,
+      dy,
       sx: from.width > 0 ? to.width / from.width : 0,
       sy: from.height > 0 ? to.height / from.height : 0,
       w: from.width,
@@ -662,7 +676,7 @@ export function ModelSelect(
       <button
         ref={triggerRef}
         type="button"
-        className={css.trigger}
+        className={clsx(css.trigger, fold === 'fold' && css.triggerPulse)}
         aria-label={triggerAria}
         aria-haspopup="menu"
         aria-expanded={open}
