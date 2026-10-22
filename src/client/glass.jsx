@@ -59,10 +59,15 @@ function apply(state) {
   // glass tint over the default ground.
   if (state.glass > 0 || state.wallpaper !== 'none') {
     body.setAttribute('data-dsh-glass', '')
+    // Which ground is active, not just whether one is: "none" clears the plate
+    // completely instead of painting the base colour, so skin.css needs to
+    // tell an empty ground from a picture.
+    body.setAttribute('data-dsh-ground', state.wallpaper)
     body.style.setProperty('--dpui-glass-opacity', String(state.glass))
     body.style.setProperty('--dpui-ground-image', wallpaperUrl(state))
   } else {
     body.removeAttribute('data-dsh-glass')
+    body.removeAttribute('data-dsh-ground')
   }
 }
 
@@ -133,6 +138,7 @@ export function createGroundController() {
       return () => {
         clearInterval(timer)
         document.body.removeAttribute('data-dsh-glass')
+        document.body.removeAttribute('data-dsh-ground')
       }
     },
   }

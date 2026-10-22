@@ -208,8 +208,15 @@
 }
 
 /* No wallpaper: a quiet empty plate, not a colour the eye mistakes for a preset. */
+/* A checkerboard, not a flat fill: the old tile read as a white swatch sitting
+   among the pictures, which is the opposite of what it does — picking it
+   clears the plate to transparent. */
 .groundSwatchNone {
-  background: var(--dsw-alias-bg-layer-2);
+  background-color: var(--dsw-alias-bg-base);
+  background-image: repeating-conic-gradient(
+    var(--dsw-alias-border-l3) 0% 25%,
+    transparent 0% 50%);
+  background-size: 12px 12px;
 }
 
 .groundSwatchCustom {

@@ -282,3 +282,15 @@ html:has(body[data-dsh-glass])[data-platform='darwin'] body[data-dsh-palette] [c
       transparent) !important;
 }
 
+/* "None" is not a white plate. With no wallpaper there is nothing to paint, so
+   the plate clears completely and the window's own material shows through —
+   mac's menu vibrancy, Windows' acrylic backdrop. The slider still fades the
+   blur, which is all that is left to fade. The sidebar rule carries the extra
+   attribute so it outranks the mac brand wash above. */
+html:has(body[data-dsh-glass][data-dsh-ground='none']) [class*="_sidebarCol"],
+html:has(body[data-dsh-glass][data-dsh-ground='none']) [class*="_centerCol"] {
+  background: transparent !important;
+}
+html:has(body[data-dsh-glass][data-dsh-ground='none'])[data-platform='darwin'] body[data-dsh-palette] [class*="_sidebarCol"] {
+  background: transparent !important;
+}
