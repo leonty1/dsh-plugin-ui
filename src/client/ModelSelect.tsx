@@ -105,7 +105,7 @@ const PLACE_GAP = 8
  * reads first, then the cards withdraw toward the composer.
  */
 const PICK_MS = 260
-const FOLD_MS = 320
+const FOLD_MS = 520
 
 /** @returns whether a placement already lands on this point (sub-pixel noise aside). */
 function samePoint(current: CSSProperties | null, left: number, top: number): boolean {
@@ -213,25 +213,20 @@ export function ModelSelect(
 
   /**
    * @param card - the list card being collapsed.
-   * @returns the vector and scale that pull one card into the trigger. The
-   *   horizontal component is damped and the vertical one biased downward, so
-   *   the motion always reads as being swallowed by the composer below.
+   * @returns the vector and scale that pull one card into the trigger button
+   *   — the seat in the composer that displays the model name — so the card
+   *   visibly lands in that window rather than drifting to a nearby point.
    */
   const foldInto = (card: HTMLElement | null): { dx: number; dy: number; sx: number; sy: number; w: number; h: number } | null => {
     const trigger = triggerRef.current
     if (card === null || trigger === null) return null
     const from = card.getBoundingClientRect()
     const to = trigger.getBoundingClientRect()
-    let dx = (to.left + to.width / 2) - (from.left + from.width / 2)
-    let dy = (to.top + to.height / 2) - (from.top + from.height / 2)
-    // Damp the sideways drift and guarantee a downward pull of at least half
-    // the card's height: the menu opens upward out of the composer, so the
-    // gesture has to end by dropping back into it.
-    dx *= 0.55
-    dy = Math.max(dy, from.height * 0.55) + 24
     return {
-      dx,
-      dy,
+      // Exact centre-to-centre vector: the destination is the trigger's own
+      // box, so the card shrinks inside the window that shows the model name.
+      dx: (to.left + to.width / 2) - (from.left + from.width / 2),
+      dy: (to.top + to.height / 2) - (from.top + from.height / 2),
       sx: from.width > 0 ? to.width / from.width : 0,
       sy: from.height > 0 ? to.height / from.height : 0,
       w: from.width,

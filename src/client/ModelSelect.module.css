@@ -398,24 +398,27 @@
 }
 
 /* Suction collapse after a pick.
-   The card is pulled down into the composer's model button the way a sheet
-   is pulled into a slot. Four things make the pull read as suction:
+   The card is pulled into the composer's model-name window — the trigger
+   button itself. foldInto() supplies the exact centre-to-centre vector and
+   the width/height ratio into that button, so the card finishes as a scale
+   copy of the window it is landing in rather than drifting near it.
 
-   1. An ease-IN curve, not ease-out: the card hangs, gathering, then dives.
-      Everything else in this file is fast-start; suction must be the reverse.
-   2. A short anticipation at 12% — the card drifts *up* a hair and its edges
-      give slightly before the drop. That pre-lift is what sells the pull.
-   3. The clip eats the surface from all four edges while the scale runs well
-      past the trigger's size, so it vanishes inside the button.
-   4. The pull is mostly downward (ModelSelect biases the vector), so every
-      row falls into the input box instead of sliding sideways.
+   The motion is deliberately unhurried (520ms): the suction has to be read,
+   not glimpsed. Four beats:
 
-   Geometry comes from ModelSelect.tsx, measured once per pick. */
+     0%    resting, full size
+     14%   anticipation — a 4px lift and a 1.01 swell while the edges give
+     34%   still gathering, almost no travel (the pull is winding up)
+     72%   the dive, most of the distance in this stretch
+     100%  swallowed by the trigger, clipped to nothing
+
+   transform-origin sits at the bottom edge facing the composer, so the
+   surface collapses toward the window it disappears into. */
 .menuFold,
 .detailFold {
   transform-origin: center bottom;
   will-change: transform, clip-path, opacity;
-  animation: dpui-card-suck 320ms cubic-bezier(0.62, 0, 0.88, 0.32) forwards;
+  animation: dpui-card-suck 520ms cubic-bezier(0.62, 0, 0.86, 0.28) forwards;
 }
 
 @keyframes dpui-card-suck {
@@ -424,36 +427,38 @@
     clip-path: inset(0 0 0 0 round 0);
     transform: translate(0, 0) scale(1, 1);
   }
-  /* Anticipation: lift a hair, edges just starting to give. */
-  12% {
+  /* Anticipation: the card lifts a hair and swells as the pull takes hold. */
+  14% {
     opacity: 1;
     clip-path: inset(0 0 1% 0 round 0);
-    transform: translate(0, -3px) scale(1.008, 1.008);
+    transform: translate(calc(var(--dpui-fold-dx, 0px) * -0.012), calc(-4px))
+      scale(1.012, 1.012);
   }
-  /* Still gathering: barely any travel, the surface is being drawn taut. */
-  28% {
+  /* Winding up: edges give a little, the card has barely started to move. */
+  34% {
     opacity: 1;
     clip-path: inset(3% 3% 3% 3% round 3px);
     transform: translate(calc(var(--dpui-fold-dx, 0px) * 0.03), calc(var(--dpui-fold-dy, 0px) * 0.03))
       scale(calc(1 - (1 - var(--dpui-fold-sx, 1)) * 0.05), calc(1 - (1 - var(--dpui-fold-sy, 1)) * 0.05));
   }
-  /* The dive: four fifths of the distance in this stretch, surface half gone. */
-  68% {
-    opacity: 0.75;
-    clip-path: inset(20% 26% 20% 26% round 8px);
-    transform: translate(calc(var(--dpui-fold-dx, 0px) * 0.8), calc(var(--dpui-fold-dy, 0px) * 0.8))
-      scale(calc(1 - (1 - var(--dpui-fold-sx, 1)) * 0.8), calc(1 - (1 - var(--dpui-fold-sy, 1)) * 0.8));
+  /* The dive: four fifths of the way into the window, surface half eaten. */
+  72% {
+    opacity: 0.8;
+    clip-path: inset(18% 24% 18% 24% round 8px);
+    transform: translate(calc(var(--dpui-fold-dx, 0px) * 0.82), calc(var(--dpui-fold-dy, 0px) * 0.82))
+      scale(calc(1 - (1 - var(--dpui-fold-sx, 1)) * 0.82), calc(1 - (1 - var(--dpui-fold-sy, 1)) * 0.82));
   }
   to {
     opacity: 0;
     clip-path: inset(50% 50% 50% 50% round 10px);
+    /* Lands at the trigger's own size, then a touch smaller, so it reads as
+       having gone inside the window rather than resting on it. */
     transform: translate(var(--dpui-fold-dx, 0px), var(--dpui-fold-dy, 0px))
-      scale(var(--dpui-fold-sx, 0.15), var(--dpui-fold-sy, 0.15));
+      scale(calc(var(--dpui-fold-sx, 0.2) * 0.85), calc(var(--dpui-fold-sy, 0.2) * 0.85));
   }
 }
 
-/* The button that received the choice answers the pull: one short dip that
-   starts as the card lands, so the gesture ends at a surface that reacts. */
+/* The window answers the pull: one short dip as the card lands in it. */
 .triggerPulse {
   animation: dpui-trigger-pulse 300ms ease-out 1;
 }
