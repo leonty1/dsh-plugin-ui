@@ -99,9 +99,18 @@ const PLUGIN_SURFACES = [
   '_projectRow', '_sessionRow', '_searchResultRow', '_newSession', '_previewBadge',
   '_header', '_root', '_card', '_genieSlice',
 ]
+/** Surfaces inside the workspace that carry text and are allowed to frost: the
+ *  ground lightens their fill, so they need an entry even though the shell owns
+ *  them. Named by data-* hook where the host offers one — those survive a build,
+ *  while its class names are hashed per release. */
+const GLASS_SURFACES = ['[data-composer-card]', '[class*="_bubble"]', '[class*="_fileCard"]']
+const GROUND_GUARD = 'data-dsh-glass'
 const owned = rule =>
   PLUGIN_SURFACES.some(name => rule.includes(`[class*="${name}"]`))
   || rule.includes('.dpui-ground-')   // the ground section's own settings UI
+  // Frosting a text-bearing surface is a deliberate, listed exception, and only
+  // while the ground is on: without that gate the rule would restyle the app.
+  || (rule.includes(GROUND_GUARD) && GLASS_SURFACES.some(hook => rule.includes(hook)))
 const macReachable = list => list.filter(rule => !rule.includes(WIN_GUARD)).sort()
 const current = macReachable(distRules)
 for (const rule of current) {

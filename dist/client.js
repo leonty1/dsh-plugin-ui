@@ -1296,6 +1296,46 @@ html:has(body[data-dsh-glass])[data-platform='darwin'] body[data-dsh-palette] [c
       transparent) !important;
 }
 
+/* Surfaces that carry text stay surfaces: the ground shows through the empty
+   canvas, not through the things you read. Their fills mix toward transparent
+   only down to one floor, so the slider lightens a card without taking its text
+   with it.
+
+   The floor is measured, not guessed. scripts/contrast-check.mjs composites
+   these very rules across every palette, both modes, every slider notch, and a
+   ground that is pure white on one side and pure black on the other; the worst
+   case in the audit needs 0.755 for 4.8:1, so the floor is 0.78. The var()
+   fallback repeats that number on purpose: without one an unknown custom
+   property invalidates the whole declaration and the card would drop to fully
+   transparent, which is the one failure mode worse than an opaque card. One floor for
+   all three because the binding constraint is the same everywhere \u2014 the lightest
+   body text against the most extreme ground \u2014 and per-surface tiers would only
+   have pretended to differ.
+
+   Deliberately not frosted: code blocks (shiki inlines its own background and
+   every syntax colour is picked against it), and menus, dialogs and toasts (an
+   overlay that lets the ground through is an overlay you cannot read). */
+html:has(body[data-dsh-glass]) [class*="_frame"] {
+  --dpui-frost-floor: 0.78;
+}
+html:has(body[data-dsh-glass]) [data-composer-card] {
+  background: color-mix(in srgb,
+    var(--dsw-specific-input-major) calc((var(--dpui-frost-floor, 0.78) + (1 - var(--dpui-glass-opacity, 0.5)) * (1 - var(--dpui-frost-floor, 0.78))) * 100%),
+    transparent) !important;
+  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 18px)) saturate(1.25);
+}
+html:has(body[data-dsh-glass]) [class*="_bubble"] {
+  background: color-mix(in srgb,
+    var(--dsw-specific-bubble) calc((var(--dpui-frost-floor, 0.78) + (1 - var(--dpui-glass-opacity, 0.5)) * (1 - var(--dpui-frost-floor, 0.78))) * 100%),
+    transparent) !important;
+  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 18px)) saturate(1.25);
+}
+html:has(body[data-dsh-glass]) [class*="_fileCard"] {
+  background: color-mix(in srgb,
+    var(--dsw-specific-input-major) calc((var(--dpui-frost-floor, 0.78) + (1 - var(--dpui-glass-opacity, 0.5)) * (1 - var(--dpui-frost-floor, 0.78))) * 100%),
+    transparent) !important;
+}
+
 /* "None" is not a white plate. With no wallpaper there is nothing to paint, so
    the plate clears completely and the window's own material shows through \u2014
    mac's menu vibrancy, Windows' acrylic backdrop. The slider still fades the
