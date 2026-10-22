@@ -247,6 +247,12 @@ html:not([data-platform='darwin']) [class*="_frame"] > [class*="_centerCol"] {
 html:has(body[data-dsh-glass]) [class*="_frame"]:has(> [class*="_centerCol"]) {
   background: var(--dpui-ground-image) center / cover no-repeat !important;
 }
+/* With no wallpaper the variable resolves to the keyword none, which clears the
+   frame's own fill — the ground layer itself is then fully transparent. That is
+   all "none" means: the two columns keep their slider-driven tint either way, so
+   picking "none" must never force them clear. Never wrap CSS words in backticks
+   in this file: the skin is inlined into a template literal in the bundle, and a
+   backtick truncates every reader that stops at the first one. */
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"],
 html:has(body[data-dsh-glass]) [class*="_centerCol"] {
   backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 22px)) saturate(1.4) !important;
@@ -320,17 +326,4 @@ html:has(body[data-dsh-glass]) [class*="_fileCard"] {
   background: color-mix(in srgb,
     var(--dsw-specific-input-major) calc((var(--dpui-frost-floor, 0.78) + (1 - var(--dpui-glass-opacity, 0.5)) * (1 - var(--dpui-frost-floor, 0.78))) * 100%),
     transparent) !important;
-}
-
-/* "None" is not a white plate. With no wallpaper there is nothing to paint, so
-   the plate clears completely and the window's own material shows through —
-   mac's menu vibrancy, Windows' acrylic backdrop. The slider still fades the
-   blur, which is all that is left to fade. The sidebar rule carries the extra
-   attribute so it outranks the mac brand wash above. */
-html:has(body[data-dsh-glass][data-dsh-ground='none']) [class*="_sidebarCol"],
-html:has(body[data-dsh-glass][data-dsh-ground='none']) [class*="_centerCol"] {
-  background: transparent !important;
-}
-html:has(body[data-dsh-glass][data-dsh-ground='none'])[data-platform='darwin'] body[data-dsh-palette] [class*="_sidebarCol"] {
-  background: transparent !important;
 }

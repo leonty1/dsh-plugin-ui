@@ -33,9 +33,18 @@ function skinLiteral(bundle) {
   const start = bundle.indexOf('var skin_default = `')
   if (start < 0) throw new Error('skin literal not found in bundle')
   const from = start + 'var skin_default = `'.length
-  const end = bundle.indexOf('`', from)
+  // A backtick inside the CSS reaches the bundle escaped, so stopping at the
+  // first one truncated the skin mid-file and this whole check went blind to
+  // every rule after it. Only an unescaped backtick ends the literal.
+  let end = -1
+  for (let i = from; i < bundle.length; i++) {
+    if (bundle[i] !== '`') continue
+    let slashes = 0
+    for (let j = i - 1; j >= from && bundle[j] === '\\'; j--) slashes++
+    if (slashes % 2 === 0) { end = i; break }
+  }
   if (end < 0) throw new Error('unterminated skin literal')
-  return bundle.slice(from, end)
+  return bundle.slice(from, end).replace(/\\`/g, '`')
 }
 
 const source = rules(readFileSync('src/client/skin.css', 'utf8'))
@@ -43,6 +52,16 @@ const dist = readFileSync('dist/client.js', 'utf8')
 const distRules = rules(skinLiteral(dist))
 let failures = 0
 const fail = message => { failures++; console.error(`FAIL: ${message}`) }
+
+// The bundle must carry every rule skin.css declares. This is the check that
+// makes the others trustworthy: a selector the extractor never saw would pass
+// every rule-level test by simply not being there.
+{
+  const missing = source.filter(rule => !distRules.includes(rule))
+  const extra = distRules.filter(rule => !source.includes(rule))
+  if (missing.length > 0) fail(`skin.css rules absent from the bundle: ${missing[0].slice(0, 70)}`)
+  if (extra.length > 0) fail(`bundle carries rules skin.css does not: ${extra[0].slice(0, 70)}`)
+}
 
 // a) --dpui-rail and the sidebar-fill redefinition are the Windows color
 //    vocabulary; any rule using them must be guarded. The --dpui-sidebar-*

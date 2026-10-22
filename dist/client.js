@@ -819,12 +819,10 @@ function apply(state) {
   const body = document.body;
   if (state.glass > 0 || state.wallpaper !== "none") {
     body.setAttribute("data-dsh-glass", "");
-    body.setAttribute("data-dsh-ground", state.wallpaper);
     body.style.setProperty("--dpui-glass-opacity", String(state.glass));
     body.style.setProperty("--dpui-ground-image", wallpaperUrl(state));
   } else {
     body.removeAttribute("data-dsh-glass");
-    body.removeAttribute("data-dsh-ground");
   }
 }
 function createGroundController() {
@@ -889,7 +887,6 @@ function createGroundController() {
       return () => {
         clearInterval(timer);
         document.body.removeAttribute("data-dsh-glass");
-        document.body.removeAttribute("data-dsh-ground");
       };
     }
   };
@@ -1261,6 +1258,12 @@ html:not([data-platform='darwin']) [class*="_frame"] > [class*="_centerCol"] {
 html:has(body[data-dsh-glass]) [class*="_frame"]:has(> [class*="_centerCol"]) {
   background: var(--dpui-ground-image) center / cover no-repeat !important;
 }
+/* With no wallpaper the variable resolves to the keyword none, which clears the
+   frame's own fill \u2014 the ground layer itself is then fully transparent. That is
+   all "none" means: the two columns keep their slider-driven tint either way, so
+   picking "none" must never force them clear. Never wrap CSS words in backticks
+   in this file: the skin is inlined into a template literal in the bundle, and a
+   backtick truncates every reader that stops at the first one. */
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"],
 html:has(body[data-dsh-glass]) [class*="_centerCol"] {
   backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 22px)) saturate(1.4) !important;
@@ -1334,19 +1337,6 @@ html:has(body[data-dsh-glass]) [class*="_fileCard"] {
   background: color-mix(in srgb,
     var(--dsw-specific-input-major) calc((var(--dpui-frost-floor, 0.78) + (1 - var(--dpui-glass-opacity, 0.5)) * (1 - var(--dpui-frost-floor, 0.78))) * 100%),
     transparent) !important;
-}
-
-/* "None" is not a white plate. With no wallpaper there is nothing to paint, so
-   the plate clears completely and the window's own material shows through \u2014
-   mac's menu vibrancy, Windows' acrylic backdrop. The slider still fades the
-   blur, which is all that is left to fade. The sidebar rule carries the extra
-   attribute so it outranks the mac brand wash above. */
-html:has(body[data-dsh-glass][data-dsh-ground='none']) [class*="_sidebarCol"],
-html:has(body[data-dsh-glass][data-dsh-ground='none']) [class*="_centerCol"] {
-  background: transparent !important;
-}
-html:has(body[data-dsh-glass][data-dsh-ground='none'])[data-platform='darwin'] body[data-dsh-palette] [class*="_sidebarCol"] {
-  background: transparent !important;
 }
 `;
 
@@ -2359,7 +2349,7 @@ var zh = {
   "palette.wallpaperCustom": "\u81EA\u5B9A\u4E49\u2026",
   "palette.wallpaperCustomSet": "\u81EA\u5B9A\u4E49 \u2713",
   "palette.glassHint": "\u5DE6\u53F3\u4E24\u4FA7\u540C\u4E00\u6863\u900F\u660E\u5EA6\uFF1B0 \u4E3A\u4E0D\u900F\u660E\uFF0C1 \u4E3A\u5B8C\u5168\u900F\u51FA",
-  "palette.wallpaperHint": "\u94FA\u5728\u4E24\u5F20\u5361\u7247\u4E0B\u65B9\u7684\u5E95\u677F\u753B\u9762\uFF1B\u9009\u300C\u65E0\u300D\u5219\u5E95\u677F\u5B8C\u5168\u900F\u660E",
+  "palette.wallpaperHint": "\u94FA\u5728\u4E24\u5F20\u5361\u7247\u4E0B\u65B9\u7684\u5E95\u677F\u753B\u9762\uFF1B\u9009\u300C\u65E0\u300D\u5219\u4E0D\u94FA\u4EFB\u4F55\u753B\u9762\uFF0C\u5E95\u677F\u5B8C\u5168\u900F\u660E",
   "palette.rotate": "\u81EA\u52A8\u66F4\u6362",
   "palette.rotateHint": "\u6309\u95F4\u9694\u81EA\u52A8\u8F6E\u6362\u4E0A\u9762\u7684\u58C1\u7EB8",
   "palette.rotateOff": "\u5173\u95ED",
@@ -2436,7 +2426,7 @@ var en = {
   "palette.wallpaperCustom": "Custom\u2026",
   "palette.wallpaperCustomSet": "Custom \u2713",
   "palette.glassHint": "One transparency for both sides; 0 is opaque, 1 shows the ground",
-  "palette.wallpaperHint": "The ground behind both floating cards; None clears it completely",
+  "palette.wallpaperHint": "The ground behind both floating cards; None lays no picture, leaving the ground clear",
   "palette.rotate": "Auto change",
   "palette.rotateHint": "Cycle the wallpapers above on an interval",
   "palette.rotateOff": "Off",
