@@ -128,8 +128,9 @@ const PLUGIN_SURFACES = [
  *  shell popover primitive's solid-white undercoat — cleared under glass so
  *  the material's own frost reads (see the backing rule in skin.css). _tag is
  *  the status tag component — only its neutral tone is touched, dropping to
- *  the 12% tint its sibling tones already use. */
-const GLASS_SURFACES = ['[data-composer-card]', '[class*="_bubble"]', '[class*="_fileCard"]', '[class*="_markdown"]', '.md-code-block', '[class*="_composerSeat"]', '[data-tool]', '[data-terminal]', '[data-web]', '[data-search]', '[class*="_backing"]', '[class*="_tag"]']
+ *  the 12% tint its sibling tones already use. data-dockkit-empty is the
+ *  dock's empty tab host, a solid-white slab cleared like the page shell. */
+const GLASS_SURFACES = ['[data-composer-card]', '[class*="_bubble"]', '[class*="_fileCard"]', '[class*="_markdown"]', '.md-code-block', '[class*="_composerSeat"]', '[data-tool]', '[data-terminal]', '[data-web]', '[data-search]', '[class*="_backing"]', '[class*="_tag"]', '[data-dockkit-empty]']
 const GROUND_GUARD = 'data-dsh-glass'
 const owned = rule =>
   PLUGIN_SURFACES.some(name => rule.includes(`[class*="${name}"]`))

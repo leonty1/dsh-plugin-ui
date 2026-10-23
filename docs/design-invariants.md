@@ -145,7 +145,7 @@ pnpm check          # 构建 + 语法 + 皮肤契约 + 类型检查
 | 行内代码 chip | 装饰级乘法曲线 `max(0.22, (1-滑条) × 0.40)`（v0.1.39）：卡片曲线下近白 token 合成 +20L 白瓷砖，降到 +9~11L；blur 12px + 4px，材质里最轻 | `_markdown` 内联 `code`（排除块代码） |
 | 微型状态件 | 顺组件自己的家族逻辑，不新开曲线（v0.1.45）：状态标签 `_tag` 的 success/info/warning/danger tone 本就是 10–12% 透色 tint，只有 neutral tone（exit code 徽标）刷不透明 `bg-module-platform`——玻璃门下降到同款 12%；solid tone 反白不动（芯片世界的主按钮）；`Stopped` 药丸刷 `interactive-bg-hover`（与行 hover 同 token），玻璃门下取 40% neutral-00 薄纱 | `[class*="_tag"][data-tone='neutral']`、`[class*="_centerCol"] [class*="_stopped"]`（`_tag` 在 GLASS_SURFACES 例外） |
 | 强调孤岛（代码段、特殊字段体、上下文行、命令卡） | 同一卡片海拔，经 `_centerCol` 上的 `--dsw-alias-markdown-code-block`（及 banner token）重定义结霜；基色在 `_frame` 上快照，避免同元素自引用环 | 「很白的实块」按用户要求全部进毛玻璃（v0.1.36） |
-| 菜单 / 弹窗 / toast / 输入框下渐变条 | toast 与渐变条保持原样；菜单/弹窗 v0.1.39 起拆掉 `_backing` 垫底（壳的浮层 primitive 本是毛玻璃 `_material` + 不透明纸白 `_backing` 两层，垫底把玻璃垫死成固定白盒）——玻璃模式下垫底透明，`_material` 自带涂层干活；非玻璃/原色模式垫底保留。v0.1.44：整页视图（自动化任务页、同族设置页）的纯白 page 板同样在玻璃门下置透明，露出柱子霜；页面控件保留填充 | `[class*="_backing"]`、`[class*="_centerCol"] [class*="_page"]`（均玻璃门控内，前者在 verify-skin GLASS_SURFACES 例外） |
+| 菜单 / 弹窗 / toast / 输入框下渐变条 | toast 与渐变条保持原样；菜单/弹窗 v0.1.39 起拆掉 `_backing` 垫底（壳的浮层 primitive 本是毛玻璃 `_material` + 不透明纸白 `_backing` 两层，垫底把玻璃垫死成固定白盒）——玻璃模式下垫底透明，`_material` 自带涂层干活；非玻璃/原色模式垫底保留。v0.1.44：整页视图（自动化任务页、同族设置页）的纯白 page 板同样在玻璃门下置透明，露出柱子霜；页面控件保留填充。v0.1.46：dock 空面板宿主（`data-dockkit-empty`，"Empty pane"）同待遇——潜伏白板，当前窗口恰在屏幕外 | `[class*="_backing"]`、`[class*="_centerCol"] [class*="_page"]`、`[data-dockkit-empty]`（均玻璃门控内，前两者在 verify-skin GLASS_SURFACES 例外） |
 
 卡片曲线 `--dpui-frost-alpha = min(0.96, max(0.46, (1-滑条) + 0.10))`：
 卡片永远比身后的底板「高一层」，但高得有限——最高不到纯不透明（留 4% 透出，

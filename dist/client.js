@@ -1603,6 +1603,14 @@ html:has(body[data-dsh-glass]) [class*="_tag"][data-tone='neutral'] {
 html:has(body[data-dsh-glass]) [class*="_centerCol"] [class*="_stopped"] {
   background: color-mix(in srgb, var(--dsw-static-neutral-00) 40%, transparent) !important;
 }
+/* The dock's empty tab host (data-dockkit-empty, the "Empty pane" slab in a
+   split or the right column when no tab fills it) paints solid white \u2014 a
+   576x810 board that would float on the wallpaper the moment the window is
+   wide enough to show it. Under glass it stands down like the page shell
+   above; its "Empty pane" label is tertiary ink and reads fine on the wash. */
+html:has(body[data-dsh-glass]) [data-dockkit-empty] {
+  background-color: transparent !important;
+}
 `;
 
 // src/client/palette.jsx

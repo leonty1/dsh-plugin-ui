@@ -134,6 +134,7 @@ md-code-block   glass×30px + 10px
 - **toast 仍然不动**：透底的 toast 读不清。
 - 浮层不进曲线表 — 它们的霜是壳自带的，插件只拆垫底。
 - **整页视图的白色页板**（v0.1.44）：自动化任务页（及同组件族的设置页）的 section 根刷纯白（990×810 大板），玻璃门下置透明露出柱子的霜——Plugins 页的 page 根本来就没刷白，所以原本只有自动化页是一块板。页面上的控件（主按钮、开关、激活筛选 tab）保留各自填充。钩子 `[class*="_centerCol"] [class*="_page"]`。
+- **dock 空面板宿主**（v0.1.46）：`[data-dockkit-empty]`（分屏/右栏没有 tab 时的 "Empty pane" 宿主）刷纯白 576×810，玻璃门下置透明（data-* 钩子稳定）。当前窗口宽度刚好把它卡在屏幕外（x=innerWidth），属潜伏项——已登记 GLASS_SURFACES。
 
 ---
 
