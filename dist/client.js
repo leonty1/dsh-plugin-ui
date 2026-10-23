@@ -1304,10 +1304,16 @@ html:has(body[data-dsh-glass]) [class*="_sidebarCol"] {
    conversation root inside it. Making only the column translucent left the
    root's opaque bg-base covering the wallpaper, so the sidebar frosted while
    the workspace did not. The root rides the same frost as its column and
-   lets the frame's wallpaper through. */
+   lets the frame's wallpaper through.
+   The composer seat is a third painter: it draws the transcript fade-out
+   mask \u2014 solid bg-base below its 36px ramp \u2014 directly behind the composer
+   card, so the card's frosted fill composited over white and read as an
+   opaque block (measured 255,255,255). Under glass the card's own frost and
+   blur are the legibility device, so the seat clears too. */
 html:has(body[data-dsh-glass]) [class*="_centerCol"] [class*="_root"],
 html:has(body[data-dsh-glass]) [class*="_rightbarCol"] [class*="_root"],
-html:has(body[data-dsh-glass]) [class*="_bottomRow"] {
+html:has(body[data-dsh-glass]) [class*="_bottomRow"],
+html:has(body[data-dsh-glass]) [class*="_composerSeat"] {
   background: transparent !important;
 }
 /* The mac sidebar keeps its own material \u2014 a sidebar fill warmed by the brand \u2014
@@ -1331,14 +1337,23 @@ html:has(body[data-dsh-glass])[data-platform='darwin'] body[data-dsh-palette] [c
 /* One material system, three elevations. The ground shows through the empty
    canvas; surfaces that carry text stay surfaces, mixing toward transparent
    only as far as their elevation above the plate allows. A card is never more
-   solid than plate + 0.28, and never fully opaque: at the ceiling it keeps 4
-   percent of the plate showing, so even the densest card belongs to the same
-   wash as its surroundings.
+   solid than plate + elevation, and never fully opaque: at the ceiling it
+   keeps 4 percent of the plate showing, so even the densest card belongs to
+   the same wash as its surroundings.
+
+   The elevation is 0.10, not the 0.28 this curve shipped with: at 0.28 a
+   card at the \u8F7B/\u4E2D notches computed 0.88-0.93 alpha and read as an opaque
+   white block \u2014 the user's emphasized islands showed no glass at all unless
+   the slider reached \u5F3A. 0.10 bends the mid-range down to the measured floor
+   by that notch while leaving both ends untouched: \u5173\u95ED still clamps at the
+   0.96 ceiling and \u5F3A at the 0.78 floor.
 
    The curve is measured, not guessed. scripts/contrast-check.mjs composites
-   these very rules across every palette, both modes, every slider notch, and a
-   ground that is pure white on one side and pure black on the other; the worst
-   case needs 0.755 for 4.8:1, so the floor is 0.78. The var() fallbacks repeat
+   these very rules across every palette, both modes, every slider notch, and
+   a ground that is pure white on one side and pure black on the other; the
+   worst case needs 0.755 for 4.8:1, so the floor is 0.78 \u2014 and since the
+   floor binds across the whole mid-range now, the mid-range sits exactly on
+   the measured worst case instead of above it. The var() fallbacks repeat
    the floors on purpose: without a fallback an unknown custom property
    invalidates the whole declaration and the surface would drop to fully
    transparent, the one failure mode worse than an opaque one.
@@ -1346,11 +1361,10 @@ html:has(body[data-dsh-glass])[data-platform='darwin'] body[data-dsh-palette] [c
    Deliberately not frosted: menus, dialogs and toasts (an overlay that lets
    the ground through is an overlay you cannot read). Code segments and the
    special-field bodies ARE frosted \u2014 see the emphasized-island rules below;
-   the user asked for exactly those to stop reading as opaque white blocks.
-   The gradient strip under the composer stays as the shell ships it. */
+   the user asked for exactly those to stop reading as opaque white blocks. */
 html:has(body[data-dsh-glass]) [class*="_frame"] {
   --dpui-frost-floor: 0.78;
-  --dpui-frost-elevation: 0.28;
+  --dpui-frost-elevation: 0.10;
   --dpui-frost-ceiling: 0.96;
   --dpui-sidebar-elevation: 0.12;
   --dpui-frost-alpha: calc(min(var(--dpui-frost-ceiling), max(var(--dpui-frost-floor), (1 - var(--dpui-glass-opacity, 0.5)) + var(--dpui-frost-elevation))));
@@ -1360,7 +1374,11 @@ html:has(body[data-dsh-glass]) [data-composer-card] {
   background: color-mix(in srgb,
     var(--dsw-specific-input-major) calc(var(--dpui-frost-alpha, 0.78) * 100%),
     transparent) !important;
-  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 22px)) saturate(1.4);
+  /* Blur rides the island recipe (30px scaled + a floor), not the bare
+     scale it shipped with: the card is the largest emphasized island, and a
+     floorless blur read as a plain white rectangle at the \u4F4E notches where
+     its scaled blur fell under 10px. */
+  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 30px + 10px)) saturate(1.4);
 }
 html:has(body[data-dsh-glass]) [class*="_bubble"] {
   background: color-mix(in srgb,
