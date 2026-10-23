@@ -1170,14 +1170,17 @@ html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_root"]:not([clas
     color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) calc(max(0.72, var(--dpui-chip-alpha, 0.36)) * 100%),
     transparent) !important;
 }
-/* The open session's row joins the chip's material: both read as "the control
-   you're in" at the top and in the list, so the selected row sheds its opaque
-   interactive-bg-active slab and rides the same chip curve \u2014 the rail's own
-   composite at chip alpha, with the chip's heavier blur. Below it the unselected
-   rows stay shell-painted, so the emphasis stays exactly one row wide, like the
-   chip is one control wide. contrast-check's newSession case audits this fill,
-   token, mix and curve verbatim. */
-html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_sessionRow"][class*="_selected"] {
+/* The sidebar's selected rows all join the chip's material: selected session,
+   selected search result and active panel shared one structural rule (one
+   active fill) before glass, and they share one meaning \u2014 "you are here" \u2014
+   so under glass they all ride the chip curve: the rail's own composite at
+   chip alpha, with the chip's heavier blur. Below them the unselected rows
+   stay shell-painted, so the emphasis stays exactly one row wide, like the
+   chip is one control wide. contrast-check's newSession case audits this
+   fill, token, mix and curve verbatim. */
+html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_sessionRow"][class*="_selected"],
+html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_searchResultRow"][class*="_selected"],
+html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_panelRow"][class*="_panelActive"] {
   background: color-mix(in srgb,
     color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) calc(var(--dpui-chip-alpha, 0.36) * 100%),
     transparent) !important;

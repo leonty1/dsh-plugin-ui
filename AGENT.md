@@ -135,7 +135,7 @@ md-code-block   glass×30px + 10px
 - **New Session 芯片的填充必须用同一合成**：`color-mix(in srgb, color-mix(in srgb, sidebar-fill 88%, brand-primary) chip-alpha, transparent)`。直接用 raw sidebar-fill 会比侧栏深两档（CDP 实测暗色薄荷 (10,15,13) vs (21,38,33)）。
 - 用户对强调的口径（多次修正后的最终版）：**芯片只需比侧栏高一线，侧栏只需比工作区高一线，甚至持平也行**。别再加码。
 - hover 态用 `max(0.72, chip-alpha)` 保住可发现性。
-- **选中的会话行同材质**（v0.1.41）：`_sessionRow_selected` 在玻璃门下复用芯片曲线（同合成填充 + `34px+12px` blur），替代原本不透明的 `interactive-bg-active` 灰板。范围只有会话行 —— `_searchResultRow_selected`、`_panelRow_panelActive` 仍走 active fill（强调范围窄原则）。
+- **选中的行全部同芯片材质**（v0.1.41 会话行，v0.1.43 扩到搜索结果行与面板行）：`_sessionRow_selected`、`_searchResultRow_selected`、`_panelRow_panelActive` 三者原本共用同一条 structural 规则（同吃 active fill），语义同为"你在哪"，玻璃门下统一复用芯片曲线（同合成填充 + `34px+12px` blur），替代不透明的 `interactive-bg-active` 灰板。非玻璃模式三行仍走 active fill。
 - **hover 也进材质**（v0.1.42）：壳在 mac 上给行刷不透明 hover 填充（实测 rgb(239,239,239)），玻璃下"扫过哪行哪行最重"。玻璃门下行 hover 改为 40% neutral-00 半透明薄纱（与 Windows 行 hover 同配方、同数值），不需要 blur —— 行下面的侧栏柱子已经模糊过。
 - 侧栏字号跟随 General → Text size（12/14/16），同一设置所有界面同值（含账号行用户名）。
 
