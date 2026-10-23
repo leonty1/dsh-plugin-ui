@@ -107,7 +107,9 @@ for (const [layer, tokens] of Object.entries(PALETTE_LAYERS)) {
       if (raw === null) continue
       /** The chip fills with the rail's own composite — sidebar-fill lifted
        *  with 12% brand, the exact mix the sidebar coat paints — so the audit
-       *  measures the material that actually ships. */
+       *  measures the material that actually ships. The selected session row
+       *  rides this same case verbatim (same fill, mix and curve), so one
+       *  surface models both. */
       const mixToken = surface.mixWith && parse(tokens[surface.mixWith][mode])
       const fill = mixToken ? raw.map((c, i) => c * (1 - surface.mixRate) + mixToken[i] * surface.mixRate) : raw
       let layerWorst = { ratio: Infinity }
