@@ -19,6 +19,7 @@ A palette skin for DeepSeek Harness: four skin palettes, a single-card model and
 ## Features
 
 - **Appearance**: four skin palettes (Forest / Mint / Bee / Parchment, each in light and dark), picked from preview cards under Appearance or from the “Skin palette” group in the quick settings menu; “Original colors” keeps the app's own colors while the plugin layout stays; a skin palette also tints the sidebar.
+- **Frosted glass & wallpaper**: the sidebar and workspace columns float on an optional wallpaper “ground”, and every text-bearing surface (composer, bubbles, code cards, overlays, status chips, selected rows…) frosts in measured layers so contrast holds; glass strength is Off / Light / Medium / Strong in the quick menu and a 0–1 slider in full settings; the ground ships gradient and photo presets, accepts a custom image, and can rotate on an interval — “None” leaves the ground clear. Glass and wallpaper are independent of the skin palette and switch off to solid at any time.
 - **Sidebar**: 5px main margin and 16px radius; workspace/session rows tightened to 30px and up; official brand row and New Session button kept; Plugins/Automation pinned above the account row with a solid divider.
 - **Text size**: sidebar text, including the account name, follows Text size (S/M/L = 12/14/16px) and New Session scales with it; the account row keeps the official 44px / 32px rows and 24px avatar.
 - **Model & effort**: one card shows the model list and effort levels (Off / Low / High / Max) with search, retry, and empty states; the Chinese UI localizes effort names. Hovering a row moves the description/effort card to that row and aligns its top edge with it; a click on either a model or an effort level confirms, so the card collapses at once and the trigger shows the new choice immediately, leaving only the spinner to cover the round trip.
@@ -37,8 +38,9 @@ Uninstall from the Plugins page or with `dsh plugin --profile <profile> remove d
 ## Configuration
 
 - Appearance → **Skin palette**: pick a palette from the preview cards; Forest is the default. The “Skin palette” group in the quick settings menu writes the same setting.
+- **Frosted glass & wallpaper**: in the Skin palette section of full settings, set the glass strength (0–1 slider) and the ground wallpaper (presets / custom / auto-rotate); the quick menu's “Frosted glass” offers four common levels.
 - General → **Quick action slot 1/2**: choose a built-in action, an action registered by another plugin, or leave it empty.
-- Storage: `dsh-plugin-ui.palette` (palette) and `dsh-plugin-ui.quick-actions.v1` (the two seats).
+- Storage: `dsh-plugin-ui.palette` (palette), `dsh-plugin-ui.glass` (glass strength), `dsh-plugin-ui.wallpaper` / `.custom` / `.every` (ground wallpaper and rotation), `dsh-plugin-ui.quick-actions.v1` (the two seats).
 
 ## Extending quick actions
 
@@ -71,7 +73,7 @@ changes colour only, never layout" and the other rules there are enforced by
 ## Tested
 
 - Web (Chromium): four palettes, Original colors, dark mode, model list/switching, effort switching, search and empty states.
-- Desktop (official 0.2.1-rc.2): install, model/effort card, official account row and quick seats, sidebar text sizes 12/14/16px, New Session hover keycaps, settings preview cards; third-party action registration verified.
+- Desktop (official 0.2.1-rc.2): install, model/effort card, official account row and quick seats, sidebar text sizes 12/14/16px, New Session hover keycaps, settings preview cards; frosted glass and wallpaper visually verified in light mode; third-party action registration verified.
 - Not tested: a successful real-account sign-in and sign-out confirmation.
 
 ## Repository & license
