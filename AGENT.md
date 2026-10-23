@@ -59,9 +59,9 @@ skin.css 里所有玻璃规则都挂在 `html:has(body[data-dsh-glass])` 下 —
 
 | 曲线 | 公式 | 用途 | 调参变量 |
 | --- | --- | --- | --- |
-| 卡片 `--dpui-frost-alpha` | `min(ceiling, max(floor, (1-glass) + 0.10))` | composer、气泡、文件卡、代码块、特殊字段体 | `frost-floor: 0.46` `frost-elevation: 0.10` `frost-ceiling: 0.96` |
+| 卡片 `--dpui-frost-alpha` | `min(ceiling, max(floor, (1-glass) + 0.10))` | 文件卡、特殊字段体（composer、气泡、代码卡 v0.1.40 起改走面板曲线） | `frost-floor: 0.46` `frost-elevation: 0.10` `frost-ceiling: 0.96` |
 | 侧栏 `--dpui-sidebar-alpha` | `min(1, (1-glass) + 0.03)` | 左栏比工作区**高一线** | `sidebar-elevation: 0.03` |
-| New Session 芯片 `--dpui-chip-alpha` | `max(0.20, (1-glass) × 0.55)` | 侧栏上的 New Session 按钮 + **workspace 里选中的会话行**（`_sessionRow_selected`，v0.1.41，同填充同 blur） | `chip-floor: 0.20` `chip-scale: 0.55` |
+| New Session 芯片 `--dpui-chip-alpha` | `max(0.20, (1-glass) × 0.55)` | 侧栏上的 New Session 按钮 + **workspace 里三种选中的行**（会话/搜索结果/面板行，v0.1.41 起、v0.1.43 扩齐，同填充同 blur） | `chip-floor: 0.20` `chip-scale: 0.55` |
 | 面板 `--dpui-panel-alpha` | `max(0.30, (1-glass) × 0.62)` | **composer 输入框（只淡色，blur 仍全窗最重）、用户消息气泡、代码卡**（眼睛平视最多的表面，卡片曲线下是白板） | `panel-floor: 0.30` `panel-scale: 0.62` |
 | 行内代码芯片 `--dpui-inline-alpha` | `max(0.22, (1-glass) × 0.40)` | 正文里的 `code` 小芯片 | `inline-floor: 0.22` `inline-scale: 0.40` |
 
