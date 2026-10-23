@@ -73,7 +73,7 @@ changes colour only, never layout" and the other rules there are enforced by
 ## Tested
 
 - Web (Chromium): four palettes, Original colors, dark mode, model list/switching, effort switching, search and empty states.
-- Desktop (official 0.2.1-rc.2): install, model/effort card, official account row and quick seats, sidebar text sizes 12/14/16px, New Session hover keycaps, settings preview cards; frosted glass and wallpaper visually verified in light mode; third-party action registration verified.
+- Desktop (official 0.2.1-rc.2): install, model/effort card, official account row and quick seats, sidebar text sizes 12/14/16px, New Session hover keycaps, settings preview cards; frosted glass and wallpaper visually verified live in light and dark mode (Strong glass over a bright wallpaper pushes dark-mode text contrast to the limit — a known tradeoff of the upper slider half); third-party action registration verified.
 - Not tested: a successful real-account sign-in and sign-out confirmation.
 
 ## Repository & license
