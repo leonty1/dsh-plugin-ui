@@ -1374,11 +1374,12 @@ html:has(body[data-dsh-glass]) [data-composer-card] {
   background: color-mix(in srgb,
     var(--dsw-specific-input-major) calc(var(--dpui-frost-alpha, 0.78) * 100%),
     transparent) !important;
-  /* Blur rides the island recipe (30px scaled + a floor), not the bare
-     scale it shipped with: the card is the largest emphasized island, and a
-     floorless blur read as a plain white rectangle at the \u4F4E notches where
-     its scaled blur fell under 10px. */
-  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 30px + 10px)) saturate(1.4);
+  /* Top of the blur ordering, above every island: the user asked for the
+     composer to frost heavier than anything else in the window. The 40px
+     scale + 18px floor keeps it ahead of the New Session chip (34 + 12) at
+     every slider notch, and the floor keeps it a milky slab rather than a
+     legible backdrop miniature at the clear end. */
+  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 40px + 18px)) saturate(1.4);
 }
 html:has(body[data-dsh-glass]) [class*="_bubble"] {
   background: color-mix(in srgb,
@@ -1435,12 +1436,27 @@ html:has(body[data-dsh-glass]) .md-code-block [class*="_bannerWrap"] {
 }
 /* Inline code chips are the last solid islands in the message text: little
    white tiles pasted on the wash. They ride the card alpha like every other
-   text-bearing surface. Block code is excluded here because it now frosts
-   through the token above; this rule would double-mix its background. */
+   text-bearing surface, and blur on the island tier \u2014 the host draws them
+   as inline-flex boxes, so backdrop-filter applies. Block code is excluded
+   here because it now frosts through the token above; this rule would
+   double-mix its background. */
 html:has(body[data-dsh-glass]) [class*="_markdown"] code:not([data-code-block-content] code) {
   background-color: color-mix(in srgb,
     var(--dsw-alias-markdown-inline-code) calc(var(--dpui-frost-alpha, 0.78) * 100%),
     transparent) !important;
+  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 30px + 8px)) saturate(1.4);
+}
+/* The special-field bodies \u2014 tool IO cards, terminal, web and search blocks \u2014
+   frost through the token above; blur lifts them onto the island tier with
+   the chips and bubbles, heavier than the two columns behind them. Each hook
+   is a data-* attribute the shell ships (stable across builds like
+   data-composer-card); the tool row's fill lives on its inner IO card, the
+   other three paint the hooked element directly. */
+html:has(body[data-dsh-glass]) [data-tool] [class*="_ioCard"],
+html:has(body[data-dsh-glass]) [data-terminal],
+html:has(body[data-dsh-glass]) [data-web],
+html:has(body[data-dsh-glass]) [data-search] {
+  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 30px + 8px)) saturate(1.4);
 }
 `;
 

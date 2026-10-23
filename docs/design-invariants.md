@@ -139,7 +139,7 @@ pnpm check          # 构建 + 语法 + 皮肤契约 + 类型检查
 | 底板 / 会话根 | 完全透出（滑条控制） | `_frame`、`_centerCol`、`_root` |
 | 侧栏 | 同配方，**重一档**（`--dpui-sidebar-elevation` 0.12，blur 30px） | `_sidebarCol` |
 | 承载文字的表面 | 卡片海拔：底板 + 0.10，夹在 [0.78, 0.96] | `[data-composer-card]`、`_bubble`、`_fileCard`、`_markdown` 内联代码、`_newSession` |
-| 模糊的轻重排序 | `_newSession` 最重（`滑条 × 34px + 12px` 地板，用户要求「更不清晰」）＞ `.md-code-block` / `[data-composer-card]`（30px + 10px）＞ `_bubble`/`_fileCard`（30px + 8px）＞ 两列（30px / 22px × 滑条，无地板）；alpha 全部仍在卡片/侧栏曲线上，对比度审计不受影响 | 各表面的 `backdrop-filter` |
+| 模糊的轻重排序（v0.1.37 定序：两列 ＜ 强调孤岛 ＜ 输入框） | `[data-composer-card]` 最重（`滑条 × 40px + 18px` 地板，用户要求输入框模糊度最高）＞ `_newSession`（`滑条 × 34px + 12px`）＞ `.md-code-block`（30px + 10px）＞ `_bubble`/`_fileCard`/行内代码 chip（30px + 8px；行内代码是宿主画的 inline-flex，backdrop-filter 直接生效）＞ 特殊字段体（`[data-tool]` 的 ioCard、`[data-terminal]`、`[data-web]`、`[data-search]`，30px + 8px，均为宿主自带 data-* 钩子）＞ 两列（30px / 22px × 滑条，无地板）；alpha 全部仍在卡片/侧栏曲线上，对比度审计不受影响 | 各表面的 `backdrop-filter` |
 | 强调孤岛（代码段、特殊字段体、上下文行、命令卡） | 同一卡片海拔，经 `_centerCol` 上的 `--dsw-alias-markdown-code-block`（及 banner token）重定义结霜；基色在 `_frame` 上快照，避免同元素自引用环 | 「很白的实块」按用户要求全部进毛玻璃（v0.1.36） |
 | 菜单 / 弹窗 / toast / 输入框下渐变条 | 保持原样 | 不加规则（浮层透底 = 读不清） |
 

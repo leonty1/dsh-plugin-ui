@@ -125,7 +125,7 @@ const PLUGIN_SURFACES = [
  *  renderer's own global class (a literal, not hashed), the one stable hook on
  *  the code card; the special-field bodies have no hook and frost through the
  *  markdown-code-block token redeclared on _centerCol instead. */
-const GLASS_SURFACES = ['[data-composer-card]', '[class*="_bubble"]', '[class*="_fileCard"]', '[class*="_markdown"]', '.md-code-block', '[class*="_composerSeat"]']
+const GLASS_SURFACES = ['[data-composer-card]', '[class*="_bubble"]', '[class*="_fileCard"]', '[class*="_markdown"]', '.md-code-block', '[class*="_composerSeat"]', '[data-tool]', '[data-terminal]', '[data-web]', '[data-search]']
 const GROUND_GUARD = 'data-dsh-glass'
 const owned = rule =>
   PLUGIN_SURFACES.some(name => rule.includes(`[class*="${name}"]`))
