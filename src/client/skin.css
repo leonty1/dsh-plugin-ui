@@ -571,3 +571,17 @@ html:has(body[data-dsh-glass]) [class*="_backing"] {
 html:has(body[data-dsh-glass]) [class*="_centerCol"] [class*="_page"] {
   background-color: transparent !important;
 }
+/* Micro status chips. The status tag component itself is translucent by
+   design — success/info/warning/danger tones all paint 10-12% tints — but
+   the neutral tone ("exit code 1") paints bg-module-platform opaque, and
+   the stopped pill paints interactive-bg-hover opaque, the same token as
+   the sidebar hover fill. Under glass both join their families: the neutral
+   tag drops to the same 12% tint its sibling tones use, and the stopped
+   pill takes the 40% veil the row hover wears. Tone-solid tags stay
+   inverted on purpose (they are the chip world's primary button). */
+html:has(body[data-dsh-glass]) [class*="_tag"][data-tone='neutral'] {
+  background: color-mix(in srgb, var(--dsw-alias-bg-module-platform) 12%, transparent) !important;
+}
+html:has(body[data-dsh-glass]) [class*="_centerCol"] [class*="_stopped"] {
+  background: color-mix(in srgb, var(--dsw-static-neutral-00) 40%, transparent) !important;
+}

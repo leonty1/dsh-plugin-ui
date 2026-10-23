@@ -116,6 +116,13 @@ md-code-block   glass×30px + 10px
 - 芯片文字色不改：token `--dsw-alias-markdown-inline-code` 的文字配对由配色层负责，玻璃层只动背景。
 - **排障经验**：截图里芯片像“空白瓷砖”时，先用 CDP 查 computed `color`（§9.2），确认是文字色问题还是底色问题；像素采样必须选**芯片内无文字的 padding 区**，采到文字上会得假读数（L 109 vs 实际 26 那次）。
 
+### 3.2b 微型状态件（v0.1.45）
+
+- 状态标签组件 `_tag` 本身就有透明设计：success/info/warning/danger 四个 tone 都是 10–12% 透色 tint，**只有 neutral tone**（如 `exit code 1`）刷不透明 `bg-module-platform`。玻璃门下把 neutral 也降到同款 12% tint（`[class*="_tag"][data-tone='neutral']`），顺着组件自己的家族逻辑，不新开曲线。
+- `solid` tone（label-primary 反白）**不动**——它是芯片世界的主按钮。
+- `Stopped` 药丸（`_stopped`，局部名稳定）刷 `interactive-bg-hover`（与 hover 实底同 token），玻璃门下取行 hover 同款 40% neutral-00 薄纱。
+- verify-skin：`[class*="_tag"]` 已登记进 GLASS_SURFACES 例外名单。
+
 ### 3.3 特殊字段体（工具 IO 卡 / 终端 / web / search）
 
 钩子是壳自带的 data-* 属性（`[data-tool] _ioCard`、`[data-terminal]`、`[data-web]`、`[data-search]`），跨构建稳定。它们只加 blur，底色走 3.1 的 token 重定义（工具行的填充在内层 IO 卡上）。
