@@ -36,7 +36,7 @@ One card shows the model list and reasoning effort levels (Off / Low / High / Ma
 
 5px main margin and 16px radius, tightened workspace/session rows; the official brand row and New Session button are kept, and Plugins/Automation pin above the account row. Text size (S / M / L = 12 / 14 / 16px) is one setting everywhere, and the account name scales with it.
 
-![Sidebar at 12px vs 16px](docs/images/text-size.png)
+![Full interface (text size: Large)](docs/images/text-size.png)
 
 ### Account row & quick settings
 
