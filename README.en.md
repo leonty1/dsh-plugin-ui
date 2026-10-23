@@ -2,7 +2,7 @@
 
 [简体中文](README.md) | **English**
 
-A palette skin for DeepSeek Harness: four skin palettes, a single-card model and reasoning-effort selector, and account quick actions. Client plugin only; core files are untouched. The palettes reference Qoder's skin colors.
+A skin for DeepSeek Harness: frosted glass over a wallpaper ground, four skin palettes, a single-card model and reasoning-effort selector, and account quick actions. Client plugin only; core files are untouched. The palettes reference Qoder's skin colors.
 
 ## Showcase
 
@@ -10,21 +10,39 @@ A palette skin for DeepSeek Harness: four skin palettes, a single-card model and
 | --- | --- |
 | ![Light UI](docs/images/showcase-light.png) | ![Dark UI](docs/images/showcase-dark.png) |
 
-![Model and reasoning effort](docs/images/showcase-models.png)
-
-![Palette previews under Appearance](docs/images/showcase-settings.png)
-
 *Account details in the screenshots are redacted.*
 
 ## Features
 
-- **Appearance**: four skin palettes (Forest / Mint / Bee / Parchment, each in light and dark), picked from preview cards under Appearance or from the “Skin palette” group in the quick settings menu; “Original colors” keeps the app's own colors while the plugin layout stays; a skin palette also tints the sidebar.
-- **Frosted glass & wallpaper**: the sidebar and workspace columns float on an optional wallpaper “ground”, and every text-bearing surface (composer, bubbles, code cards, overlays, status chips, selected rows…) frosts in measured layers so contrast holds; glass strength is Off / Light / Medium / Strong in the quick menu and a 0–1 slider in full settings; the ground ships gradient and photo presets, accepts a custom image, and can rotate on an interval — “None” leaves the ground clear. Glass and wallpaper are independent of the skin palette and switch off to solid at any time.
-- **Sidebar**: 5px main margin and 16px radius; workspace/session rows tightened to 30px and up; official brand row and New Session button kept; Plugins/Automation pinned above the account row with a solid divider.
-- **Text size**: sidebar text, including the account name, follows Text size (S/M/L = 12/14/16px) and New Session scales with it; the account row keeps the official 44px / 32px rows and 24px avatar.
-- **Model & effort**: one card shows the model list and effort levels (Off / Low / High / Max) with search, retry, and empty states; the Chinese UI localizes effort names. Hovering a row moves the description/effort card to that row and aligns its top edge with it; a click on either a model or an effort level confirms, so the card collapses at once and the trigger shows the new choice immediately, leaving only the spinner to cover the round trip.
-- **Account row (desktop)**: official 24px avatar / 44px row; signed out it is ⋯ + “More”; two configurable quick seats sit on the right.
-- **Account menu**: matches the official items (Settings, Contact us, sign in/out); quick settings open from the gear seat with language, color mode, Skin palette, text size, and All settings.
+### Frosted glass & wallpaper
+
+The sidebar and workspace columns float on an optional wallpaper "ground", and every text-bearing surface (composer, bubbles, code cards, overlays, status chips, selected rows…) frosts in measured layers so contrast holds. Glass strength is Off / Light / Medium / Strong in the quick menu and a 0–1 slider in full settings; the ground ships gradient and photo presets, accepts a custom image, and can rotate on an interval — "None" leaves the ground clear. Glass and wallpaper are independent of the skin palette and switch off to solid at any time.
+
+![Frosted glass and wallpaper](docs/images/showcase-light.png)
+
+### Skin palette
+
+Four skin palettes (Forest / Mint / Bee / Parchment, each in light and dark) plus "Original colors", which keeps the app's own colors while the plugin layout stays. Pick from preview cards under Appearance; the "Skin palette" group in the quick menu writes the same setting. A palette changes colour only, never layout.
+
+![Skin palette](docs/images/showcase-settings.png)
+
+### Model & effort
+
+One card shows the model list and reasoning effort levels (Off / Low / High / Max) with search, retry, and empty states; the Chinese UI localizes effort names. Hovering a row moves the description card to that row and aligns its top edge with it; a click on either a model or an effort level confirms, so the card collapses at once and the trigger shows the new choice immediately.
+
+![Model and reasoning effort](docs/images/showcase-models.png)
+
+### Sidebar & text size
+
+5px main margin and 16px radius, tightened workspace/session rows; the official brand row and New Session button are kept, and Plugins/Automation pin above the account row. Text size (S / M / L = 12 / 14 / 16px) is one setting everywhere, and the account name scales with it.
+
+![Sidebar at 12px vs 16px](docs/images/text-size.png)
+
+### Account row & quick settings
+
+The account row keeps the official 24px avatar / 44px height, with two configurable quick seats on the right. The gear seat opens quick settings: language, color mode, skin palette, frosted glass, text size, and All settings. The account menu matches the official items (Settings, Contact us, sign in/out).
+
+![Account row and quick settings](docs/images/quick-settings.png)
 
 ## Install
 
@@ -37,8 +55,8 @@ Uninstall from the Plugins page or with `dsh plugin --profile <profile> remove d
 
 ## Configuration
 
-- Appearance → **Skin palette**: pick a palette from the preview cards; Forest is the default. The “Skin palette” group in the quick settings menu writes the same setting.
-- **Frosted glass & wallpaper**: in the Skin palette section of full settings, set the glass strength (0–1 slider) and the ground wallpaper (presets / custom / auto-rotate); the quick menu's “Frosted glass” offers four common levels.
+- Appearance → **Skin palette**: pick a palette from the preview cards; Forest is the default.
+- Appearance → **Frosted glass / ground wallpaper**: the glass strength slider (0–1); wallpaper presets, a custom image, and auto-rotation.
 - General → **Quick action slot 1/2**: choose a built-in action, an action registered by another plugin, or leave it empty.
 - Storage: `dsh-plugin-ui.palette` (palette), `dsh-plugin-ui.glass` (glass strength), `dsh-plugin-ui.wallpaper` / `.custom` / `.every` (ground wallpaper and rotation), `dsh-plugin-ui.quick-actions.v1` (the two seats).
 
