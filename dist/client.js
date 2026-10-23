@@ -1150,11 +1150,11 @@ html[data-platform='darwin'] body[data-dsh-palette][data-ds-dark-theme] [class*=
    4%. Alpha stays on the measured card curve, so contrast-check is
    unaffected. */
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] {
-  background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) calc(var(--dpui-frost-alpha, 0.78) * 100%), transparent) !important;
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) calc(var(--dpui-frost-alpha, 0.6) * 100%), transparent) !important;
   backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 34px + 12px)) saturate(1.4);
 }
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"]:hover {
-  background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) calc(max(0.88, var(--dpui-frost-alpha, 0.78)) * 100%), transparent) !important;
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) calc(max(0.88, var(--dpui-frost-alpha, 0.6)) * 100%), transparent) !important;
 }
 [class*="_centerCol"] header[class*="_header"] { padding-left: 24px !important; padding-right: 24px !important; border-bottom: none !important; }
 [class*="_composerStack"] [class*="_card"] { background: var(--dsw-alias-bg-layer-1) !important; border-radius: 16px !important; }
@@ -1344,26 +1344,33 @@ html:has(body[data-dsh-glass])[data-platform='darwin'] body[data-dsh-palette] [c
    The elevation is 0.10, not the 0.28 this curve shipped with: at 0.28 a
    card at the \u8F7B/\u4E2D notches computed 0.88-0.93 alpha and read as an opaque
    white block \u2014 the user's emphasized islands showed no glass at all unless
-   the slider reached \u5F3A. 0.10 bends the mid-range down to the measured floor
-   by that notch while leaving both ends untouched: \u5173\u95ED still clamps at the
-   0.96 ceiling and \u5F3A at the 0.78 floor.
+   the slider reached \u5F3A.
 
-   The curve is measured, not guessed. scripts/contrast-check.mjs composites
-   these very rules across every palette, both modes, every slider notch, and
-   a ground that is pure white on one side and pure black on the other; the
-   worst case needs 0.755 for 4.8:1, so the floor is 0.78 \u2014 and since the
-   floor binds across the whole mid-range now, the mid-range sits exactly on
-   the measured worst case instead of above it. The var() fallbacks repeat
-   the floors on purpose: without a fallback an unknown custom property
-   invalidates the whole declaration and the surface would drop to fully
-   transparent, the one failure mode worse than an opaque one.
+   The floor is 0.46, not the 0.78 this curve originally shipped with: a 0.78
+   floor binds across the ENTIRE common slider range ((1 - glass) + 0.10 stays
+   under 0.78 for every notch past 0.32), which flattened the curve into a
+   constant \u2014 the slider moved nothing, and the user read the islands as
+   "almost no blur, just abrupt white slabs". 0.46 lets the mid-range track
+   the slider (0.60 at the default notch, 0.46 from \u5F3A upward).
+
+   The readability promise ends at the mid notch, and the audit says so:
+   scripts/contrast-check.mjs enforces the full 4.5:1 AA for every notch up
+   to and including the mid one \u2014 the range a user is assumed to live in \u2014
+   and only REPORTS the worst case beyond it, where the slider's whole point
+   is dialing past the guarantee into clear glass. 0.46 is the lowest floor
+   the enforced tier holds; the reported beyond-mid worst case is the
+   pathological corner (dark mode over a pure white wallpaper). The var()
+   fallbacks repeat a sane mid alpha on purpose: without
+   a fallback an unknown custom property invalidates the whole declaration
+   and the surface would drop to fully transparent, the one failure mode
+   worse than an opaque one.
 
    Deliberately not frosted: menus, dialogs and toasts (an overlay that lets
    the ground through is an overlay you cannot read). Code segments and the
    special-field bodies ARE frosted \u2014 see the emphasized-island rules below;
    the user asked for exactly those to stop reading as opaque white blocks. */
 html:has(body[data-dsh-glass]) [class*="_frame"] {
-  --dpui-frost-floor: 0.78;
+  --dpui-frost-floor: 0.46;
   --dpui-frost-elevation: 0.10;
   --dpui-frost-ceiling: 0.96;
   --dpui-sidebar-elevation: 0.12;
@@ -1372,7 +1379,7 @@ html:has(body[data-dsh-glass]) [class*="_frame"] {
 }
 html:has(body[data-dsh-glass]) [data-composer-card] {
   background: color-mix(in srgb,
-    var(--dsw-specific-input-major) calc(var(--dpui-frost-alpha, 0.78) * 100%),
+    var(--dsw-specific-input-major) calc(var(--dpui-frost-alpha, 0.6) * 100%),
     transparent) !important;
   /* Top of the blur ordering, above every island: the user asked for the
      composer to frost heavier than anything else in the window. The 40px
@@ -1383,13 +1390,13 @@ html:has(body[data-dsh-glass]) [data-composer-card] {
 }
 html:has(body[data-dsh-glass]) [class*="_bubble"] {
   background: color-mix(in srgb,
-    var(--dsw-specific-bubble) calc(var(--dpui-frost-alpha, 0.78) * 100%),
+    var(--dsw-specific-bubble) calc(var(--dpui-frost-alpha, 0.6) * 100%),
     transparent) !important;
   backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 30px + 8px)) saturate(1.4);
 }
 html:has(body[data-dsh-glass]) [class*="_fileCard"] {
   background: color-mix(in srgb,
-    var(--dsw-specific-input-major) calc(var(--dpui-frost-alpha, 0.78) * 100%),
+    var(--dsw-specific-input-major) calc(var(--dpui-frost-alpha, 0.6) * 100%),
     transparent) !important;
   backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 30px + 8px)) saturate(1.4);
 }
@@ -1415,10 +1422,10 @@ html:has(body[data-dsh-glass]) [class*="_frame"]:has(> [class*="_centerCol"]) {
 }
 html:has(body[data-dsh-glass]) [class*="_centerCol"] {
   --dsw-alias-markdown-code-block: color-mix(in srgb,
-    var(--dpui-code-frost-base, var(--dsw-alias-bg-layer-2)) calc(var(--dpui-frost-alpha, 0.78) * 100%),
+    var(--dpui-code-frost-base, var(--dsw-alias-bg-layer-2)) calc(var(--dpui-frost-alpha, 0.6) * 100%),
     transparent);
   --dsw-alias-markdown-code-block-banner: color-mix(in srgb,
-    var(--dpui-code-banner-base, var(--dsw-alias-bg-layer-2)) calc(var(--dpui-frost-alpha, 0.78) * 100%),
+    var(--dpui-code-banner-base, var(--dsw-alias-bg-layer-2)) calc(var(--dpui-frost-alpha, 0.6) * 100%),
     transparent);
 }
 /* The code card itself carries the heaviest blur in the material after the
@@ -1432,7 +1439,7 @@ html:has(body[data-dsh-glass]) .md-code-block {
   backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 30px + 10px)) saturate(1.4);
 }
 html:has(body[data-dsh-glass]) .md-code-block [class*="_bannerWrap"] {
-  background-color: color-mix(in srgb, var(--dsw-alias-bg-base) calc(var(--dpui-frost-alpha, 0.78) * 100%), transparent) !important;
+  background-color: color-mix(in srgb, var(--dsw-alias-bg-base) calc(var(--dpui-frost-alpha, 0.6) * 100%), transparent) !important;
 }
 /* Inline code chips are the last solid islands in the message text: little
    white tiles pasted on the wash. They ride the card alpha like every other
@@ -1442,7 +1449,7 @@ html:has(body[data-dsh-glass]) .md-code-block [class*="_bannerWrap"] {
    double-mix its background. */
 html:has(body[data-dsh-glass]) [class*="_markdown"] code:not([data-code-block-content] code) {
   background-color: color-mix(in srgb,
-    var(--dsw-alias-markdown-inline-code) calc(var(--dpui-frost-alpha, 0.78) * 100%),
+    var(--dsw-alias-markdown-inline-code) calc(var(--dpui-frost-alpha, 0.6) * 100%),
     transparent) !important;
   backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 30px + 8px)) saturate(1.4);
 }
