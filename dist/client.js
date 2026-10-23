@@ -1283,11 +1283,14 @@ html:has(body[data-dsh-glass]) [class*="_frame"]:has(> [class*="_centerCol"]) {
    picking "none" must never force them clear. Never wrap CSS words in backticks
    in this file: the skin is inlined into a template literal in the bundle, and a
    backtick truncates every reader that stops at the first one. */
-/* The two columns share one recipe but not one weight. The workspace is where
-   long text is read and it clears with the slider; the sidebar is navigation,
-   so it frosts one step heavier \u2014 more fill and a wider blur, the denser grain
-   the user asked for. Both still empty out toward the top of the track; the
-   sidebar simply starts and stays one notch denser via --dpui-sidebar-alpha. */
+/* The two columns share one recipe and nearly one weight. The workspace is
+   where long text is read and it clears with the slider; the sidebar is
+   navigation, so it sits a hair above it \u2014 0.03 of elevation, down from the
+   0.12 this shipped with: at 0.12 the rail read as a visibly denser panel
+   beside the workspace, and the user asked for "slightly higher, or even the
+   same" \u2014 the rail's only emphasized surface is the New Session chip, which
+   carries its own card elevation and heavier blur. Both columns still empty
+   out toward the top of the track. */
 html:has(body[data-dsh-glass]) [class*="_centerCol"] {
   backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 22px)) saturate(1.4) !important;
   background: color-mix(in srgb,
@@ -1297,7 +1300,7 @@ html:has(body[data-dsh-glass]) [class*="_centerCol"] {
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"] {
   backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 30px)) saturate(1.4) !important;
   background: color-mix(in srgb,
-    var(--dsw-alias-bg-base) calc(var(--dpui-sidebar-alpha, 0.62) * 100%),
+    var(--dsw-alias-bg-base) calc(var(--dpui-sidebar-alpha, 0.53) * 100%),
     transparent) !important;
 }
 /* The workspace paints its base twice: the centre column, then the
@@ -1324,13 +1327,13 @@ html:has(body[data-dsh-glass]) [class*="_composerSeat"] {
 html:has(body[data-dsh-glass])[data-platform='darwin'] body[data-dsh-palette] [class*="_sidebarCol"] {
   background: linear-gradient(
       to bottom,
-      rgb(from var(--dsw-alias-brand-primary) r g b / calc(var(--dpui-sidebar-alpha, 0.62) * 0.1)),
+      rgb(from var(--dsw-alias-brand-primary) r g b / calc(var(--dpui-sidebar-alpha, 0.53) * 0.1)),
       rgb(from var(--dsw-alias-brand-primary) r g b / 0) 35%,
       rgb(from var(--dsw-alias-brand-primary) r g b / 0) 68%,
-      rgb(from var(--dsw-alias-brand-primary) r g b / calc(var(--dpui-sidebar-alpha, 0.62) * 0.09))
+      rgb(from var(--dsw-alias-brand-primary) r g b / calc(var(--dpui-sidebar-alpha, 0.53) * 0.09))
     ),
     color-mix(in srgb,
-      color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) calc(var(--dpui-sidebar-alpha, 0.62) * 100%),
+      color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) calc(var(--dpui-sidebar-alpha, 0.53) * 100%),
       transparent) !important;
 }
 
@@ -1373,7 +1376,7 @@ html:has(body[data-dsh-glass]) [class*="_frame"] {
   --dpui-frost-floor: 0.46;
   --dpui-frost-elevation: 0.10;
   --dpui-frost-ceiling: 0.96;
-  --dpui-sidebar-elevation: 0.12;
+  --dpui-sidebar-elevation: 0.03;
   --dpui-frost-alpha: calc(min(var(--dpui-frost-ceiling), max(var(--dpui-frost-floor), (1 - var(--dpui-glass-opacity, 0.5)) + var(--dpui-frost-elevation))));
   --dpui-sidebar-alpha: calc(min(1, (1 - var(--dpui-glass-opacity, 0.5)) + var(--dpui-sidebar-elevation)));
 }

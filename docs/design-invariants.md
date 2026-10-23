@@ -137,7 +137,7 @@ pnpm check          # 构建 + 语法 + 皮肤契约 + 类型检查
 | 层 | 处理 | 位置 |
 |---|---|---|
 | 底板 / 会话根 | 完全透出（滑条控制） | `_frame`、`_centerCol`、`_root` |
-| 侧栏 | 同配方，**重一档**（`--dpui-sidebar-elevation` 0.12，blur 30px） | `_sidebarCol` |
+| 侧栏 | 同配方，**高一线**（`--dpui-sidebar-elevation` 0.03，blur 30px；v0.1.38 从 0.12 降下——用户要求侧栏只比工作区稍重甚至持平，强调只留给 New Session 芯片） | `_sidebarCol` |
 | 承载文字的表面 | 卡片海拔：底板 + 0.10，夹在 [0.46, 0.96] | `[data-composer-card]`、`_bubble`、`_fileCard`、`_markdown` 内联代码、`_newSession` |
 | 模糊的轻重排序（v0.1.37 定序：两列 ＜ 强调孤岛 ＜ 输入框） | `[data-composer-card]` 最重（`滑条 × 40px + 18px` 地板，用户要求输入框模糊度最高）＞ `_newSession`（`滑条 × 34px + 12px`）＞ `.md-code-block`（30px + 10px）＞ `_bubble`/`_fileCard`/行内代码 chip（30px + 8px；行内代码是宿主画的 inline-flex，backdrop-filter 直接生效）＞ 特殊字段体（`[data-tool]` 的 ioCard、`[data-terminal]`、`[data-web]`、`[data-search]`，30px + 8px，均为宿主自带 data-* 钩子）＞ 两列（30px / 22px × 滑条，无地板）；alpha 全部仍在卡片/侧栏曲线上，对比度审计不受影响 | 各表面的 `backdrop-filter` |
 | 强调孤岛（代码段、特殊字段体、上下文行、命令卡） | 同一卡片海拔，经 `_centerCol` 上的 `--dsw-alias-markdown-code-block`（及 banner token）重定义结霜；基色在 `_frame` 上快照，避免同元素自引用环 | 「很白的实块」按用户要求全部进毛玻璃（v0.1.36） |
@@ -150,7 +150,8 @@ pnpm check          # 构建 + 语法 + 皮肤契约 + 类型检查
 「强」才见玻璃。地板 0.46 是 v0.1.38 从 0.78 降下来的：0.78 在整个常用区间
 （滑条 0.32 以上）都把曲线托成常数，滑条搬不动 alpha，用户读成「几乎不模糊、
 就是一块块突兀的白板」；0.46 让中段回到曲线上（默认档 0.60）、「强」以后落在
-地板上。侧栏是导航，比工作区重一档（海拔 0.12）；两列在滑条顶端仍都会清空。
+地板上。侧栏只比工作区高一线（海拔 0.03，v0.1.38 从 0.12 降下；强调只留给
+New Session 芯片）；两列在滑条顶端仍都会清空。
 另外：composer 座位的渐变淡出条在玻璃下一并清空（它是输入框背后的「第三位
 画手」，不清空则结霜叠在纯白上），规则挂在 `_composerSeat` 上。
 
