@@ -397,6 +397,14 @@ html:has(body[data-dsh-glass]) [class*="_frame"] {
   --dpui-inline-floor: 0.22;
   --dpui-inline-scale: 0.40;
   --dpui-inline-alpha: calc(max(var(--dpui-inline-floor), (1 - var(--dpui-glass-opacity, 0.5)) * var(--dpui-inline-scale)));
+  /* Panels: the two surfaces the user reads at eye level across every
+     message — the sent-message bubble and the code card. At the card curve
+     both still read as slabs (the near-white code card composited +27L over
+     the wash), so they get their own multiplicative tier between the card
+     and the inline chip: present, tinted, but clearly of the wash. */
+  --dpui-panel-floor: 0.30;
+  --dpui-panel-scale: 0.62;
+  --dpui-panel-alpha: calc(max(var(--dpui-panel-floor), (1 - var(--dpui-glass-opacity, 0.5)) * var(--dpui-panel-scale)));
   --dpui-sidebar-alpha: calc(min(1, (1 - var(--dpui-glass-opacity, 0.5)) + var(--dpui-sidebar-elevation)));
 }
 html:has(body[data-dsh-glass]) [data-composer-card] {
@@ -410,9 +418,12 @@ html:has(body[data-dsh-glass]) [data-composer-card] {
      legible backdrop miniature at the clear end. */
   backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 40px + 18px)) saturate(1.4);
 }
+/* The sent-message bubble rides the panel curve, not the card curve: at the
+   card's alpha the mint fill read as a dense pill pasted on the wash. It is
+   the user's own words — present, tinted, but clearly of the wash. */
 html:has(body[data-dsh-glass]) [class*="_bubble"] {
   background: color-mix(in srgb,
-    var(--dsw-specific-bubble) calc(var(--dpui-frost-alpha, 0.6) * 100%),
+    var(--dsw-specific-bubble) calc(var(--dpui-panel-alpha, 0.4) * 100%),
     transparent) !important;
   backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 30px + 8px)) saturate(1.4);
 }
@@ -457,11 +468,26 @@ html:has(body[data-dsh-glass]) [class*="_centerCol"] {
    hashed suffix cannot. The bannerWrap strip behind the language header
    paints bg-base directly and would otherwise stay an opaque band across
    the card's top. */
+/* The code card rides the panel curve too — the user named it alongside the
+   sent bubble as the last slab on the wash. The card paints once, directly
+   from the snapshot base at panel alpha; the pre and header go transparent,
+   because each painted the shared token at the card curve and stacked back
+   up to a dense slab over the lighter card (the token stays at the card
+   curve for the special-field bodies — emphasis stays narrow: only the
+   named surfaces move). The banner keeps its bg-base wash so the strip
+   still reads as a band. */
 html:has(body[data-dsh-glass]) .md-code-block {
+  background-color: color-mix(in srgb,
+    var(--dpui-code-frost-base, var(--dsw-alias-bg-layer-2)) calc(var(--dpui-panel-alpha, 0.4) * 100%),
+    transparent) !important;
   backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 30px + 10px)) saturate(1.4);
 }
+html:has(body[data-dsh-glass]) .md-code-block pre,
+html:has(body[data-dsh-glass]) .md-code-block [class*="_header"] {
+  background-color: transparent !important;
+}
 html:has(body[data-dsh-glass]) .md-code-block [class*="_bannerWrap"] {
-  background-color: color-mix(in srgb, var(--dsw-alias-bg-base) calc(var(--dpui-frost-alpha, 0.6) * 100%), transparent) !important;
+  background-color: color-mix(in srgb, var(--dsw-alias-bg-base) calc(var(--dpui-panel-alpha, 0.4) * 100%), transparent) !important;
 }
 /* Inline code chips ride the decoration curve, not the card curve: at the
    card's alpha the near-white token turned every chip into a stark white

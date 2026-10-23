@@ -62,6 +62,7 @@ skin.css 里所有玻璃规则都挂在 `html:has(body[data-dsh-glass])` 下 —
 | 卡片 `--dpui-frost-alpha` | `min(ceiling, max(floor, (1-glass) + 0.10))` | composer、气泡、文件卡、代码块、特殊字段体 | `frost-floor: 0.46` `frost-elevation: 0.10` `frost-ceiling: 0.96` |
 | 侧栏 `--dpui-sidebar-alpha` | `min(1, (1-glass) + 0.03)` | 左栏比工作区**高一线** | `sidebar-elevation: 0.03` |
 | New Session 芯片 `--dpui-chip-alpha` | `max(0.20, (1-glass) × 0.55)` | 侧栏上的 New Session 按钮 | `chip-floor: 0.20` `chip-scale: 0.55` |
+| 面板 `--dpui-panel-alpha` | `max(0.30, (1-glass) × 0.62)` | **用户消息气泡 + 代码卡**（眼睛平视最多的两块，卡片曲线下仍是板） | `panel-floor: 0.30` `panel-scale: 0.62` |
 | 行内代码芯片 `--dpui-inline-alpha` | `max(0.22, (1-glass) × 0.40)` | 正文里的 `code` 小芯片 | `inline-floor: 0.22` `inline-scale: 0.40` |
 
 改任何一行公式的步骤：
@@ -88,6 +89,8 @@ md-code-block   glass×30px + 10px
 两根柱子         glass×30 / ×22，无 floor
 ```
 
+注意：气泡的**底色**走 panel 曲线但 blur 仍在岛屿档（30px+8）；代码卡和它的 `_header` 在 panel 曲线时直接从快照基色（`--dpui-code-frost-base`）刷，**不走 token** —— token 和特殊字段体共享，改 token 会把没被点名的表面一起带走（强调范围要窄）。
+
 改 blur 时保持这个相对秩序；某一级要变重，先想它和上下级的关系。
 
 ---
@@ -99,6 +102,7 @@ md-code-block   glass×30px + 10px
 ### 3.1 代码块（md-code-block）
 
 - 大代码卡通过在 `_centerCol` 上**重定义 token** 实现霜化：`--dsw-alias-markdown-code-block` 被重定义为 `color-mix(base, frost-alpha)`。这样所有消费该 token 的表面一次性霜化，而 portal 到 body 的菜单/对话框不受影响。
+- **卡内分层坑（v0.1.39）**：代码卡的外卡、`_header`、`pre._plain` 会**各自**刷一遍同一 token —— 只把外卡调轻、不动内层，`pre` 会以卡片曲线叠回来（有效 0.85，白板照旧）。正确改法：外卡一层承担全部涂色，`pre` 和 `_header` 置 `transparent !important`，`_bannerWrap` 保留 bg-base 薄条做色带。
 - token 的原始色在父级（`_frame:has(> _centerCol)`）快照成 `--dpui-code-frost-base` —— var() 在声明处解析，同元素自引用会成环。
 - banner 条（语言头）单独刷 `--dsw-alias-bg-base`。
 - `.md-code-block` 是壳的全局字面类，跨构建稳定，优先用它做钩子。
@@ -196,7 +200,8 @@ const ws = new WebSocket(list.find(p => p.type === 'page').webSocketDebuggerUrl)
 ### 9.3 截图像素采样
 
 - 先定位窗口（AppleScript `{position, size}`，Retina ×2），`screencapture -x` 全屏再裁 —— `screencapture -R` 可能拍到别的 Space（拍到过微信）。
-- 采样选**无文字区域**；对比表面和洗底必须在**同一高度**（地面有纵向渐变，跨高度采样会得假差值）。
+- 采样选**无文字区域**；对比表面和洗底必须在**同一高度**（地面有纵向渐变，跨高度采样会得假差值），且尽量在**同一张截图内**取对照点。
+- **壁纸会自动轮换**（glass.jsx 的 rotate，默认关但用户可能开着）：跨截图的绝对亮度不可比，甚至同一位置前后两张能差 40L；判定"是否协调"只看同一张截图内表面与相邻洗底的关系，绝对数值只做参考。
 - 用户频繁换主题/壁纸/滑杆档位，采样前先 CDP 读 `data-dsh-palette`、`--dpui-glass-opacity` 确认当前环境。
 
 ### 9.4 提交

@@ -25,10 +25,10 @@ const PALETTE_LAYERS = JSON.parse(declaration.slice(declaration.indexOf('{'), de
  *  so this audit always tests the curve that actually ships. */
 const skin = readFileSync(join(root, 'src/client/skin.css'), 'utf8')
 const declared = {}
-for (const m of skin.matchAll(/--dpui-(frost-floor|frost-elevation|frost-ceiling|sidebar-elevation|chip-floor|chip-scale|inline-floor|inline-scale):\s*([0-9.]+)/g)) {
+for (const m of skin.matchAll(/--dpui-(frost-floor|frost-elevation|frost-ceiling|sidebar-elevation|chip-floor|chip-scale|inline-floor|inline-scale|panel-floor|panel-scale):\s*([0-9.]+)/g)) {
   declared[m[1]] = Number(m[2])
 }
-for (const key of ['frost-floor', 'frost-elevation', 'frost-ceiling', 'sidebar-elevation', 'chip-floor', 'chip-scale', 'inline-floor', 'inline-scale']) {
+for (const key of ['frost-floor', 'frost-elevation', 'frost-ceiling', 'sidebar-elevation', 'chip-floor', 'chip-scale', 'inline-floor', 'inline-scale', 'panel-floor', 'panel-scale']) {
   if (declared[key] === undefined) {
     console.error(`contrast-check: skin.css declares no --dpui-${key}`)
     process.exit(1)
@@ -47,6 +47,16 @@ const chipAlpha = opacity =>
  *  than even the New Session chip — a tile a breath off the wash. */
 const inlineAlpha = opacity =>
   Math.max(declared['inline-floor'], (1 - opacity) * declared['inline-scale'])
+/** Panels — the sent bubble and the code card: a multiplicative tier between
+ *  the card and the inline chip, present but clearly of the wash. */
+const panelAlpha = opacity =>
+  Math.max(declared['panel-floor'], (1 - opacity) * declared['panel-scale'])
+/** Which curve each surface rides. */
+const alphaFor = (surface, opacity) =>
+  surface.name === 'newSession' ? chipAlpha(opacity)
+  : surface.name === 'codeChip' ? inlineAlpha(opacity)
+  : surface.name === 'bubble' || surface.name === 'codeBlock' || surface.name === 'codeBanner' ? panelAlpha(opacity)
+  : cardAlpha(opacity)
 /** The sidebar column rides its own, heavier elevation. */
 const sidebarAlpha = opacity =>
   Math.min(1, (1 - opacity) + declared['sidebar-elevation'])
@@ -102,9 +112,7 @@ for (const [layer, tokens] of Object.entries(PALETTE_LAYERS)) {
       for (const opacity of OPACITIES) {
         for (const ground of GROUNDS) {
           const plateAlpha = surface.column === 'sidebar' ? sidebarAlpha(opacity) : 1 - opacity
-          const surfaceAlpha = surface.name === 'newSession' ? chipAlpha(opacity)
-            : surface.name === 'codeChip' ? inlineAlpha(opacity)
-            : cardAlpha(opacity)
+          const surfaceAlpha = alphaFor(surface, opacity)
           const column = over(base, plateAlpha, ground)
           const card = over(fill, surfaceAlpha, column)
           const ratio = contrast(text, card)
