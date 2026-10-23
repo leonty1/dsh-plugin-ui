@@ -1,0 +1,217 @@
+# AGENT.md — dsh-plugin-ui 修改维护手册
+
+写给以后接手修改的 agent / 人：每个模块长什么样、改哪、怎么改、改完怎么验证。
+原则（来自实际踩坑，违反过就会返工）：
+
+1. **改曲线必改审计**：skin.css 里每条 alpha 曲线在 `scripts/contrast-check.mjs` 都有对应建模，两边不同步审计就会失真。
+2. **不硬编码颜色**：颜色一律走 `--dsw-*` token；插件自己的新变量用 `--dpui-*` 前缀，声明在 `[class*="_frame"]`（或 body）上。
+3. **每个 `var()` 带 fallback**：`var(--dpui-xxx, 0.6)`，防止选择器没命中时整个 color-mix 失效。
+4. **改完必须真机目测**：`pnpm check` 全绿 ≠ 好看。构建 → 重启 DeepSeek Harness → 截图/CDP 采样确认（见 §9）。
+5. **文档写真实事实**：不照抄上游、不写没验证过的行为。
+
+---
+
+## 1. 仓库结构与流水线
+
+```
+src/client/
+  entry.jsx            入口：注册 locale、palette、ground、模型座、账号座（槽位注入）
+  skin.css             布局 + 玻璃材质系统（本文件的核心，见 §2–§4）
+  glass.jsx            玻璃/壁纸地面控制器（body 属性 + localStorage 持久化）
+  palette.jsx/.css     皮肤配色控制器（四套配色 + 原色，预览卡 + 快捷设置两个入口）
+  generated-palettes.js只读 token 源（PALETTE_LAYERS，四层配色 × 明暗，build 生成）
+  ModelSelect.tsx/.module.css  单卡模型/推理强度选择器（925 行，见 §5）
+  account.jsx/.css     账号行 + 账号菜单 + 快捷设置齿轮（仅桌面版）
+  quick-actions*.jsx   快捷操作目录与设置（两个座位）
+  quick-settings.jsx   快捷设置菜单内容
+  locales.js           zh/en 词典（UI_NS + MODEL_NS 两个命名空间）
+  model-contract.ts    模型目录的类型契约
+  provider-order.ts    模型排序
+scripts/
+  build.mjs            打包 dist/client.js + index.js
+  verify-skin.mjs      skin 结构校验
+  typecheck.mjs        TS 检查
+  check-scope.mjs      作用域检查（禁止自由变量）
+  rotate-smoke.mjs     壁纸轮换冒烟
+  contrast-check.mjs   对比度审计（建模 skin.css 的全部曲线，见 §6）
+docs/design-invariants.md  设计不变量（为什么这么设计）；本文件讲“怎么改”
+```
+
+- `pnpm build` = 打包；`pnpm check` = build + node --check + verify-skin + typecheck + check-scope + rotate-smoke + contrast-check，**提交前必跑全量 check**。
+- `dist/` 是提交进仓库的（安装走 git 地址），所以 build 产物变了就要一起提交。
+- 安装/更新插件后需**完全退出并重启 DeepSeek Harness**（HMR 对 link: 安装的插件不驱逐 src/ 模块缓存；重启协议见 §9）。
+
+---
+
+## 2. 玻璃系统（地面 + 材质曲线）— 最常改的部分
+
+### 2.1 数据流
+
+`glass.jsx` 把设置发布到 `<body>` 上：
+
+- `data-dsh-glass`（存在即开启；`glass=0` 且壁纸 `none` 时移除，所有玻璃规则随之失效）
+- `--dpui-glass-opacity`：滑杆值 0–1，**越大越透**。全部曲线的输入。
+- `--dpui-ground-image`：壁纸 URL 或 `none`（`none` 时清除壁纸层，不涂色）
+
+skin.css 里所有玻璃规则都挂在 `html:has(body[data-dsh-glass])` 下 —— 选择器不命中就整体回到官方样式，这是“原色”模式的实现方式。
+
+### 2.2 曲线总表（声明在 skin.css 的 `[class*="_frame"]` 块，~370 行起）
+
+| 曲线 | 公式 | 用途 | 调参变量 |
+| --- | --- | --- | --- |
+| 卡片 `--dpui-frost-alpha` | `min(ceiling, max(floor, (1-glass) + 0.10))` | composer、气泡、文件卡、代码块、特殊字段体 | `frost-floor: 0.46` `frost-elevation: 0.10` `frost-ceiling: 0.96` |
+| 侧栏 `--dpui-sidebar-alpha` | `min(1, (1-glass) + 0.03)` | 左栏比工作区**高一线** | `sidebar-elevation: 0.03` |
+| New Session 芯片 `--dpui-chip-alpha` | `max(0.20, (1-glass) × 0.55)` | 侧栏上的 New Session 按钮 | `chip-floor: 0.20` `chip-scale: 0.55` |
+| 行内代码芯片 `--dpui-inline-alpha` | `max(0.22, (1-glass) × 0.40)` | 正文里的 `code` 小芯片 | `inline-floor: 0.22` `inline-scale: 0.40` |
+
+改任何一行公式的步骤：
+
+1. 改 skin.css 的变量声明（变量名带语义：floor 是保底、elevation 是加法抬升、scale 是乘法系数）。
+2. 同步 `scripts/contrast-check.mjs`：regex key 列表（`frost-floor|...`）、必查 key 数组、对应的 `xxxAlpha(opacity)` 函数、`SURFACES` 里该表面的分支。
+3. `pnpm check:contrast` 必须全绿（强制区间见 §6）。
+4. 真机目测（§9）。
+
+### 2.3 乘法曲线的适用场景（重要的判断）
+
+- **加法曲线**（`(1-glass) + e`）适合“表面直接坐在地面/柱子上的大面”：卡片、侧栏。
+- **乘法曲线**（`(1-glass) × s`）适合“**叠在另一个已涂层表面上的小件**”：New Session 芯片坐在侧栏上，有效覆盖率 = `s + c·(1-s)`，乘法让这个有效差值在每个档位都保持小；行内代码芯片同理（坐在工作区柱子上）。
+- 教训记录：New Session 芯片曾用“raw token + 加法 +0.05”，在滑杆 0.35 时仍是一块黑贴纸 —— 因为 raw `--dsw-specific-sidebar-fill` 本身就比侧栏的涂层深两档（侧栏涂层 = sidebar-fill 混 12% brand）。**芯片的填充必须复刻它所坐表面的合成色**，见 §3。
+
+### 2.4 blur 排序（v0.1.37，从重到轻）
+
+```
+composer        glass×40px + 18px
+New Session     glass×34px + 12px
+md-code-block   glass×30px + 10px
+气泡/文件卡/特殊字段体  glass×30px + 8px
+行内代码芯片     glass×12px + 4px   ← 装饰级，最小
+两根柱子         glass×30 / ×22，无 floor
+```
+
+改 blur 时保持这个相对秩序；某一级要变重，先想它和上下级的关系。
+
+---
+
+## 3. 对话内容表面（skin.css 后半，~336 行起）
+
+材质系统是三层：**柱子（columns）< 岛屿（islands）< composer**。对话内容里的表面全是岛屿，全部走 token 重定义 + backdrop-filter 两件套。
+
+### 3.1 代码块（md-code-block）
+
+- 大代码卡通过在 `_centerCol` 上**重定义 token** 实现霜化：`--dsw-alias-markdown-code-block` 被重定义为 `color-mix(base, frost-alpha)`。这样所有消费该 token 的表面一次性霜化，而 portal 到 body 的菜单/对话框不受影响。
+- token 的原始色在父级（`_frame:has(> _centerCol)`）快照成 `--dpui-code-frost-base` —— var() 在声明处解析，同元素自引用会成环。
+- banner 条（语言头）单独刷 `--dsw-alias-bg-base`。
+- `.md-code-block` 是壳的全局字面类，跨构建稳定，优先用它做钩子。
+
+### 3.2 行内代码芯片（2026-10 改，最近一次反馈的修复）
+
+规则：`html:has(body[data-dsh-glass]) [class*="_markdown"] code:not([data-code-block-content] code)`
+
+- **踩过的坑**：最初让它骑卡片曲线（滑杆 0.35 → alpha 0.75），浅色模式下近白 token（`#f6f6f6`）合成出刺眼白瓷砖（比洗底亮 ~20L）。**修法**：给它独立的乘法装饰曲线（§2.2 最后一行），同高度采样降到 +9~11L，文字清晰。
+- `:not([data-code-block-content] code)` 排除块代码 —— 块代码已通过 3.1 的 token 霜化，这里再刷会双重混合。
+- 芯片文字色不改：token `--dsw-alias-markdown-inline-code` 的文字配对由配色层负责，玻璃层只动背景。
+- **排障经验**：截图里芯片像“空白瓷砖”时，先用 CDP 查 computed `color`（§9.2），确认是文字色问题还是底色问题；像素采样必须选**芯片内无文字的 padding 区**，采到文字上会得假读数（L 109 vs 实际 26 那次）。
+
+### 3.3 特殊字段体（工具 IO 卡 / 终端 / web / search）
+
+钩子是壳自带的 data-* 属性（`[data-tool] _ioCard`、`[data-terminal]`、`[data-web]`、`[data-search]`），跨构建稳定。它们只加 blur，底色走 3.1 的 token 重定义（工具行的填充在内层 IO 卡上）。
+
+### 3.4 刻意不霜化的表面
+
+菜单、对话框、toast —— 让地面透出来的浮层没法读。改玻璃系统时**不要**顺手给它们加霜。
+
+---
+
+## 4. 侧栏与 New Session 芯片（skin.css ~24–160 行）
+
+- 左栏是一张浮动卡（5px gutter / 16px 圆角），涂层 = `--dsw-specific-sidebar-fill` 混 `--dsw-alias-brand-primary` 12%。
+- **New Session 芯片的填充必须用同一合成**：`color-mix(in srgb, color-mix(in srgb, sidebar-fill 88%, brand-primary) chip-alpha, transparent)`。直接用 raw sidebar-fill 会比侧栏深两档（CDP 实测暗色薄荷 (10,15,13) vs (21,38,33)）。
+- 用户对强调的口径（多次修正后的最终版）：**芯片只需比侧栏高一线，侧栏只需比工作区高一线，甚至持平也行**。别再加码。
+- hover 态用 `max(0.72, chip-alpha)` 保住可发现性。
+- 侧栏字号跟随 General → Text size（12/14/16），同一设置所有界面同值（含账号行用户名）。
+
+---
+
+## 5. 模型列表（ModelSelect.tsx / .module.css）
+
+- 单卡组件：模型列表 + 强度（关闭/低/高/最高）同卡，搜索、重试、空状态内置；强度名走 locale。
+- 交互契约（改前先读组件头注释）：悬停行时左侧介绍卡跟随该行、顶边对齐；点模型或点强度都算确认，卡片立即收起，触发按钮当场显示新选择，网络往返只体现在转圈。
+- 注入路径：`entry.jsx` 里 `conversation.input.model` 槽，`priority: -1`，按 sessionId 取 directory；子代理会话（`sessions.subagentAddress` 非空）不可用。
+- 样式在 `.module.css`，**不进玻璃材质系统**（浮层，读本身就该实）。
+- 改排序 → `provider-order.ts`；改类型 → `model-contract.ts`。
+
+---
+
+## 6. 对比度审计（scripts/contrast-check.mjs）
+
+模型逐层复刻 CSS：`column = bg-base at (1-opacity) over ground` → `surface = token at curve over column` → 对 `label-primary` 求 WCAG 对比度。560 例（4 配色 × 2 模式 × 7 表面 × 5 档 × 2 地面）。
+
+**强制政策（增量原则，别改回去）**：
+
+- 只对 `glass ≤ 0.5` 且该例的 `columnRatio`（文字 vs 柱子洗底）本身 ≥ 4.5:1 的用例强制 AA。
+- 柱子自己都不达标的角落（暗色×白壁纸、浅色×黑壁纸）只报告不失败 —— 那是滑杆的选择，表面不替地面背锅。
+- 中位之外（glass > 0.5）全部只报告。
+- 教训：曾把 chip-scale 扫到 0.90 去凑单个审计红点，结果芯片重新变实（L 45）—— 正确做法是把审计改成增量模型，而不是把曲线调坏去讨好审计。
+
+---
+
+## 7. 皮肤配色与外观设置
+
+- token 源 `generated-palettes.js` 是**只读生成物**（4 层：forest/mint/bee/parchment × 明暗），要加色先改生成脚本再 build。
+- 设置入口纪律（用户明确要求过）：官方入口（General 设置等）保持官方行为；插件自己的外观设置放 **Appearance 分区**并给**真实预览卡**（palette.module.css 里的预览卡直接消费 PALETTE_LAYERS token，不是贴图）。
+- “原色”选项 = 卸掉配色层只留布局，由 palette 控制器摘 body 属性实现。
+- 壁纸轮换：`glass.jsx` 的 `advance/tick`，按**存储时间戳**比较（关窗的时间也计入），选 `none` 是轮换开启时的明确退出（不循环跳过它）。
+
+## 8. 账号与快捷设置（仅桌面版）
+
+- `entry.jsx` 用 `'dshDesktop' in globalThis` 分流：Web 壳走自己的登录流，不注入账号座。
+- 账号行/菜单对齐官方规格（24px 头像 / 44px 行高），未登录显示 ⋯ + “更多”。
+- 快捷设置由齿轮座位打开（语言、颜色模式、皮肤配色、文字大小、完整设置入口）；快捷操作两个座位（General → 快捷操作位置 1/2）可选内置/其他插件动作或留空。
+- 非必要不弹模态（用户原则）：只读/可逆动作直接执行并留日志，只有清空/删除类才提示。
+
+---
+
+## 9. 真机验证（check 全绿之后必做）
+
+### 9.1 重启协议（项目记忆 harness-app-restart.md 同源）
+
+```bash
+for p in $(pgrep -f "DeepSeek Harness"); do kill $p; done   # 循环 SIGTERM 直到全树退出
+# 若卡在 supervisor 崩溃对话框：osascript AXPress 'click button "Exit" of
+#   (first window whose subrole is "AXDialog") of process "DeepSeek"'
+# 只有 PPID=1 且无视 SIGTERM 的僵尸才 kill -9，且只杀那一个
+open -a "DeepSeek Harness" --args --remote-debugging-port=9222   # 带调试端口拉起
+```
+
+### 9.2 CDP 取证（Node ≥22 自带 WebSocket，无需依赖）
+
+```js
+const list = await (await fetch('http://127.0.0.1:9222/json/list')).json()
+const ws = new WebSocket(list.find(p => p.type === 'page').webSocketDebuggerUrl)
+// Runtime.evaluate + getComputedStyle：查 token 是否命中、alpha/blur 实际值、文字色
+```
+
+典型用途：确认新规则生效（computed backgroundColor 应含目标 alpha）、排查“空白瓷砖”（查 `color` vs `backgroundColor`）、查某表面实际吃的 token。
+
+### 9.3 截图像素采样
+
+- 先定位窗口（AppleScript `{position, size}`，Retina ×2），`screencapture -x` 全屏再裁 —— `screencapture -R` 可能拍到别的 Space（拍到过微信）。
+- 采样选**无文字区域**；对比表面和洗底必须在**同一高度**（地面有纵向渐变，跨高度采样会得假差值）。
+- 用户频繁换主题/壁纸/滑杆档位，采样前先 CDP 读 `data-dsh-palette`、`--dpui-glass-opacity` 确认当前环境。
+
+### 9.4 提交
+
+实质改动默认 commit；私有仓库直接 push main（这台机 GitHub 只能走 SSH，https 推不动）。
+
+---
+
+## 10. 已知教训索引（改同类东西前先看）
+
+| 教训 | 一句话 | 详见 |
+| --- | --- | --- |
+| frost-floor 0.78 | 滑杆低段全死，“几乎不模糊，太突兀” → 0.46 | §2.2 |
+| 芯片黑贴纸 | 叠层小件的填充必须复刻所坐表面的合成色 + 乘法曲线 | §2.3 §4 |
+| 行内芯片白瓷砖 | 装饰级小件不骑卡片曲线 | §3.2 |
+| 审计凑数 | 为过审计把曲线调坏是本末倒置，改审计模型 | §6 |
+| 侧栏强调过头 | 强调口径是“高一线”，不是“高一档” | §4 |
+| 假像素读数 | 采到文字/跨高度采样都会骗人 | §9.3 |

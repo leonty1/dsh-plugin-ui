@@ -25,10 +25,10 @@ const PALETTE_LAYERS = JSON.parse(declaration.slice(declaration.indexOf('{'), de
  *  so this audit always tests the curve that actually ships. */
 const skin = readFileSync(join(root, 'src/client/skin.css'), 'utf8')
 const declared = {}
-for (const m of skin.matchAll(/--dpui-(frost-floor|frost-elevation|frost-ceiling|sidebar-elevation|chip-floor|chip-scale):\s*([0-9.]+)/g)) {
+for (const m of skin.matchAll(/--dpui-(frost-floor|frost-elevation|frost-ceiling|sidebar-elevation|chip-floor|chip-scale|inline-floor|inline-scale):\s*([0-9.]+)/g)) {
   declared[m[1]] = Number(m[2])
 }
-for (const key of ['frost-floor', 'frost-elevation', 'frost-ceiling', 'sidebar-elevation', 'chip-floor', 'chip-scale']) {
+for (const key of ['frost-floor', 'frost-elevation', 'frost-ceiling', 'sidebar-elevation', 'chip-floor', 'chip-scale', 'inline-floor', 'inline-scale']) {
   if (declared[key] === undefined) {
     console.error(`contrast-check: skin.css declares no --dpui-${key}`)
     process.exit(1)
@@ -43,6 +43,10 @@ const cardAlpha = opacity =>
  *  coat itself is max(floor, (1-opacity)·scale). */
 const chipAlpha = opacity =>
   Math.max(declared['chip-floor'], (1 - opacity) * declared['chip-scale'])
+/** Inline code chips are decoration: their own multiplicative curve, lighter
+ *  than even the New Session chip — a tile a breath off the wash. */
+const inlineAlpha = opacity =>
+  Math.max(declared['inline-floor'], (1 - opacity) * declared['inline-scale'])
 /** The sidebar column rides its own, heavier elevation. */
 const sidebarAlpha = opacity =>
   Math.min(1, (1 - opacity) + declared['sidebar-elevation'])
@@ -98,7 +102,9 @@ for (const [layer, tokens] of Object.entries(PALETTE_LAYERS)) {
       for (const opacity of OPACITIES) {
         for (const ground of GROUNDS) {
           const plateAlpha = surface.column === 'sidebar' ? sidebarAlpha(opacity) : 1 - opacity
-          const surfaceAlpha = surface.name === 'newSession' ? chipAlpha(opacity) : cardAlpha(opacity)
+          const surfaceAlpha = surface.name === 'newSession' ? chipAlpha(opacity)
+            : surface.name === 'codeChip' ? inlineAlpha(opacity)
+            : cardAlpha(opacity)
           const column = over(base, plateAlpha, ground)
           const card = over(fill, surfaceAlpha, column)
           const ratio = contrast(text, card)

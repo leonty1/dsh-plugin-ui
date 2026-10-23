@@ -387,6 +387,16 @@ html:has(body[data-dsh-glass]) [class*="_frame"] {
   --dpui-chip-floor: 0.20;
   --dpui-chip-scale: 0.55;
   --dpui-chip-alpha: calc(max(var(--dpui-chip-floor), (1 - var(--dpui-glass-opacity, 0.5)) * var(--dpui-chip-scale)));
+  /* Inline code chips are decoration, not architecture: a tile a breath off
+     the wash, not a slab on it. They ride their own multiplicative curve —
+     lighter than even the New Session chip — because at the card curve the
+     near-white inline-code token composited to a glaring white tile on the
+     light-mode wash (+20L). Floor 0.22 keeps the tile legible at the clear
+     end; scale 0.40 puts it ~9L off the wash at the mid notches, which is
+     where a code chip belongs. */
+  --dpui-inline-floor: 0.22;
+  --dpui-inline-scale: 0.40;
+  --dpui-inline-alpha: calc(max(var(--dpui-inline-floor), (1 - var(--dpui-glass-opacity, 0.5)) * var(--dpui-inline-scale)));
   --dpui-sidebar-alpha: calc(min(1, (1 - var(--dpui-glass-opacity, 0.5)) + var(--dpui-sidebar-elevation)));
 }
 html:has(body[data-dsh-glass]) [data-composer-card] {
@@ -453,17 +463,17 @@ html:has(body[data-dsh-glass]) .md-code-block {
 html:has(body[data-dsh-glass]) .md-code-block [class*="_bannerWrap"] {
   background-color: color-mix(in srgb, var(--dsw-alias-bg-base) calc(var(--dpui-frost-alpha, 0.6) * 100%), transparent) !important;
 }
-/* Inline code chips are the last solid islands in the message text: little
-   white tiles pasted on the wash. They ride the card alpha like every other
-   text-bearing surface, and blur on the island tier — the host draws them
-   as inline-flex boxes, so backdrop-filter applies. Block code is excluded
-   here because it now frosts through the token above; this rule would
-   double-mix its background. */
+/* Inline code chips ride the decoration curve, not the card curve: at the
+   card's alpha the near-white token turned every chip into a stark white
+   tile pasted on the wash. They are the smallest emphasized islands, so
+   they also take the lightest blur in the material — a breath of frost,
+   not a pane. Block code is excluded here because it frosts through the
+   token above; this rule would double-mix its background. */
 html:has(body[data-dsh-glass]) [class*="_markdown"] code:not([data-code-block-content] code) {
   background-color: color-mix(in srgb,
-    var(--dsw-alias-markdown-inline-code) calc(var(--dpui-frost-alpha, 0.6) * 100%),
+    var(--dsw-alias-markdown-inline-code) calc(var(--dpui-inline-alpha, 0.26) * 100%),
     transparent) !important;
-  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 30px + 8px)) saturate(1.4);
+  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 12px + 4px)) saturate(1.4);
 }
 /* The special-field bodies — tool IO cards, terminal, web and search blocks —
    frost through the token above; blur lifts them onto the island tier with
