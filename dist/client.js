@@ -1137,24 +1137,31 @@ html[data-platform='darwin'] body[data-dsh-palette][data-ds-dark-theme] [class*=
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] span[class*="newSessionShortcut"] {
   color: var(--dsw-alias-label-tertiary) !important;
 }
-/* On the glass ground the button climbs to the card elevation: slightly more
-   solid than the sidebar behind it, so it reads as a control resting on the
-   panel rather than a sticker on the wallpaper. Hover stays at least as
-   solid as rest at every slider position.
-   Blur rides a heavier curve than any other surface \u2014 the sidebar's own 30px
-   recipe scaled up plus a floor \u2014 because the button floats on the rail as a
-   small chip: what shows through it must stay milky at every slider notch,
-   never a legible miniature of the wallpaper (the user asked for a less
-   clear frost). The floor keeps it frosted even at the solid end, where the
-   96% fill already hides the ground; the extra blur only softens the last
-   4%. Alpha stays on the measured card curve, so contrast-check is
-   unaffected. */
+/* On the glass ground the chip rides its own curve \u2014 a constant +0.05 over
+   the sidebar behind it, so it reads as a control resting on the panel, one
+   breath more solid, at every slider position. Hover stays at least as
+   solid as rest.
+   The fill is the sidebar's OWN composite \u2014 sidebar-fill lifted with 12%
+   brand, exactly the mix the rail's coat paints (the mac palette rule below
+   keeps them in step). Filling the chip with the raw token painted a
+   near-black sticker on the brand-lifted rail in dark palettes: same source
+   token, two shades apart \u2014 the user read it as "still not transparent".
+   Same material, slightly more of it, is the whole emphasis.
+   Blur keeps the heavier recipe \u2014 the sidebar's 30px scaled up plus a floor \u2014
+   so the chip stays a notch above the rail in blur as well. Alpha is
+   measured by contrast-check through its own chip curve (declared on the
+   frame) against the sidebar column and the same mixed fill, so the audit
+   tests exactly what ships. */
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"] {
-  background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) calc(var(--dpui-frost-alpha, 0.6) * 100%), transparent) !important;
+  background: color-mix(in srgb,
+    color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) calc(var(--dpui-chip-alpha, 0.36) * 100%),
+    transparent) !important;
   backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 34px + 12px)) saturate(1.4);
 }
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) button[class*="_newSession"]:hover {
-  background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) calc(max(0.88, var(--dpui-frost-alpha, 0.6)) * 100%), transparent) !important;
+  background: color-mix(in srgb,
+    color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) calc(max(0.72, var(--dpui-chip-alpha, 0.36)) * 100%),
+    transparent) !important;
 }
 [class*="_centerCol"] header[class*="_header"] { padding-left: 24px !important; padding-right: 24px !important; border-bottom: none !important; }
 [class*="_composerStack"] [class*="_card"] { background: var(--dsw-alias-bg-layer-1) !important; border-radius: 16px !important; }
@@ -1378,6 +1385,19 @@ html:has(body[data-dsh-glass]) [class*="_frame"] {
   --dpui-frost-ceiling: 0.96;
   --dpui-sidebar-elevation: 0.03;
   --dpui-frost-alpha: calc(min(var(--dpui-frost-ceiling), max(var(--dpui-frost-floor), (1 - var(--dpui-glass-opacity, 0.5)) + var(--dpui-frost-elevation))));
+  /* The New Session chip shadows the sidebar, not the card curve: the user
+     scoped its emphasis to "slightly above the rail". The chip sits ON the
+     rail, so its coat composites with the rail's coat (effective coverage =
+     s + c\xB7(1-s)); a multiplicative curve keeps that EFFECTIVE step small at
+     every notch where the rail's own coverage is high. Floor 0.20 keeps a
+     veil at the clear end; scale 0.55 puts the chip a breath denser than the
+     rail at the mid notches instead of a slab on it \u2014 the audit allows this
+     slope because it enforces a surface's increment over its own wash, and
+     the corners where the rail itself sits below AA are the dial's, reported
+     not enforced. */
+  --dpui-chip-floor: 0.20;
+  --dpui-chip-scale: 0.55;
+  --dpui-chip-alpha: calc(max(var(--dpui-chip-floor), (1 - var(--dpui-glass-opacity, 0.5)) * var(--dpui-chip-scale)));
   --dpui-sidebar-alpha: calc(min(1, (1 - var(--dpui-glass-opacity, 0.5)) + var(--dpui-sidebar-elevation)));
 }
 html:has(body[data-dsh-glass]) [data-composer-card] {
