@@ -62,7 +62,7 @@ skin.css 里所有玻璃规则都挂在 `html:has(body[data-dsh-glass])` 下 —
 | 卡片 `--dpui-frost-alpha` | `min(ceiling, max(floor, (1-glass) + 0.10))` | composer、气泡、文件卡、代码块、特殊字段体 | `frost-floor: 0.46` `frost-elevation: 0.10` `frost-ceiling: 0.96` |
 | 侧栏 `--dpui-sidebar-alpha` | `min(1, (1-glass) + 0.03)` | 左栏比工作区**高一线** | `sidebar-elevation: 0.03` |
 | New Session 芯片 `--dpui-chip-alpha` | `max(0.20, (1-glass) × 0.55)` | 侧栏上的 New Session 按钮 | `chip-floor: 0.20` `chip-scale: 0.55` |
-| 面板 `--dpui-panel-alpha` | `max(0.30, (1-glass) × 0.62)` | **用户消息气泡 + 代码卡**（眼睛平视最多的两块，卡片曲线下仍是板） | `panel-floor: 0.30` `panel-scale: 0.62` |
+| 面板 `--dpui-panel-alpha` | `max(0.30, (1-glass) × 0.62)` | **composer 输入框（只淡色，blur 仍全窗最重）、用户消息气泡、代码卡**（眼睛平视最多的表面，卡片曲线下是白板） | `panel-floor: 0.30` `panel-scale: 0.62` |
 | 行内代码芯片 `--dpui-inline-alpha` | `max(0.22, (1-glass) × 0.40)` | 正文里的 `code` 小芯片 | `inline-floor: 0.22` `inline-scale: 0.40` |
 
 改任何一行公式的步骤：
@@ -89,7 +89,7 @@ md-code-block   glass×30px + 10px
 两根柱子         glass×30 / ×22，无 floor
 ```
 
-注意：气泡的**底色**走 panel 曲线但 blur 仍在岛屿档（30px+8）；代码卡和它的 `_header` 在 panel 曲线时直接从快照基色（`--dpui-code-frost-base`）刷，**不走 token** —— token 和特殊字段体共享，改 token 会把没被点名的表面一起带走（强调范围要窄）。
+注意：气泡/composer/代码卡的**底色**走 panel 曲线但 blur 各留各档（composer 仍是最重的 40px+18）；代码卡在 panel 曲线时直接从快照基色（`--dpui-code-frost-base`）刷，**不走 token** —— token 和特殊字段体共享，改 token 会把没被点名的表面一起带走（强调范围要窄）。平滑渐变壁纸上 blur 不可见，"玻璃感"实际由 tint/alpha 决定 —— 觉得玻璃感不够先降 alpha，别加 blur。
 
 改 blur 时保持这个相对秩序；某一级要变重，先想它和上下级的关系。
 

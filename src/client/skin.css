@@ -414,13 +414,15 @@ html:has(body[data-dsh-glass]) [class*="_frame"] {
 }
 html:has(body[data-dsh-glass]) [data-composer-card] {
   background: color-mix(in srgb,
-    var(--dsw-specific-input-major) calc(var(--dpui-frost-alpha, 0.6) * 100%),
+    var(--dsw-specific-input-major) calc(var(--dpui-panel-alpha, 0.4) * 100%),
     transparent) !important;
   /* Top of the blur ordering, above every island: the user asked for the
      composer to frost heavier than anything else in the window. The 40px
      scale + 18px floor keeps it ahead of the New Session chip (34 + 12) at
-     every slider notch, and the floor keeps it a milky slab rather than a
-     legible backdrop miniature at the clear end. */
+     every slider notch. Its TINT rides the panel curve, not the card curve:
+     at 0.75 the pure-white input token composited to a white slab — on the
+     smooth wash blur reads as alpha, so the glass feel lives in the tint.
+     Heaviest blur, panel tint: dense frost, visible ground. */
   backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 40px + 18px)) saturate(1.4);
 }
 /* The sent-message bubble rides the panel curve, not the card curve: at the

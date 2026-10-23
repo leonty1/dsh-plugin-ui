@@ -138,10 +138,10 @@ pnpm check          # 构建 + 语法 + 皮肤契约 + 类型检查
 |---|---|---|
 | 底板 / 会话根 | 完全透出（滑条控制） | `_frame`、`_centerCol`、`_root` |
 | 侧栏 | 同配方，**高一线**（`--dpui-sidebar-elevation` 0.03，blur 30px；v0.1.38 从 0.12 降下——用户要求侧栏只比工作区稍重甚至持平，强调只留给 New Session 芯片） | `_sidebarCol` |
-| 承载文字的表面 | 卡片海拔：底板 + 0.10，夹在 [0.46, 0.96] | `[data-composer-card]`、`_fileCard`；`_bubble` 与 `.md-code-block` v0.1.39 起改走面板曲线（见下） |
+| 承载文字的表面 | 卡片海拔：底板 + 0.10，夹在 [0.46, 0.96] | `_fileCard`；`[data-composer-card]`、`_bubble` 与 `.md-code-block` v0.1.39/40 起改走面板曲线（见下） |
 | 模糊的轻重排序（v0.1.37 定序：两列 ＜ 强调孤岛 ＜ 输入框） | `[data-composer-card]` 最重（`滑条 × 40px + 18px` 地板，用户要求输入框模糊度最高）＞ `_newSession`（`滑条 × 34px + 12px`）＞ `.md-code-block`（30px + 10px）＞ `_bubble`/`_fileCard`/行内代码 chip（30px + 8px；行内代码是宿主画的 inline-flex，backdrop-filter 直接生效）＞ 特殊字段体（`[data-tool]` 的 ioCard、`[data-terminal]`、`[data-web]`、`[data-search]`，30px + 8px，均为宿主自带 data-* 钩子）＞ 两列（30px / 22px × 滑条，无地板）；alpha 曲线按表面各归各：芯片曲线见下，其余在卡片/侧栏曲线上 | 各表面的 `backdrop-filter` |
 | New Session 芯片 alpha | 专属**乘法涂层**曲线 `max(0.20, (1-滑条) × 0.55)`：芯片叠在侧栏涂层之上，实覆盖率 = s + c·(1-s)，天然贴着侧栏走（滑条 0.35 时芯片实测 L≈50 vs 侧栏 70–93，此前是黑贴纸 L≈26）。**填色必须用侧栏同款混料**：`sidebar-fill` 混 12% 品牌色（与侧栏涂层同配方）——直接填生 token 会在暗色调色板下比轨道暗两档。v0.1.38 第三修：斜率本由强制 AA 档反推到 0.90，但那把芯片重新填实（L≈45）；v0.1.38 末把审计改成增量模型后斜率回落 0.55 | `_newSession` 的玻璃规则 |
-| 面板（用户气泡 + 代码卡）| 专属乘法曲线 `max(0.30, (1-滑条) × 0.62)`（v0.1.39）：卡片曲线下这两块眼睛平视最多的表面仍读成板（代码卡比洗色亮 +27L）。直接从快照基色刷、不走共享 token——token 与特殊字段体共享，动 token 会带走没被点名的表面（强调范围要窄） | `_bubble`、`.md-code-block`（含 `_header`、`_bannerWrap`） |
+| 面板（composer 输入框 + 用户气泡 + 代码卡）| 专属乘法曲线 `max(0.30, (1-滑条) × 0.62)`（v0.1.39，composer v0.1.40 加入）：卡片曲线下这些眼睛平视最多的表面读成板（代码卡比洗色亮 +27L、composer 纯白 0.75 直接是白板）。composer 的 tint 走面板曲线但 **blur 仍全窗最重**（40px+18）——平滑壁纸上 blur 读成 alpha，玻璃感在 tint 不在 blur。代码卡直接从快照基色刷、不走共享 token——token 与特殊字段体共享，动 token 会带走没被点名的表面（强调范围要窄） | `[data-composer-card]`、`_bubble`、`.md-code-block`（含 `_header`、`_bannerWrap`） |
 | 行内代码 chip | 装饰级乘法曲线 `max(0.22, (1-滑条) × 0.40)`（v0.1.39）：卡片曲线下近白 token 合成 +20L 白瓷砖，降到 +9~11L；blur 12px + 4px，材质里最轻 | `_markdown` 内联 `code`（排除块代码） |
 | 强调孤岛（代码段、特殊字段体、上下文行、命令卡） | 同一卡片海拔，经 `_centerCol` 上的 `--dsw-alias-markdown-code-block`（及 banner token）重定义结霜；基色在 `_frame` 上快照，避免同元素自引用环 | 「很白的实块」按用户要求全部进毛玻璃（v0.1.36） |
 | 菜单 / 弹窗 / toast / 输入框下渐变条 | toast 与渐变条保持原样；菜单/弹窗 v0.1.39 起拆掉 `_backing` 垫底（壳的浮层 primitive 本是毛玻璃 `_material` + 不透明纸白 `_backing` 两层，垫底把玻璃垫死成固定白盒）——玻璃模式下垫底透明，`_material` 自带涂层干活；非玻璃/原色模式垫底保留 | `[class*="_backing"]`（玻璃门控内，verify-skin GLASS_SURFACES 例外） |
