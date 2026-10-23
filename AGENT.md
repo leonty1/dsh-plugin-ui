@@ -120,9 +120,12 @@ md-code-block   glass×30px + 10px
 
 钩子是壳自带的 data-* 属性（`[data-tool] _ioCard`、`[data-terminal]`、`[data-web]`、`[data-search]`），跨构建稳定。它们只加 blur，底色走 3.1 的 token 重定义（工具行的填充在内层 IO 卡上）。
 
-### 3.4 刻意不霜化的表面
+### 3.4 浮层（菜单 / 对话框 / toast）
 
-菜单、对话框、toast —— 让地面透出来的浮层没法读。改玻璃系统时**不要**顺手给它们加霜。
+- 壳的浮层 primitive 是两层：`_material`（自带 0.58 涂层 + 40px blur 的毛玻璃，随主题）+ `_backing`（刷**不透明纸白**的垫底）。垫底把玻璃完全垫死，这就是"对话框固定白色"的病根。
+- **修法（v0.1.39）**：玻璃模式下 `_backing` 置透明（`[class*="_backing"] { background-color: transparent !important }`），让 `_material` 自己的涂层干活；非玻璃模式垫底保留，"原色"模式仍是实心浮层。规则已登记进 verify-skin 的 GLASS_SURFACES 例外名单。
+- **toast 仍然不动**：透底的 toast 读不清。
+- 浮层不进曲线表 — 它们的霜是壳自带的，插件只拆垫底。
 
 ---
 

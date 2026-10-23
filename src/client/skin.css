@@ -364,10 +364,15 @@ html:has(body[data-dsh-glass])[data-platform='darwin'] body[data-dsh-palette] [c
    and the surface would drop to fully transparent, the one failure mode
    worse than an opaque one.
 
-   Deliberately not frosted: menus, dialogs and toasts (an overlay that lets
-   the ground through is an overlay you cannot read). Code segments and the
-   special-field bodies ARE frosted — see the emphasized-island rules below;
-   the user asked for exactly those to stop reading as opaque white blocks. */
+   Deliberately not frosted: toasts (an overlay that lets the ground through
+   is an overlay you cannot read). Dialogs and menus WERE on this list too,
+   until the popover primitive turned out to be two layers — a shell material
+   that is already frosted glass (0.58 coat + 40px blur) sitting on a `_backing`
+   that paints solid paper-white and mortars the glass to the ground. Under
+   glass the backing goes transparent and the material's own coat does the
+   work; without glass the backing stays, so Original colors keeps the opaque
+   popover. Code segments and the special-field bodies ARE frosted — see the
+   emphasized-island rules below. */
 html:has(body[data-dsh-glass]) [class*="_frame"] {
   --dpui-frost-floor: 0.46;
   --dpui-frost-elevation: 0.10;
@@ -512,4 +517,15 @@ html:has(body[data-dsh-glass]) [data-terminal],
 html:has(body[data-dsh-glass]) [data-web],
 html:has(body[data-dsh-glass]) [data-search] {
   backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 30px + 8px)) saturate(1.4);
+}
+/* Dialogs, menus and popovers were the fixed-white boxes: the shell's
+   floating primitive is a frosted material (`_material`, its own 0.58 coat
+   and 40px blur, theme-aware) sitting on a `_backing` that paints solid
+   paper-white — the backing mortars the glass to the ground and nothing
+   behind it can ever show. Under glass the backing stands down and the
+   material does the work it was built for. Scoped to glass, so Original
+   colors keeps the opaque popover; toasts keep theirs regardless (an
+   overlay that lets the ground through is an overlay you cannot read). */
+html:has(body[data-dsh-glass]) [class*="_backing"] {
+  background-color: transparent !important;
 }

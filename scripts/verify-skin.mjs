@@ -124,8 +124,10 @@ const PLUGIN_SURFACES = [
  *  while its class names are hashed per release. md-code-block is the markdown
  *  renderer's own global class (a literal, not hashed), the one stable hook on
  *  the code card; the special-field bodies have no hook and frost through the
- *  markdown-code-block token redeclared on _centerCol instead. */
-const GLASS_SURFACES = ['[data-composer-card]', '[class*="_bubble"]', '[class*="_fileCard"]', '[class*="_markdown"]', '.md-code-block', '[class*="_composerSeat"]', '[data-tool]', '[data-terminal]', '[data-web]', '[data-search]']
+ *  markdown-code-block token redeclared on _centerCol instead. _backing is the
+ *  shell popover primitive's solid-white undercoat — cleared under glass so
+ *  the material's own frost reads (see the backing rule in skin.css). */
+const GLASS_SURFACES = ['[data-composer-card]', '[class*="_bubble"]', '[class*="_fileCard"]', '[class*="_markdown"]', '.md-code-block', '[class*="_composerSeat"]', '[data-tool]', '[data-terminal]', '[data-web]', '[data-search]', '[class*="_backing"]']
 const GROUND_GUARD = 'data-dsh-glass'
 const owned = rule =>
   PLUGIN_SURFACES.some(name => rule.includes(`[class*="${name}"]`))
