@@ -144,7 +144,7 @@ pnpm check          # 构建 + 语法 + 皮肤契约 + 类型检查
 | 面板（composer 输入框 + 用户气泡 + 代码卡）| 专属乘法曲线 `max(0.30, (1-滑条) × 0.62)`（v0.1.39，composer v0.1.40 加入）：卡片曲线下这些眼睛平视最多的表面读成板（代码卡比洗色亮 +27L、composer 纯白 0.75 直接是白板）。composer 的 tint 走面板曲线但 **blur 仍全窗最重**（40px+18）——平滑壁纸上 blur 读成 alpha，玻璃感在 tint 不在 blur。代码卡直接从快照基色刷、不走共享 token——token 与特殊字段体共享，动 token 会带走没被点名的表面（强调范围要窄） | `[data-composer-card]`、`_bubble`、`.md-code-block`（含 `_header`、`_bannerWrap`） |
 | 行内代码 chip | 装饰级乘法曲线 `max(0.22, (1-滑条) × 0.40)`（v0.1.39）：卡片曲线下近白 token 合成 +20L 白瓷砖，降到 +9~11L；blur 12px + 4px，材质里最轻 | `_markdown` 内联 `code`（排除块代码） |
 | 强调孤岛（代码段、特殊字段体、上下文行、命令卡） | 同一卡片海拔，经 `_centerCol` 上的 `--dsw-alias-markdown-code-block`（及 banner token）重定义结霜；基色在 `_frame` 上快照，避免同元素自引用环 | 「很白的实块」按用户要求全部进毛玻璃（v0.1.36） |
-| 菜单 / 弹窗 / toast / 输入框下渐变条 | toast 与渐变条保持原样；菜单/弹窗 v0.1.39 起拆掉 `_backing` 垫底（壳的浮层 primitive 本是毛玻璃 `_material` + 不透明纸白 `_backing` 两层，垫底把玻璃垫死成固定白盒）——玻璃模式下垫底透明，`_material` 自带涂层干活；非玻璃/原色模式垫底保留 | `[class*="_backing"]`（玻璃门控内，verify-skin GLASS_SURFACES 例外） |
+| 菜单 / 弹窗 / toast / 输入框下渐变条 | toast 与渐变条保持原样；菜单/弹窗 v0.1.39 起拆掉 `_backing` 垫底（壳的浮层 primitive 本是毛玻璃 `_material` + 不透明纸白 `_backing` 两层，垫底把玻璃垫死成固定白盒）——玻璃模式下垫底透明，`_material` 自带涂层干活；非玻璃/原色模式垫底保留。v0.1.44：整页视图（自动化任务页、同族设置页）的纯白 page 板同样在玻璃门下置透明，露出柱子霜；页面控件保留填充 | `[class*="_backing"]`、`[class*="_centerCol"] [class*="_page"]`（均玻璃门控内，前者在 verify-skin GLASS_SURFACES 例外） |
 
 卡片曲线 `--dpui-frost-alpha = min(0.96, max(0.46, (1-滑条) + 0.10))`：
 卡片永远比身后的底板「高一层」，但高得有限——最高不到纯不透明（留 4% 透出，

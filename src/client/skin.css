@@ -561,3 +561,13 @@ html:has(body[data-dsh-glass]) [data-search] {
 html:has(body[data-dsh-glass]) [class*="_backing"] {
   background-color: transparent !important;
 }
+/* Full-page views (Automation tasks, and the settings page shares the
+   component family) paint their section solid paper-white, a 990x810 slab
+   that mortars over the workspace's frost — the Plugins page's section has
+   no fill, which is why that one already rides the wash. Under glass the
+   page shell stands down and the column's frost shows through, exactly like
+   the conversation root above; controls on the page (primary buttons,
+   switches, active filter tabs) keep their fills. */
+html:has(body[data-dsh-glass]) [class*="_centerCol"] [class*="_page"] {
+  background-color: transparent !important;
+}

@@ -126,6 +126,7 @@ md-code-block   glass×30px + 10px
 - **修法（v0.1.39）**：玻璃模式下 `_backing` 置透明（`[class*="_backing"] { background-color: transparent !important }`），让 `_material` 自己的涂层干活；非玻璃模式垫底保留，"原色"模式仍是实心浮层。规则已登记进 verify-skin 的 GLASS_SURFACES 例外名单。
 - **toast 仍然不动**：透底的 toast 读不清。
 - 浮层不进曲线表 — 它们的霜是壳自带的，插件只拆垫底。
+- **整页视图的白色页板**（v0.1.44）：自动化任务页（及同组件族的设置页）的 section 根刷纯白（990×810 大板），玻璃门下置透明露出柱子的霜——Plugins 页的 page 根本来就没刷白，所以原本只有自动化页是一块板。页面上的控件（主按钮、开关、激活筛选 tab）保留各自填充。钩子 `[class*="_centerCol"] [class*="_page"]`。
 
 ---
 
