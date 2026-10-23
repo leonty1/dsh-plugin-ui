@@ -142,7 +142,7 @@ md-code-block   glass×30px + 10px
 ## 5. 模型列表（ModelSelect.tsx / .module.css）
 
 - 单卡组件：模型列表 + 强度（关闭/低/高/最高）同卡，搜索、重试、空状态内置；强度名走 locale。
-- 交互契约（改前先读组件头注释）：悬停行时左侧介绍卡跟随该行、顶边对齐；点模型或点强度都算确认，卡片立即收起，触发按钮当场显示新选择，网络往返只体现在转圈。
+- 交互契约（改前先读组件头注释）：悬停行时左侧介绍卡跟随该行、顶边对齐；点模型或点强度都算确认，卡片立即收起，触发按钮当场显示新选择，网络往返只体现在转圈。**开卡定位**：选中行滚动到列表**垂直中点**（rect 数学改 viewport.scrollTop，不用 scrollIntoView —— 会拖动外层容器）；只在开卡瞬间生效，键盘/指针一旦接管高亮就停止重定位，导航仍走 focus 的最小滚动。
 - 注入路径：`entry.jsx` 里 `conversation.input.model` 槽，`priority: -1`，按 sessionId 取 directory；子代理会话（`sessions.subagentAddress` 非空）不可用。
 - 样式在 `.module.css`，**不进玻璃材质系统**（浮层，读本身就该实）。
 - 改排序 → `provider-order.ts`；改类型 → `model-contract.ts`。

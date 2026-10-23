@@ -411,15 +411,25 @@ export function ModelSelect(
   // one, and scrolling would slide a different row into the next click.
   const pointerPicked = useRef(false)
 
-  // Opening lands on the selected model: that row is the menu's answer, so
-  // it scrolls into view (nearest edge, minimal movement) rather than leaving
-  // the list wherever it happened to be last time. Keyboard entry reaches the
-  // same row through focus; a pointer pick never scrolls.
+  // Opening lands on the selected model, centered: that row is the menu's
+  // answer, so it sits mid-list where the eye lands — nearest-edge left it
+  // pinned to the bottom whenever the selection sat late in the catalog.
+  // Keyboard entry reaches the same row through focus; once the highlight is
+  // moved by keys or pointer the card stops re-centering and navigation
+  // scrolls minimally through focus, as before. Scrolled via the viewport's
+  // own scrollTop (rect math) — scrollIntoView would drag outer containers.
   useLayoutEffect(() => {
-    if (open && activeModelIndex >= 0 && !pointerPicked.current) {
-      itemRefs.current[activeModelIndex]?.scrollIntoView({ block: 'nearest' })
+    if (!open || pointerPicked.current || highlightedIndex !== null) return
+    const viewport = groupsRef.current
+    const row = itemRefs.current[activeModelIndex]
+    if (viewport === null || row === null) {
+      row?.scrollIntoView({ block: 'nearest' })
+      return
     }
-  }, [open, activeModelIndex, visibleModels])
+    const vp = viewport.getBoundingClientRect()
+    const rr = row.getBoundingClientRect()
+    viewport.scrollTop += rr.top + rr.height / 2 - (vp.top + vp.height / 2)
+  }, [open, activeModelIndex, visibleModels, highlightedIndex])
 
   // Portaled placement (the Menu primitive's portal rules: fixed from the
   // anchor rect, measured before paint, clamped inside the viewport): above

@@ -266,10 +266,17 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
   }, [available, open, filteredGroups]);
   const pointerPicked = (0, import_react.useRef)(false);
   (0, import_react.useLayoutEffect)(() => {
-    if (open && activeModelIndex >= 0 && !pointerPicked.current) {
-      itemRefs.current[activeModelIndex]?.scrollIntoView({ block: "nearest" });
+    if (!open || pointerPicked.current || highlightedIndex !== null) return;
+    const viewport = groupsRef.current;
+    const row = itemRefs.current[activeModelIndex];
+    if (viewport === null || row === null) {
+      row?.scrollIntoView({ block: "nearest" });
+      return;
     }
-  }, [open, activeModelIndex, visibleModels]);
+    const vp = viewport.getBoundingClientRect();
+    const rr = row.getBoundingClientRect();
+    viewport.scrollTop += rr.top + rr.height / 2 - (vp.top + vp.height / 2);
+  }, [open, activeModelIndex, visibleModels, highlightedIndex]);
   (0, import_react.useLayoutEffect)(() => {
     if (!open) {
       setMenuPos(null);
