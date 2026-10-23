@@ -165,6 +165,20 @@ html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_sessionRow"][cla
     transparent) !important;
   backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 34px + 12px)) saturate(1.4);
 }
+/* Hover joins the material too: the shell paints its own opaque hover fill
+   (measured rgb(239,239,239)) straight onto the row, which under glass made
+   the row under the pointer the densest slab in the rail — heavier than the
+   selected row's frost. Under glass the hover becomes the translucent veil
+   the Windows rules below already use (40% neutral-00, no !important there
+   because the rail it sits on is opaque), so sweeping the list reads as a
+   breath over the frosted column instead of pasting grey chips. Row fills
+   stay !important here to beat the shell's hover fill on the same element. */
+html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_sessionRow"]:hover:not([class*="_selected"]),
+html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_searchResultRow"]:hover:not([class*="_selected"]),
+html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_projectRow"]:hover,
+html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_panelRow"]:hover:not([class*="_panelActive"]) {
+  background: color-mix(in srgb, var(--dsw-static-neutral-00) 40%, transparent) !important;
+}
 [class*="_centerCol"] header[class*="_header"] { padding-left: 24px !important; padding-right: 24px !important; border-bottom: none !important; }
 [class*="_composerStack"] [class*="_card"] { background: var(--dsw-alias-bg-layer-1) !important; border-radius: 16px !important; }
 

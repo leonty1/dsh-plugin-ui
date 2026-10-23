@@ -136,6 +136,7 @@ md-code-block   glass×30px + 10px
 - 用户对强调的口径（多次修正后的最终版）：**芯片只需比侧栏高一线，侧栏只需比工作区高一线，甚至持平也行**。别再加码。
 - hover 态用 `max(0.72, chip-alpha)` 保住可发现性。
 - **选中的会话行同材质**（v0.1.41）：`_sessionRow_selected` 在玻璃门下复用芯片曲线（同合成填充 + `34px+12px` blur），替代原本不透明的 `interactive-bg-active` 灰板。范围只有会话行 —— `_searchResultRow_selected`、`_panelRow_panelActive` 仍走 active fill（强调范围窄原则）。
+- **hover 也进材质**（v0.1.42）：壳在 mac 上给行刷不透明 hover 填充（实测 rgb(239,239,239)），玻璃下"扫过哪行哪行最重"。玻璃门下行 hover 改为 40% neutral-00 半透明薄纱（与 Windows 行 hover 同配方、同数值），不需要 blur —— 行下面的侧栏柱子已经模糊过。
 - 侧栏字号跟随 General → Text size（12/14/16），同一设置所有界面同值（含账号行用户名）。
 
 ---

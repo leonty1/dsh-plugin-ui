@@ -1170,6 +1170,33 @@ html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_root"]:not([clas
     color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) calc(max(0.72, var(--dpui-chip-alpha, 0.36)) * 100%),
     transparent) !important;
 }
+/* The open session's row joins the chip's material: both read as "the control
+   you're in" at the top and in the list, so the selected row sheds its opaque
+   interactive-bg-active slab and rides the same chip curve \u2014 the rail's own
+   composite at chip alpha, with the chip's heavier blur. Below it the unselected
+   rows stay shell-painted, so the emphasis stays exactly one row wide, like the
+   chip is one control wide. contrast-check's newSession case audits this fill,
+   token, mix and curve verbatim. */
+html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_sessionRow"][class*="_selected"] {
+  background: color-mix(in srgb,
+    color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) calc(var(--dpui-chip-alpha, 0.36) * 100%),
+    transparent) !important;
+  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 34px + 12px)) saturate(1.4);
+}
+/* Hover joins the material too: the shell paints its own opaque hover fill
+   (measured rgb(239,239,239)) straight onto the row, which under glass made
+   the row under the pointer the densest slab in the rail \u2014 heavier than the
+   selected row's frost. Under glass the hover becomes the translucent veil
+   the Windows rules below already use (40% neutral-00, no !important there
+   because the rail it sits on is opaque), so sweeping the list reads as a
+   breath over the frosted column instead of pasting grey chips. Row fills
+   stay !important here to beat the shell's hover fill on the same element. */
+html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_sessionRow"]:hover:not([class*="_selected"]),
+html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_searchResultRow"]:hover:not([class*="_selected"]),
+html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_projectRow"]:hover,
+html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_panelRow"]:hover:not([class*="_panelActive"]) {
+  background: color-mix(in srgb, var(--dsw-static-neutral-00) 40%, transparent) !important;
+}
 [class*="_centerCol"] header[class*="_header"] { padding-left: 24px !important; padding-right: 24px !important; border-bottom: none !important; }
 [class*="_composerStack"] [class*="_card"] { background: var(--dsw-alias-bg-layer-1) !important; border-radius: 16px !important; }
 
