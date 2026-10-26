@@ -132,8 +132,8 @@ md-code-block   glass×30px + 10px
 - 壳的浮层 primitive 是两层：`_material`（自带 0.58 涂层 + 40px blur 的毛玻璃，随主题）+ `_backing`（刷**不透明纸白**的垫底）。垫底把玻璃完全垫死，这就是"对话框固定白色"的病根。
 - **修法（v0.1.39）**：玻璃模式下 `_backing` 置透明（`[class*="_backing"] { background-color: transparent !important }`），让 `_material` 自己的涂层干活；非玻璃模式垫底保留，"原色"模式仍是实心浮层。规则已登记进 verify-skin 的 GLASS_SURFACES 例外名单。
 - **`_material` 的 blur 玻璃门下降到 24px（v0.1.47）**：40px 是全窗最重的一层 backdrop，也是合成器内存压力下**最先整批丢弃**的那类层（2026-10-26 事故：所有 blur 层同时消失、tint 还在，浮层后面内容清晰透出；重启即愈）。玻璃门下 24px 在已糊的地面上读不出差别，纯省成本；"原色"模式保留壳的 40px。规则同为 glass-gated，已登记 GLASS_SURFACES。
-- **合成器静默丢 blur 是不治之症（2026-10-26 三起定论）**：中央列两个 fixed 元素（顶栏、composer）的 backdrop-filter 会单独死亡——采样的是滚动中的对话内容，滚动流内元素和侧栏都无恙。**页面内一切手段救不回**（真机逐一试过并全部失败）：inline blur 切换、transform/display 层重建、`data-dsh-glass` 总闸重开、根 zoom 重排、真实输入、微滚动。GPU 正常无崩溃，唯一疗法是重启。曾试过 inline 轻推自愈守护（v0.1.47 一度上线）——对重症无效，且窗口被遮挡时 rAF 停摆会让 inline `none` 卡住不还原、全窗无霜，已撤。
-- **预防只有一条实验性规则（v0.1.48）**：`[data-composer-card] { will-change: transform }`（玻璃门内）——把受害者自己提升成合成层，让它随自己的层重栅格而不是共享缓存过期。**注意方向性**：给滚动容器加合成层提示（`[data-conversation-scroll]` 上 `will-change: scroll-position`）实锤有害——隔离了 backdrop root，整窗玻璃变白板，A/B 撤掉即恢复，别再试。composer 这条真机 A/B 验证无害（壁纸与全部霜不动），但能否防住丢层**未证实**：若复发，删规则、认命重启。`[data-composer-card]` 本就是 GLASS_SURFACES 钩子。
+- **合成器静默丢 blur 是不治之症（2026-10-26 四起定论）**：中央列两个 fixed 元素（顶栏、composer）的 backdrop-filter 会单独死亡——采样的是滚动中的对话内容，滚动流内元素和侧栏都无恙。**页面内一切手段救不回**（真机逐一试过并全部失败）：inline blur 切换、transform/display 层重建、`data-dsh-glass` 总闸重开、根 zoom 重排、真实输入、微滚动。GPU 正常无崩溃，唯一疗法是重启。曾试过 inline 轻推自愈守护（v0.1.47 一度上线）——对重症无效，且窗口被遮挡时 rAF 停摆会让 inline `none` 卡住不还原、全窗无霜，已撤。
+- **CSS 预防也全部失败，不要再加 will-change**：`[data-conversation-scroll]` 上 `will-change: scroll-position` 实锤有害——隔离 backdrop root，整窗玻璃变白板，A/B 撤掉即恢复。`[data-composer-card] { will-change: transform }` 真机 A/B 无害，但 v0.1.48 上线后第四次复发，证明防不住，已删。当前结论：**没有插件内预防或自愈方案，复发只能重启**；`_material` 24px 仅作为降载优化保留。
 - **toast 仍然不动**：透底的 toast 读不清。
 - 浮层不进曲线表 — 它们的霜是壳自带的，插件只拆垫底。
 - **整页视图的白色页板**（v0.1.44）：自动化任务页（及同组件族的设置页）的 section 根刷纯白（990×810 大板），玻璃门下置透明露出柱子的霜——Plugins 页的 page 根本来就没刷白，所以原本只有自动化页是一块板。页面上的控件（主按钮、开关、激活筛选 tab）保留各自填充。钩子 `[class*="_centerCol"] [class*="_page"]`。
