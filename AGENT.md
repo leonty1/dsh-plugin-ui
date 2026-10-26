@@ -59,10 +59,10 @@ skin.css 里所有玻璃规则都挂在 `html:has(body[data-dsh-glass])` 下 —
 
 | 曲线 | 公式 | 用途 | 调参变量 |
 | --- | --- | --- | --- |
-| 卡片 `--dpui-frost-alpha` | `min(ceiling, max(floor, (1-glass) + 0.10))` | 文件卡、特殊字段体（composer、气泡、代码卡 v0.1.40 起改走面板曲线） | `frost-floor: 0.46` `frost-elevation: 0.10` `frost-ceiling: 0.96` |
+| 卡片 `--dpui-frost-alpha` | `min(ceiling, max(floor, (1-glass) + 0.10))` | 文件卡、特殊字段体（气泡、代码卡 v0.1.40 起改走面板曲线；composer v0.1.49 起退出曲线体系，见下） | `frost-floor: 0.46` `frost-elevation: 0.10` `frost-ceiling: 0.96` |
 | 侧栏 `--dpui-sidebar-alpha` | `min(1, (1-glass) + 0.03)` | 左栏比工作区**高一线** | `sidebar-elevation: 0.03` |
 | New Session 芯片 `--dpui-chip-alpha` | `max(0.20, (1-glass) × 0.55)` | 侧栏上的 New Session 按钮 + **workspace 里三种选中的行**（会话/搜索结果/面板行，v0.1.41 起、v0.1.43 扩齐，同填充同 blur） | `chip-floor: 0.20` `chip-scale: 0.55` |
-| 面板 `--dpui-panel-alpha` | `max(0.30, (1-glass) × 0.62)` | **composer 输入框（只淡色，blur 仍全窗最重）、用户消息气泡、代码卡**（眼睛平视最多的表面，卡片曲线下是白板） | `panel-floor: 0.30` `panel-scale: 0.62` |
+| 面板 `--dpui-panel-alpha` | `max(0.30, (1-glass) × 0.62)` | **用户消息气泡、代码卡**（眼睛平视最多的表面，卡片曲线下是白板）。composer v0.1.49 起不再走此曲线：固定 0.85 纯 tint、无 blur（丢层免疫设计，见 §3.4） | `panel-floor: 0.30` `panel-scale: 0.62` |
 | 行内代码芯片 `--dpui-inline-alpha` | `max(0.22, (1-glass) × 0.40)` | 正文里的 `code` 小芯片 | `inline-floor: 0.22` `inline-scale: 0.40` |
 
 改任何一行公式的步骤：
@@ -81,15 +81,15 @@ skin.css 里所有玻璃规则都挂在 `html:has(body[data-dsh-glass])` 下 —
 ### 2.4 blur 排序（v0.1.37，从重到轻）
 
 ```
-composer        glass×40px + 18px
 New Session     glass×34px + 12px
 md-code-block   glass×30px + 10px
 气泡/文件卡/特殊字段体  glass×30px + 8px
 行内代码芯片     glass×12px + 4px   ← 装饰级，最小
 两根柱子         glass×30 / ×22，无 floor
+composer        无 blur（v0.1.49 摘除，固定 0.85 tint——丢层免疫设计，见 §3.4）
 ```
 
-注意：气泡/composer/代码卡的**底色**走 panel 曲线但 blur 各留各档（composer 仍是最重的 40px+18）；代码卡在 panel 曲线时直接从快照基色（`--dpui-code-frost-base`）刷，**不走 token** —— token 和特殊字段体共享，改 token 会把没被点名的表面一起带走（强调范围要窄）。平滑渐变壁纸上 blur 不可见，"玻璃感"实际由 tint/alpha 决定 —— 觉得玻璃感不够先降 alpha，别加 blur。
+注意：气泡/代码卡的**底色**走 panel 曲线但 blur 各留各档；composer 的底色是固定 0.85、与滑杆无关（v0.1.49 起）；代码卡在 panel 曲线时直接从快照基色（`--dpui-code-frost-base`）刷，**不走 token** —— token 和特殊字段体共享，改 token 会把没被点名的表面一起带走（强调范围要窄）。平滑渐变壁纸上 blur 不可见，"玻璃感"实际由 tint/alpha 决定 —— 觉得玻璃感不够先降 alpha，别加 blur。
 
 改 blur 时保持这个相对秩序；某一级要变重，先想它和上下级的关系。
 
@@ -97,7 +97,7 @@ md-code-block   glass×30px + 10px
 
 ## 3. 对话内容表面（skin.css 后半，~336 行起）
 
-材质系统是三层：**柱子（columns）< 岛屿（islands）< composer**。对话内容里的表面全是岛屿，全部走 token 重定义 + backdrop-filter 两件套。
+材质系统是两层：**柱子（columns）< 岛屿（islands）**。对话内容里的表面全是岛屿，全部走 token 重定义 + backdrop-filter 两件套。composer 曾经是顶层的第三层（v0.1.37 全窗最重 blur），v0.1.49 起退出体系（无 blur、固定 0.85 tint，见 §3.4 丢层免疫）。
 
 ### 3.1 代码块（md-code-block）
 
@@ -132,8 +132,9 @@ md-code-block   glass×30px + 10px
 - 壳的浮层 primitive 是两层：`_material`（自带 0.58 涂层 + 40px blur 的毛玻璃，随主题）+ `_backing`（刷**不透明纸白**的垫底）。垫底把玻璃完全垫死，这就是"对话框固定白色"的病根。
 - **修法（v0.1.39）**：玻璃模式下 `_backing` 置透明（`[class*="_backing"] { background-color: transparent !important }`），让 `_material` 自己的涂层干活；非玻璃模式垫底保留，"原色"模式仍是实心浮层。规则已登记进 verify-skin 的 GLASS_SURFACES 例外名单。
 - **`_material` 的 blur 玻璃门下降到 24px（v0.1.47）**：40px 是全窗最重的一层 backdrop，也是合成器内存压力下**最先整批丢弃**的那类层（2026-10-26 事故：所有 blur 层同时消失、tint 还在，浮层后面内容清晰透出；重启即愈）。玻璃门下 24px 在已糊的地面上读不出差别，纯省成本；"原色"模式保留壳的 40px。规则同为 glass-gated，已登记 GLASS_SURFACES。
-- **合成器静默丢 blur 是不治之症（2026-10-26 四起定论）**：中央列两个 fixed 元素（顶栏、composer）的 backdrop-filter 会单独死亡——采样的是滚动中的对话内容，滚动流内元素和侧栏都无恙。**页面内一切手段救不回**（真机逐一试过并全部失败）：inline blur 切换、transform/display 层重建、`data-dsh-glass` 总闸重开、根 zoom 重排、真实输入、微滚动。GPU 正常无崩溃，唯一疗法是重启。曾试过 inline 轻推自愈守护（v0.1.47 一度上线）——对重症无效，且窗口被遮挡时 rAF 停摆会让 inline `none` 卡住不还原、全窗无霜，已撤。
+- **合成器静默丢 blur 是不治之症（2026-10-26 六起定论）**：中央列两个 fixed 元素（顶栏、composer）的 backdrop-filter 会单独死亡——采样的是滚动中的对话内容，滚动流内元素和侧栏都无恙。**页面内一切手段救不回**（真机逐一试过并全部失败）：inline blur 切换、transform/display 层重建、`data-dsh-glass` 总闸重开、根 zoom 重排、真实输入、微滚动。GPU 正常无崩溃，唯一疗法是重启。曾试过 inline 轻推自愈守护（v0.1.47 一度上线）——对重症无效，且窗口被遮挡时 rAF 停摆会让 inline `none` 卡住不还原、全窗无霜，已撤。
 - **CSS 预防也全部失败，不要再加 will-change**：`[data-conversation-scroll]` 上 `will-change: scroll-position` 实锤有害——隔离 backdrop root，整窗玻璃变白板，A/B 撤掉即恢复。`[data-composer-card] { will-change: transform }` 真机 A/B 无害，但 v0.1.48 上线后第四次复发，证明防不住，已删。当前结论：**没有插件内预防或自愈方案，复发只能重启**；`_material` 24px 仅作为降载优化保留。
+- **设计层免疫：composer 摘除 blur、固定 0.85 纯 tint（v0.1.49，现行方案）**：当天累计六起复发、且后两起在重启后约 1 分钟内即丢——"健康态"实际上住不进去，决策按丢层态做。真机六格对比（同段正文压卡后）结论：0.85 纯 tint 下残影是常驻淡影几乎无感，0.92 几乎无痕但卡读成实心板，0.40 无 blur 是正文清晰穿透的事故。故 composer 不再挂 backdrop-filter、不走任何曲线，`background` 固定 `color-mix(input-major 85%, transparent)`——blur 死活与它无关，观感恒定。**唯一为此放弃霜感的表面**；窗体其余玻璃（柱子、岛屿、侧栏）从未丢层，不动。注意实验仪器坑：composer 规则带 `!important`，CDP 验证 tint 变体必须 `style.setProperty(..., "important")`，普通 inline 赋值会被压住（曾据此误判"0.92 纯 tint 藏不住残影"）。
 - **toast 仍然不动**：透底的 toast 读不清。
 - 浮层不进曲线表 — 它们的霜是壳自带的，插件只拆垫底。
 - **整页视图的白色页板**（v0.1.44）：自动化任务页（及同组件族的设置页）的 section 根刷纯白（990×810 大板），玻璃门下置透明露出柱子的霜——Plugins 页的 page 根本来就没刷白，所以原本只有自动化页是一块板。页面上的控件（主按钮、开关、激活筛选 tab）保留各自填充。钩子 `[class*="_centerCol"] [class*="_page"]`。

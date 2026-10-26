@@ -51,13 +51,15 @@ const inlineAlpha = opacity =>
  *  the card and the inline chip, present but clearly of the wash. */
 const panelAlpha = opacity =>
   Math.max(declared['panel-floor'], (1 - opacity) * declared['panel-scale'])
-/** Which curve each surface rides. The composer keeps the heaviest blur but
- *  dials its tint on the panel curve — on the smooth wash blur reads as
- *  alpha, and the card curve made it a white slab. */
+/** The composer carries a fixed 0.85 tint and no blur (v0.1.49 glass-drop
+ *  immunity) — its coverage does not move with the slider. */
+const composerAlpha = () => 0.85
+/** Which curve each surface rides. */
 const alphaFor = (surface, opacity) =>
   surface.name === 'newSession' ? chipAlpha(opacity)
   : surface.name === 'codeChip' ? inlineAlpha(opacity)
-  : surface.name === 'bubble' || surface.name === 'codeBlock' || surface.name === 'codeBanner' || surface.name === 'composer' ? panelAlpha(opacity)
+  : surface.name === 'composer' ? composerAlpha(opacity)
+  : surface.name === 'bubble' || surface.name === 'codeBlock' || surface.name === 'codeBanner' ? panelAlpha(opacity)
   : cardAlpha(opacity)
 /** The sidebar column rides its own, heavier elevation. */
 const sidebarAlpha = opacity =>

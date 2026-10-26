@@ -442,18 +442,20 @@ html:has(body[data-dsh-glass]) [class*="_frame"] {
   --dpui-panel-alpha: calc(max(var(--dpui-panel-floor), (1 - var(--dpui-glass-opacity, 0.5)) * var(--dpui-panel-scale)));
   --dpui-sidebar-alpha: calc(min(1, (1 - var(--dpui-glass-opacity, 0.5)) + var(--dpui-sidebar-elevation)));
 }
+/* The composer carries NO backdrop-filter, by design: it is the one surface
+   whose blur lives on a sticky seat inside the scroll container, and the
+   compositor silently drops it (computed style intact, rendering gone —
+   2026-10-26, six incidents, each within ~1 minute of a fresh launch;
+   nothing in-page prevents or heals it). A dead blur at tint 0.40 prints
+   body text straight through the card. So the composer trades frost for a
+   fixed high tint: alpha 0.85 keeps the ghost text a faint constant shadow
+   whether the blur layer lives or dies, and the look never changes out
+   under the user. Verified live: at 0.85 no-blur the ghost is barely
+   perceptible; at 0.92 it vanishes but the card reads as an opaque slab. */
 html:has(body[data-dsh-glass]) [data-composer-card] {
   background: color-mix(in srgb,
-    var(--dsw-specific-input-major) calc(var(--dpui-panel-alpha, 0.4) * 100%),
+    var(--dsw-specific-input-major) 85%,
     transparent) !important;
-  /* Top of the blur ordering, above every island: the user asked for the
-     composer to frost heavier than anything else in the window. The 40px
-     scale + 18px floor keeps it ahead of the New Session chip (34 + 12) at
-     every slider notch. Its TINT rides the panel curve, not the card curve:
-     at 0.75 the pure-white input token composited to a white slab — on the
-     smooth wash blur reads as alpha, so the glass feel lives in the tint.
-     Heaviest blur, panel tint: dense frost, visible ground. */
-  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 40px + 18px)) saturate(1.4);
 }
 /* The sent-message bubble rides the panel curve, not the card curve: at the
    card's alpha the mint fill read as a dense pill pasted on the wash. It is
