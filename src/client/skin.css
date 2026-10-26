@@ -561,6 +561,14 @@ html:has(body[data-dsh-glass]) [data-search] {
 html:has(body[data-dsh-glass]) [class*="_backing"] {
   background-color: transparent !important;
 }
+/* The material's stock 40px blur is the single heaviest backdrop layer on
+   screen and the one the renderer drops first under memory pressure (live
+   incident 2026-10-26: every blur layer vanished at once, tint survived).
+   Under glass 24px reads the same over an already-blurred ground, so the
+   big radius is pure cost — scoped to glass, Original colors keeps 40px. */
+html:has(body[data-dsh-glass]) [class*="_material"] {
+  backdrop-filter: blur(24px) saturate(1.5) !important;
+}
 /* Full-page views (Automation tasks, and the settings page shares the
    component family) paint their section solid paper-white, a 990x810 slab
    that mortars over the workspace's frost — the Plugins page's section has

@@ -131,6 +131,8 @@ md-code-block   glass×30px + 10px
 
 - 壳的浮层 primitive 是两层：`_material`（自带 0.58 涂层 + 40px blur 的毛玻璃，随主题）+ `_backing`（刷**不透明纸白**的垫底）。垫底把玻璃完全垫死，这就是"对话框固定白色"的病根。
 - **修法（v0.1.39）**：玻璃模式下 `_backing` 置透明（`[class*="_backing"] { background-color: transparent !important }`），让 `_material` 自己的涂层干活；非玻璃模式垫底保留，"原色"模式仍是实心浮层。规则已登记进 verify-skin 的 GLASS_SURFACES 例外名单。
+- **`_material` 的 blur 玻璃门下降到 24px（v0.1.47）**：40px 是全窗最重的一层 backdrop，也是合成器内存压力下**最先整批丢弃**的那类层（2026-10-26 事故：所有 blur 层同时消失、tint 还在，浮层后面内容清晰透出；重启即愈）。玻璃门下 24px 在已糊的地面上读不出差别，纯省成本；"原色"模式保留壳的 40px。规则同为 glass-gated，已登记 GLASS_SURFACES。
+- **blur 自愈守护（v0.1.47，glass.jsx）**：ground controller 安装时挂一个 5 分钟一跳的 sweep + visibilitychange 后 500ms 一跳：把页面上所有带 backdrop-filter 的元素 inline 置 `none`，双 rAF 后撤掉 inline —— 强制合成器重画一遍该层，丢层自愈（双 rAF 是必须的：单 rAF 在绘制前就取消，"none"帧落不到屏上）。菜单/对话框开着或页面隐藏时跳过。代价是那一帧 blur 短暂缺席，藏在 5 分钟间隔里。
 - **toast 仍然不动**：透底的 toast 读不清。
 - 浮层不进曲线表 — 它们的霜是壳自带的，插件只拆垫底。
 - **整页视图的白色页板**（v0.1.44）：自动化任务页（及同组件族的设置页）的 section 根刷纯白（990×810 大板），玻璃门下置透明露出柱子的霜——Plugins 页的 page 根本来就没刷白，所以原本只有自动化页是一块板。页面上的控件（主按钮、开关、激活筛选 tab）保留各自填充。钩子 `[class*="_centerCol"] [class*="_page"]`。
@@ -156,7 +158,7 @@ md-code-block   glass×30px + 10px
 - 单卡组件：模型列表 + 强度（关闭/低/高/最高）同卡，搜索、重试、空状态内置；强度名走 locale。
 - 交互契约（改前先读组件头注释）：悬停行时左侧介绍卡跟随该行、顶边对齐；点模型或点强度都算确认，卡片立即收起，触发按钮当场显示新选择，网络往返只体现在转圈。**开卡定位**：选中行滚动到列表**垂直中点**（rect 数学改 viewport.scrollTop，不用 scrollIntoView —— 会拖动外层容器）；只在开卡瞬间生效，键盘/指针一旦接管高亮就停止重定位，导航仍走 focus 的最小滚动。
 - 注入路径：`entry.jsx` 里 `conversation.input.model` 槽，`priority: -1`，按 sessionId 取 directory；子代理会话（`sessions.subagentAddress` 非空）不可用。
-- 浮层材质（实测修正）：账号菜单、快捷设置、模型卡、rc.3 侧栏 More 菜单都渲染进壳的 Menu/MenuSurface primitive，绘画层是 `_material`（0.58 涂层 + 40px blur）——玻璃门下 `_backing` 拆掉后**它们已经全部跟上玻璃**（真机截图 /tmp/model-card-glass.png 为证）。`.module.css` 只画控件（行 hover、警示、危险底），不画容器；§3.4 的"浮层不进曲线表"同样适用。
+- 浮层材质（实测修正）：账号菜单、快捷设置、模型卡、rc.3 侧栏 More 菜单都渲染进壳的 Menu/MenuSurface primitive，绘画层是 `_material`（0.58 涂层；blur 壳自带 40px，玻璃门下降到 24px，见 §3.4）——玻璃门下 `_backing` 拆掉后**它们已经全部跟上玻璃**（真机截图 /tmp/model-card-glass.png 为证）。`.module.css` 只画控件（行 hover、警示、危险底），不画容器；§3.4 的"浮层不进曲线表"同样适用。
 - 改排序 → `provider-order.ts`；改类型 → `model-contract.ts`。
 
 ---

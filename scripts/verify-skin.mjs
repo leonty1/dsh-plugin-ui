@@ -126,11 +126,15 @@ const PLUGIN_SURFACES = [
  *  the code card; the special-field bodies have no hook and frost through the
  *  markdown-code-block token redeclared on _centerCol instead. _backing is the
  *  shell popover primitive's solid-white undercoat — cleared under glass so
- *  the material's own frost reads (see the backing rule in skin.css). _tag is
+ *  the material's own frost reads (see the backing rule in skin.css), and
+ *  _material — the same primitive's paint layer — has its stock 40px blur
+ *  stepped down to 24px under glass: it is the heaviest backdrop layer on
+ *  screen and the first one the compositor drops under memory pressure
+ *  (live incident 2026-10-26). _tag is
  *  the status tag component — only its neutral tone is touched, dropping to
  *  the 12% tint its sibling tones already use. data-dockkit-empty is the
  *  dock's empty tab host, a solid-white slab cleared like the page shell. */
-const GLASS_SURFACES = ['[data-composer-card]', '[class*="_bubble"]', '[class*="_fileCard"]', '[class*="_markdown"]', '.md-code-block', '[class*="_composerSeat"]', '[data-tool]', '[data-terminal]', '[data-web]', '[data-search]', '[class*="_backing"]', '[class*="_tag"]', '[data-dockkit-empty]']
+const GLASS_SURFACES = ['[data-composer-card]', '[class*="_bubble"]', '[class*="_fileCard"]', '[class*="_markdown"]', '.md-code-block', '[class*="_composerSeat"]', '[data-tool]', '[data-terminal]', '[data-web]', '[data-search]', '[class*="_backing"]', '[class*="_material"]', '[class*="_tag"]', '[data-dockkit-empty]']
 const GROUND_GUARD = 'data-dsh-glass'
 const owned = rule =>
   PLUGIN_SURFACES.some(name => rule.includes(`[class*="${name}"]`))

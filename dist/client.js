@@ -832,9 +832,39 @@ function apply(state) {
     body.removeAttribute("data-dsh-glass");
   }
 }
+var WATCHDOG_INTERVAL = 5 * 6e4;
+function nudgeBlurs() {
+  if (document.querySelector("[role=dialog],[role=menu],.dpui-account-list")) return;
+  const blurred = [];
+  for (const el of document.body.querySelectorAll("*")) {
+    if (getComputedStyle(el).backdropFilter !== "none") blurred.push(el);
+  }
+  if (blurred.length === 0) return;
+  for (const el of blurred) el.style.backdropFilter = "none";
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    for (const el of blurred) el.style.removeProperty("backdrop-filter");
+  }));
+}
+function startBlurWatchdog() {
+  let pending;
+  const sweep = () => {
+    if (!document.hidden) nudgeBlurs();
+  };
+  const onVisibility = () => {
+    pending = setTimeout(sweep, 500);
+  };
+  const interval = setInterval(sweep, WATCHDOG_INTERVAL);
+  document.addEventListener("visibilitychange", onVisibility);
+  return () => {
+    clearInterval(interval);
+    clearTimeout(pending);
+    document.removeEventListener("visibilitychange", onVisibility);
+  };
+}
 function createGroundController() {
   let current = stored();
   let timer;
+  let stopWatchdog;
   const listeners = /* @__PURE__ */ new Set();
   const notify = () => {
     for (const listener of listeners) listener();
@@ -891,8 +921,10 @@ function createGroundController() {
       apply(current);
       tick();
       timer = setInterval(tick, 3e4);
+      stopWatchdog = startBlurWatchdog();
       return () => {
         clearInterval(timer);
+        stopWatchdog();
         document.body.removeAttribute("data-dsh-glass");
       };
     }
@@ -1578,6 +1610,14 @@ html:has(body[data-dsh-glass]) [data-search] {
    overlay that lets the ground through is an overlay you cannot read). */
 html:has(body[data-dsh-glass]) [class*="_backing"] {
   background-color: transparent !important;
+}
+/* The material's stock 40px blur is the single heaviest backdrop layer on
+   screen and the one the renderer drops first under memory pressure (live
+   incident 2026-10-26: every blur layer vanished at once, tint survived).
+   Under glass 24px reads the same over an already-blurred ground, so the
+   big radius is pure cost \u2014 scoped to glass, Original colors keeps 40px. */
+html:has(body[data-dsh-glass]) [class*="_material"] {
+  backdrop-filter: blur(24px) saturate(1.5) !important;
 }
 /* Full-page views (Automation tasks, and the settings page shares the
    component family) paint their section solid paper-white, a 990x810 slab
