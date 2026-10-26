@@ -66,6 +66,45 @@ function apply(state) {
   }
 }
 
+const WATCHDOG_INTERVAL = 5 * 60000
+
+/**
+ * Chromium occasionally drops every backdrop-filter layer at once — the tint
+ * keeps painting but the blur goes missing, so frost shows crisp bleed-through
+ * — without any crash or log. Rebuilding the layers heals it: park each
+ * blurred element on `none` for one painted frame, then let the stylesheet
+ * take the value back. The double rAF is what makes the "off" state actually
+ * reach the screen: one rAF would cancel it before the frame paints.
+ */
+function nudgeBlurs() {
+  // One painted frame of unblurred frost is invisible to the eye, but don't
+  // sweep while an overlay is mid-interaction anyway.
+  if (document.querySelector('[role=dialog],[role=menu],.dpui-account-list')) return
+  const blurred = []
+  for (const el of document.body.querySelectorAll('*')) {
+    if (getComputedStyle(el).backdropFilter !== 'none') blurred.push(el)
+  }
+  if (blurred.length === 0) return
+  for (const el of blurred) el.style.backdropFilter = 'none'
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    for (const el of blurred) el.style.removeProperty('backdrop-filter')
+  }))
+}
+
+/** @returns a stop function for the periodic blur sweep. */
+function startBlurWatchdog() {
+  let pending
+  const sweep = () => { if (!document.hidden) nudgeBlurs() }
+  const onVisibility = () => { pending = setTimeout(sweep, 500) }
+  const interval = setInterval(sweep, WATCHDOG_INTERVAL)
+  document.addEventListener('visibilitychange', onVisibility)
+  return () => {
+    clearInterval(interval)
+    clearTimeout(pending)
+    document.removeEventListener('visibilitychange', onVisibility)
+  }
+}
+
 /**
  * Owns the ground settings: get/choose/persist, plus the install pair that
  * applies and reverts the body attributes. Reuses the palette controller's
@@ -75,6 +114,7 @@ function apply(state) {
 export function createGroundController() {
   let current = stored()
   let timer
+  let stopWatchdog
   const listeners = new Set()
   const notify = () => { for (const listener of listeners) listener() }
   const write = next => {
@@ -130,8 +170,10 @@ export function createGroundController() {
       apply(current)
       tick()
       timer = setInterval(tick, 30000)
+      stopWatchdog = startBlurWatchdog()
       return () => {
         clearInterval(timer)
+        stopWatchdog()
         document.body.removeAttribute('data-dsh-glass')
       }
     },
