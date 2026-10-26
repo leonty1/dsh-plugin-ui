@@ -147,6 +147,7 @@ md-code-block   glass×30px + 10px
 - **选中的行全部同芯片材质**（v0.1.41 会话行，v0.1.43 扩到搜索结果行与面板行）：`_sessionRow_selected`、`_searchResultRow_selected`、`_panelRow_panelActive` 三者原本共用同一条 structural 规则（同吃 active fill），语义同为"你在哪"，玻璃门下统一复用芯片曲线（同合成填充 + `34px+12px` blur），替代不透明的 `interactive-bg-active` 灰板。非玻璃模式三行仍走 active fill。
 - **hover 也进材质**（v0.1.42）：壳在 mac 上给行刷不透明 hover 填充（实测 rgb(239,239,239)），玻璃下"扫过哪行哪行最重"。玻璃门下行 hover 改为 40% neutral-00 半透明薄纱（与 Windows 行 hover 同配方、同数值），不需要 blur —— 行下面的侧栏柱子已经模糊过。
 - 侧栏字号跟随 General → Text size（12/14/16），同一设置所有界面同值（含账号行用户名）。
+- **官方往 `_panelList` 里加行不用跟改**（rc.3 实测）：新增的 More 行（`_panelRow` + `_moreAnchor`）自动吃齐行样式、字号与"钉在账号行上方"（`_panelList` 整组 order:1）；它的弹层也走壳的 `_surface`/`_material`/`_backing` 原语，玻璃门下实测 `_backing` 已被拆透明、`_material` 0.58 涂层独立干活——**零 CSS 改动跟上**。属性包含选择器（`[class*="_panelRow"]`）+ 壳浮层原语这两条设计在此兑现。
 
 ---
 
@@ -155,7 +156,7 @@ md-code-block   glass×30px + 10px
 - 单卡组件：模型列表 + 强度（关闭/低/高/最高）同卡，搜索、重试、空状态内置；强度名走 locale。
 - 交互契约（改前先读组件头注释）：悬停行时左侧介绍卡跟随该行、顶边对齐；点模型或点强度都算确认，卡片立即收起，触发按钮当场显示新选择，网络往返只体现在转圈。**开卡定位**：选中行滚动到列表**垂直中点**（rect 数学改 viewport.scrollTop，不用 scrollIntoView —— 会拖动外层容器）；只在开卡瞬间生效，键盘/指针一旦接管高亮就停止重定位，导航仍走 focus 的最小滚动。
 - 注入路径：`entry.jsx` 里 `conversation.input.model` 槽，`priority: -1`，按 sessionId 取 directory；子代理会话（`sessions.subagentAddress` 非空）不可用。
-- 浮层材质（实测修正）：账号菜单、快捷设置、模型卡都渲染进壳的 Menu/MenuSurface primitive，绘画层是 `_material`（0.58 涂层 + 40px blur）——玻璃门下 `_backing` 拆掉后**它们已经全部跟上玻璃**（真机截图 /tmp/model-card-glass.png 为证）。`.module.css` 只画控件（行 hover、警示、危险底），不画容器；§3.4 的"浮层不进曲线表"同样适用。
+- 浮层材质（实测修正）：账号菜单、快捷设置、模型卡、rc.3 侧栏 More 菜单都渲染进壳的 Menu/MenuSurface primitive，绘画层是 `_material`（0.58 涂层 + 40px blur）——玻璃门下 `_backing` 拆掉后**它们已经全部跟上玻璃**（真机截图 /tmp/model-card-glass.png 为证）。`.module.css` 只画控件（行 hover、警示、危险底），不画容器；§3.4 的"浮层不进曲线表"同样适用。
 - 改排序 → `provider-order.ts`；改类型 → `model-contract.ts`。
 
 ---
