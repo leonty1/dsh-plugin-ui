@@ -832,39 +832,9 @@ function apply(state) {
     body.removeAttribute("data-dsh-glass");
   }
 }
-var WATCHDOG_INTERVAL = 5 * 6e4;
-function nudgeBlurs() {
-  if (document.querySelector("[role=dialog],[role=menu],.dpui-account-list")) return;
-  const blurred = [];
-  for (const el of document.body.querySelectorAll("*")) {
-    if (getComputedStyle(el).backdropFilter !== "none") blurred.push(el);
-  }
-  if (blurred.length === 0) return;
-  for (const el of blurred) el.style.backdropFilter = "none";
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    for (const el of blurred) el.style.removeProperty("backdrop-filter");
-  }));
-}
-function startBlurWatchdog() {
-  let pending;
-  const sweep = () => {
-    if (!document.hidden) nudgeBlurs();
-  };
-  const onVisibility = () => {
-    pending = setTimeout(sweep, 500);
-  };
-  const interval = setInterval(sweep, WATCHDOG_INTERVAL);
-  document.addEventListener("visibilitychange", onVisibility);
-  return () => {
-    clearInterval(interval);
-    clearTimeout(pending);
-    document.removeEventListener("visibilitychange", onVisibility);
-  };
-}
 function createGroundController() {
   let current = stored();
   let timer;
-  let stopWatchdog;
   const listeners = /* @__PURE__ */ new Set();
   const notify = () => {
     for (const listener of listeners) listener();
@@ -921,10 +891,8 @@ function createGroundController() {
       apply(current);
       tick();
       timer = setInterval(tick, 3e4);
-      stopWatchdog = startBlurWatchdog();
       return () => {
         clearInterval(timer);
-        stopWatchdog();
         document.body.removeAttribute("data-dsh-glass");
       };
     }
@@ -1378,6 +1346,23 @@ html:has(body[data-dsh-glass]) [class*="_sidebarCol"] {
   background: color-mix(in srgb,
     var(--dsw-alias-bg-base) calc(var(--dpui-sidebar-alpha, 0.53) * 100%),
     transparent) !important;
+}
+/* Prevention experiment for the compositor's silent blur drop (2026-10-26,
+   three incidents): the fixed header and composer lose their backdrop-filter
+   while scrolled elements keep theirs, and nothing in-page heals it \u2014 inline
+   toggles, display/transform layer rebuilds, a full glass-gate cycle, zoom
+   relayout, real input, scroll jiggles all failed live; only an app restart
+   cures it. First idea \u2014 promoting the conversation scroller itself
+   (will-change: scroll-position on [data-conversation-scroll]) \u2014 is actively
+   harmful: it isolated the backdrop root and the whole glass went white until
+   it was removed. This form promotes the casualty instead: a self-composited
+   composer card re-rasters with its own layer rather than a shared cache that
+   can go stale. Live A/B verified harmless (wallpaper and every frost stay
+   put); whether it actually prevents the drop is unproven \u2014 if it recurs,
+   delete this rule and accept restart-only. data-composer-card is already a
+   GLASS_SURFACES hook. */
+html:has(body[data-dsh-glass]) [data-composer-card] {
+  will-change: transform;
 }
 /* The workspace paints its base twice: the centre column, then the
    conversation root inside it. Making only the column translucent left the
