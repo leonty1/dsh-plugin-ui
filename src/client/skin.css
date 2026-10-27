@@ -459,12 +459,16 @@ html:has(body[data-dsh-glass]) [data-composer-card] {
 }
 /* The sent-message bubble rides the panel curve, not the card curve: at the
    card's alpha the mint fill read as a dense pill pasted on the wash. It is
-   the user's own words — present, tinted, but clearly of the wash. */
+   the user's own words — present, tinted, but clearly of the wash. No
+   backdrop-filter (v0.1.52): a descendant backdrop is clipped to the column,
+   so every bubble bought a full-column-size backdrop surface for a 477×60
+   pill. The column's own frost already blurs the wallpaper; tint carries the
+   bubble. Layer-tree A/B with the code cards: 91→52 layers, −32% layer
+   pixels, pixel delta confined to the surfaces themselves. */
 html:has(body[data-dsh-glass]) [class*="_bubble"] {
   background: color-mix(in srgb,
     var(--dsw-specific-bubble) calc(var(--dpui-panel-alpha, 0.4) * 100%),
     transparent) !important;
-  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 30px + 8px)) saturate(1.4);
 }
 html:has(body[data-dsh-glass]) [class*="_fileCard"] {
   background: color-mix(in srgb,
@@ -500,13 +504,14 @@ html:has(body[data-dsh-glass]) [class*="_centerCol"] {
     var(--dpui-code-banner-base, var(--dsw-alias-bg-layer-2)) calc(var(--dpui-frost-alpha, 0.6) * 100%),
     transparent);
 }
-/* The code card itself carries the heaviest blur in the material after the
-   New Session chip: it is the largest emphasized island, so what shows
-   through it must be milk, not pattern. md-code-block is the renderer's own
-   global class — a literal the shell ships, so it survives builds the way a
-   hashed suffix cannot. The bannerWrap strip behind the language header
-   paints bg-base directly and would otherwise stay an opaque band across
-   the card's top. */
+/* The code card is tint, not a second frost (v0.1.52): like the bubble and
+   the chips, a descendant backdrop-filter is clipped to the conversation
+   column, so each card bought a full-column-size backdrop surface while the
+   column's own blur already smoothed the wallpaper. md-code-block is the
+   renderer's own global class — a literal the shell ships, so it survives
+   builds the way a hashed suffix cannot. The bannerWrap strip behind the
+   language header paints bg-base directly and would otherwise stay an
+   opaque band across the card's top. */
 /* The code card rides the panel curve too — the user named it alongside the
    sent bubble as the last slab on the wash. The card paints once, directly
    from the snapshot base at panel alpha; the pre and header go transparent,
@@ -519,7 +524,6 @@ html:has(body[data-dsh-glass]) .md-code-block {
   background-color: color-mix(in srgb,
     var(--dpui-code-frost-base, var(--dsw-alias-bg-layer-2)) calc(var(--dpui-panel-alpha, 0.4) * 100%),
     transparent) !important;
-  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 30px + 10px)) saturate(1.4);
 }
 html:has(body[data-dsh-glass]) .md-code-block pre,
 html:has(body[data-dsh-glass]) .md-code-block [class*="_header"] {
@@ -544,11 +548,13 @@ html:has(body[data-dsh-glass]) [class*="_markdown"] code:not([data-code-block-co
     transparent) !important;
 }
 /* The special-field bodies — tool IO cards, terminal, web and search blocks —
-   frost through the token above; blur lifts them onto the island tier with
-   the chips and bubbles, heavier than the two columns behind them. Each hook
-   is a data-* attribute the shell ships (stable across builds like
-   data-composer-card); the tool row's fill lives on its inner IO card, the
-   other three paint the hooked element directly. */
+   frost through the token above. They keep the last island-level blurs in the
+   column (together with the rare file-attachment card): the chips, bubbles
+   and code cards went tint-only on 2026-10-27 (v0.1.52), but these bodies
+   mount on demand and have not been A/B'd in the live app, so they stay as-is
+   until one is on screen. Each hook is a data-* attribute the shell ships
+   (stable across builds like data-composer-card); the tool row's fill lives
+   on its inner IO card, the other three paint the hooked element directly. */
 html:has(body[data-dsh-glass]) [data-tool] [class*="_ioCard"],
 html:has(body[data-dsh-glass]) [data-terminal],
 html:has(body[data-dsh-glass]) [data-web],

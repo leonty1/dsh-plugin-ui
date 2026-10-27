@@ -78,18 +78,18 @@ skin.css 里所有玻璃规则都挂在 `html:has(body[data-dsh-glass])` 下 —
 - **乘法曲线**（`(1-glass) × s`）适合“**叠在另一个已涂层表面上的小件**”：New Session 芯片坐在侧栏上，有效覆盖率 = `s + c·(1-s)`，乘法让这个有效差值在每个档位都保持小；行内代码芯片同理（坐在工作区柱子上）。
 - 教训记录：New Session 芯片曾用“raw token + 加法 +0.05”，在滑杆 0.35 时仍是一块黑贴纸 —— 因为 raw `--dsw-specific-sidebar-fill` 本身就比侧栏的涂层深两档（侧栏涂层 = sidebar-fill 混 12% brand）。**芯片的填充必须复刻它所坐表面的合成色**，见 §3。
 
-### 2.4 blur 排序（v0.1.37，从重到轻）
+### 2.4 blur 排序（v0.1.37 定序；v0.1.52 现状）
 
 ```
 New Session     glass×34px + 12px
-md-code-block   glass×30px + 10px
-气泡/文件卡/特殊字段体  glass×30px + 8px
-行内代码芯片     glass×12px + 4px   ← 装饰级，最小
+文件卡/特殊字段体  glass×30px + 8px   ← 列内最后仍有 blur 的岛屿（工具体按需，未 A/B）
 两根柱子         glass×30 / ×22，无 floor
+代码卡/气泡/行内代码芯片  无 blur（v0.1.52/51 摘除——列内小件的 backdrop 会被裁到
+                          整列、各买一张离屏面，见 §3.1/§3.2）
 composer        无 blur（v0.1.49 摘除，固定 0.85 tint——丢层免疫设计，见 §3.4）
 ```
 
-注意：气泡/代码卡的**底色**走 panel 曲线但 blur 各留各档；composer 的底色是固定 0.85、与滑杆无关（v0.1.49 起）；代码卡在 panel 曲线时直接从快照基色（`--dpui-code-frost-base`）刷，**不走 token** —— token 和特殊字段体共享，改 token 会把没被点名的表面一起带走（强调范围要窄）。平滑渐变壁纸上 blur 不可见，"玻璃感"实际由 tint/alpha 决定 —— 觉得玻璃感不够先降 alpha，别加 blur。
+注意：气泡/代码卡的**底色**仍走 panel 曲线，只是不再挂 blur；composer 的底色是固定 0.85、与滑杆无关（v0.1.49 起）；代码卡在 panel 曲线时直接从快照基色（`--dpui-code-frost-base`）刷，**不走 token** —— token 和特殊字段体共享，改 token 会把没被点名的表面一起带走（强调范围要窄）。平滑渐变壁纸上 blur 不可见，"玻璃感"实际由 tint/alpha 决定 —— 觉得玻璃感不够先降 alpha，别加 blur。
 
 改 blur 时保持这个相对秩序；某一级要变重，先想它和上下级的关系。
 
@@ -97,7 +97,7 @@ composer        无 blur（v0.1.49 摘除，固定 0.85 tint——丢层免疫�
 
 ## 3. 对话内容表面（skin.css 后半，~336 行起）
 
-材质系统是两层：**柱子（columns）< 岛屿（islands）**。对话内容里的表面全是岛屿，全部走 token 重定义 + backdrop-filter 两件套。composer 曾经是顶层的第三层（v0.1.37 全窗最重 blur），v0.1.49 起退出体系（无 blur、固定 0.85 tint，见 §3.4 丢层免疫）。
+材质系统是两层：**柱子（columns）< 岛屿（islands）**。对话内容里的表面全是岛屿，走 token 重定义 + tint 两件套；**blur 只在柱子一层**——列内小件挂 backdrop-filter 会让合成器为每个小件复制一张整列离屏面（§3.1/§3.2/§3.4），v0.1.51/52 已把芯片、气泡、代码卡的 blur 全部摘除。composer 曾经是顶层的第三层（v0.1.37 全窗最重 blur），v0.1.49 起退出体系（无 blur、固定 0.85 tint，见 §3.4 丢层免疫）。
 
 ### 3.1 代码块（md-code-block）
 
@@ -106,6 +106,7 @@ composer        无 blur（v0.1.49 摘除，固定 0.85 tint——丢层免疫�
 - token 的原始色在父级（`_frame:has(> _centerCol)`）快照成 `--dpui-code-frost-base` —— var() 在声明处解析，同元素自引用会成环。
 - banner 条（语言头）单独刷 `--dsw-alias-bg-base`。
 - `.md-code-block` 是壳的全局字面类，跨构建稳定，优先用它做钩子。
+- **卡不再挂 blur（v0.1.52，2026-10-27）**：与芯片同理，卡的后代 backdrop-filter 被裁到中央列（最近的 backdrop root），一张 680×581 的卡也要买一张整列大小（1984×1624 设备像素）的离屏面；列自己的 7.7px 霜已经把壁纸糊开，卡的 20.5px 只是再糊一层大渐变。摘除后同屏（3 卡 + 5 气泡）91→52 层、141.4M→95.6M 层像素、整列面 18→5；像素 A/B 差异集中在卡头部条带（壁纸边透过 40% tint）与气泡自身，正文区轻微。**列内常驻 backdrop-filter 已清零**；只剩按需挂载、尚未真机 A/B 的工具体与附件卡（§3.3）。
 
 ### 3.2 行内代码芯片（2026-10 改，最近一次反馈的修复）
 
@@ -115,7 +116,7 @@ composer        无 blur（v0.1.49 摘除，固定 0.85 tint——丢层免疫�
 - `:not([data-code-block-content] code)` 排除块代码 —— 块代码已通过 3.1 的 token 霜化，这里再刷会双重混合。
 - 芯片文字色不改：token `--dsw-alias-markdown-inline-code` 的文字配对由配色层负责，玻璃层只动背景。
 - **排障经验**：截图里芯片像“空白瓷砖”时，先用 CDP 查 computed `color`（§9.2），确认是文字色问题还是底色问题；像素采样必须选**芯片内无文字的 padding 区**，采到文字上会得假读数（L 109 vs 实际 26 那次）。
-- **芯片曾是合成器层内存的最大放大器，blur 已摘除（v0.1.51，2026-10-27 CDP 层树实测）**：后代的 backdrop-filter 会被裁到最近的 backdrop root，而中央列本身就是 backdrop root——于是**每个芯片申请一张整列大小（1984×1624 设备像素）的离屏 surface**，不是一层薄雾。旧版一屏 73–92 张，芯片共 142 层 / 约 242M 层像素 = 全树 67%。摘除后同屏 221→79 层、362.9M→120.8M 像素（−68%），芯片 computed `backdrop-filter: none`；全页像素 A/B 仅芯片边缘变化（0.61%），并排裁剪图无法分辨——12px blur 糊在平铺正文上本来就不可见，tint 才是芯片本体。**别再给芯片（或任何对话列内小件）加 blur**，除非确认它不在带 backdrop-filter 的祖先里。
+- **芯片曾是合成器层内存的最大放大器，blur 已摘除（v0.1.51，2026-10-27 CDP 层树实测）**：后代的 backdrop-filter 会被裁到最近的 backdrop root，而中央列本身就是 backdrop root——于是**每个芯片申请一张整列大小（1984×1624 设备像素）的离屏 surface**，不是一层薄雾。旧版一屏 73–92 张，芯片共 142 层 / 约 242M 层像素 = 全树 67%。摘除后同屏 221→79 层、362.9M→120.8M 像素（−68%），芯片 computed `backdrop-filter: none`；全页像素 A/B 仅芯片边缘变化（0.61%），并排裁剪图无法分辨——12px blur 糊在平铺正文上本来就不可见，tint 才是芯片本体。**别再给芯片（或任何对话列内小件）加 blur**，除非确认它不在带 backdrop-filter 的祖先里；v0.1.52 已把同一处理推广到气泡与代码卡。
 
 ### 3.2b 微型状态件（v0.1.45）
 
@@ -134,7 +135,7 @@ composer        无 blur（v0.1.49 摘除，固定 0.85 tint——丢层免疫�
 - **修法（v0.1.39）**：玻璃模式下 `_backing` 置透明（`[class*="_backing"] { background-color: transparent !important }`），让 `_material` 自己的涂层干活；非玻璃模式垫底保留，"原色"模式仍是实心浮层。规则已登记进 verify-skin 的 GLASS_SURFACES 例外名单。
 - **`_material` 的 blur 玻璃门下降到 24px（v0.1.47）**：40px 是全窗最重的一层 backdrop，也是合成器内存压力下**最先整批丢弃**的那类层（2026-10-26 事故：所有 blur 层同时消失、tint 还在，浮层后面内容清晰透出；重启即愈）。玻璃门下 24px 在已糊的地面上读不出差别，纯省成本；"原色"模式保留壳的 40px。规则同为 glass-gated，已登记 GLASS_SURFACES。
 - **合成器静默丢 blur 是不治之症（2026-10-26 六起定论）**：中央列两个 fixed 元素（顶栏、composer）的 backdrop-filter 会单独死亡——采样的是滚动中的对话内容，滚动流内元素和侧栏都无恙。**页面内一切手段救不回**（真机逐一试过并全部失败）：inline blur 切换、transform/display 层重建、`data-dsh-glass` 总闸重开、根 zoom 重排、真实输入、微滚动。GPU 正常无崩溃，唯一疗法是重启。曾试过 inline 轻推自愈守护（v0.1.47 一度上线）——对重症无效，且窗口被遮挡时 rAF 停摆会让 inline `none` 卡住不还原、全窗无霜，已撤。
-- **结构性放大器：后代 backdrop-filter = 复制一张祖先尺寸的 backdrop surface（2026-10-27 层树实测）**：Chromium 把后代 backdrop-filter 裁到最近的 backdrop root，而 root（中央列）铺满整个滚动列，所以"给每个小件加 blur"实际是给每个小件配一张整列大小的离屏 surface。插件旧版行内 chip 正是如此（§3.2），一屏 73–92 张、占全树 67% 层像素；v0.1.51 摘除后层内存降 68%。**这也解释了"rc.2 时代不出问题"**：rc.3 与 rc.2 的渲染代码逐文件比对（asar 全量 hash + 归一化 diff）没有 backdrop/will-change/contain/filter 改动，变量是重启 + 更长的会话把层内存推过 macOS Metal/vibrancy 的阈值（Windows 走 D3D/acrylic，不在此阈值内）。剩余可降载项：代码卡 26 层 / 20.7M、气泡 9 层 / 19.8M，各有一张整列 surface，属可选优化。
+- **结构性放大器：后代 backdrop-filter = 复制一张祖先尺寸的 backdrop surface（2026-10-27 层树实测）**：Chromium 把后代 backdrop-filter 裁到最近的 backdrop root，而 root（中央列）铺满整个滚动列，所以"给每个小件加 blur"实际是给每个小件配一张整列大小的离屏 surface。插件旧版行内 chip 正是如此（§3.2），一屏 73–92 张、占全树 67% 层像素；v0.1.51 摘除后层内存降 68%。**v0.1.52 把同一原则推广到气泡与代码卡**（§3.1）：同屏 91→52 层、141.4M→95.6M，整列面 18→5，列内常驻 backdrop-filter 清零；相对剥离前（362.9M）累计 **−74%**。只剩 `_fileCard` 与按需工具体在可见时仍各买一张整列面（§3.3），待真机 A/B 后再决定。**这也解释了"rc.2 时代不出问题"**：rc.3 与 rc.2 的渲染代码逐文件比对（asar 全量 hash + 归一化 diff）没有 backdrop/will-change/contain/filter 改动，变量是重启 + 更长的会话把层内存推过 macOS Metal/vibrancy 的阈值（Windows 走 D3D/acrylic，不在此阈值内）。
 - **同族变种：滚动容器的文字栅格层整批丢失（2026-10-26，重启对照实锤与插件无关）**：症状是中央对话列的普通正文/标题整体不可见，而自带合成层的元素（行内 chip 药丸、代码 token、自带底色的小件）照常渲染；侧栏、顶栏、弹窗文字全部正常。鉴别法：这份 dist 重启后同会话一切正常 → DOM 与 CSS 均无恙，纯合成器丢文字层，与丢 blur 同族同疗法（重启即愈）。见到"chips 在、正文没了"先重启再排查样式，别往 token/文字色方向查。
 - **文字丢层可治（2026-10-27 CDP 实锤，推翻"文字变种只能重启"）**：普通重载后 22s，正文两段中文与 `build_indexes.py` 芯片文字整批未上屏（同段 `check_refs.py` 芯片正常、KaTeX 斜体正常——computed style 完全一致、DOM 完整，纯首绘丢栅格），静置不自愈；**对 `[data-conversation-scroll]` 做一次 ±1px 同步往返滚动即全部恢复**，治愈后静置 30s 稳定。侧栏启动期变种（logo/Workspaces/底组在 DOM 但不 paint，约 30s–3min 自愈或被任意强制出帧治愈）疑为同族，清扫对它顺带覆盖（`_regionArea` 同款 nudge），未单独立案。**"页面内一切手段救不回"仅适用于 fixed 元素丢 blur 变种**——当时清单里的"微滚动"救的是 blur，救不了 blur 但救得了文字。
 - **插件自愈已上线（v0.1.50）**：`src/client/repaint-sweep.js` 在 boot 2/6/12/25s 各做一次清扫，之后挂 body 级 MutationObserver（防抖 800ms、限频 1.5s）在会话切换/流式输出后再清扫；nudge 是单任务内 ±1px 往返，不产生中间帧、不跳屏、无 inline 样式残留（吸取 v0.1.47 watchdog 卡 `none` 的教训，不用 rAF、不挂 inline）。清扫与被删的 blur watchdog 无关：那个治 blur（无效已撤），这个治文字丢层（实测有效）。
@@ -246,4 +247,4 @@ const ws = new WebSocket(list.find(p => p.type === 'page').webSocketDebuggerUrl)
 | 侧栏强调过头 | 强调口径是“高一线”，不是“高一档” | §4 |
 | 假像素读数 | 采到文字/跨高度采样都会骗人 | §9.3 |
 | 文字丢层可自愈 | 首绘丢正文 ≠ 不治之症：±1px 往返滚动即愈，v0.1.50 清扫已上线；blur 变种仍只能重启 | §3.4 |
-| 小件 blur 的层内存杠杆 | 后代 backdrop-filter 被裁到列级 backdrop root：一个 chip = 一张整列 surface；芯片曾占全树 67% 层像素，v0.1.51 摘除 | §3.2 §3.4 |
+| 小件 blur 的层内存杠杆 | 后代 backdrop-filter 被裁到列级 backdrop root：一个小件 = 一张整列 surface；芯片/气泡/代码卡已相继摘除（v0.1.51/52），列内常驻面清零 | §3.1 §3.2 §3.4 |
