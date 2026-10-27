@@ -141,7 +141,7 @@ export const en = {
   'palette.wallpaper': 'Ground wallpaper',
   'palette.wallpaperCustom': 'Custom…',
   'palette.wallpaperCustomSet': 'Custom ✓',
-  'palette.glassHint': 'Transparency over the ground; 0 is opaque, 1 shows the wallpaper',
+  'palette.glassHint': 'Glass over the ground: 0 opaque, 1 shows the wallpaper',
   'palette.wallpaperHint': 'The ground behind the floating cards',
   'palette.rotate': 'Auto change',
   'palette.rotateHint': 'Cycle the wallpapers above on an interval',
