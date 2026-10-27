@@ -134,7 +134,9 @@ composer        无 blur（v0.1.49 摘除，固定 0.85 tint——丢层免疫�
 - **`_material` 的 blur 玻璃门下降到 24px（v0.1.47）**：40px 是全窗最重的一层 backdrop，也是合成器内存压力下**最先整批丢弃**的那类层（2026-10-26 事故：所有 blur 层同时消失、tint 还在，浮层后面内容清晰透出；重启即愈）。玻璃门下 24px 在已糊的地面上读不出差别，纯省成本；"原色"模式保留壳的 40px。规则同为 glass-gated，已登记 GLASS_SURFACES。
 - **合成器静默丢 blur 是不治之症（2026-10-26 六起定论）**：中央列两个 fixed 元素（顶栏、composer）的 backdrop-filter 会单独死亡——采样的是滚动中的对话内容，滚动流内元素和侧栏都无恙。**页面内一切手段救不回**（真机逐一试过并全部失败）：inline blur 切换、transform/display 层重建、`data-dsh-glass` 总闸重开、根 zoom 重排、真实输入、微滚动。GPU 正常无崩溃，唯一疗法是重启。曾试过 inline 轻推自愈守护（v0.1.47 一度上线）——对重症无效，且窗口被遮挡时 rAF 停摆会让 inline `none` 卡住不还原、全窗无霜，已撤。
 - **同族变种：滚动容器的文字栅格层整批丢失（2026-10-26，重启对照实锤与插件无关）**：症状是中央对话列的普通正文/标题整体不可见，而自带合成层的元素（行内 chip 药丸、代码 token、自带底色的小件）照常渲染；侧栏、顶栏、弹窗文字全部正常。鉴别法：这份 dist 重启后同会话一切正常 → DOM 与 CSS 均无恙，纯合成器丢文字层，与丢 blur 同族同疗法（重启即愈）。见到"chips 在、正文没了"先重启再排查样式，别往 token/文字色方向查。
-- **CSS 预防也全部失败，不要再加 will-change**：`[data-conversation-scroll]` 上 `will-change: scroll-position` 实锤有害——隔离 backdrop root，整窗玻璃变白板，A/B 撤掉即恢复。`[data-composer-card] { will-change: transform }` 真机 A/B 无害，但 v0.1.48 上线后第四次复发，证明防不住，已删。当前结论：**没有插件内预防或自愈方案，复发只能重启**；`_material` 24px 仅作为降载优化保留。
+- **文字丢层可治（2026-10-27 CDP 实锤，推翻"文字变种只能重启"）**：普通重载后 22s，正文两段中文与 `build_indexes.py` 芯片文字整批未上屏（同段 `check_refs.py` 芯片正常、KaTeX 斜体正常——computed style 完全一致、DOM 完整，纯首绘丢栅格），静置不自愈；**对 `[data-conversation-scroll]` 做一次 ±1px 同步往返滚动即全部恢复**，治愈后静置 30s 稳定。侧栏启动期变种（logo/Workspaces/底组在 DOM 但不 paint，约 30s–3min 自愈或被任意强制出帧治愈）疑为同族，清扫对它顺带覆盖（`_regionArea` 同款 nudge），未单独立案。**"页面内一切手段救不回"仅适用于 fixed 元素丢 blur 变种**——当时清单里的"微滚动"救的是 blur，救不了 blur 但救得了文字。
+- **插件自愈已上线（v0.1.50）**：`src/client/repaint-sweep.js` 在 boot 2/6/12/25s 各做一次清扫，之后挂 body 级 MutationObserver（防抖 800ms、限频 1.5s）在会话切换/流式输出后再清扫；nudge 是单任务内 ±1px 往返，不产生中间帧、不跳屏、无 inline 样式残留（吸取 v0.1.47 watchdog 卡 `none` 的教训，不用 rAF、不挂 inline）。清扫与被删的 blur watchdog 无关：那个治 blur（无效已撤），这个治文字丢层（实测有效）。
+- **CSS 预防也全部失败，不要再加 will-change**：`[data-conversation-scroll]` 上 `will-change: scroll-position` 实锤有害——隔离 backdrop root，整窗玻璃变白板，A/B 撤掉即恢复。`[data-composer-card] { will-change: transform }` 真机 A/B 无害，但 v0.1.48 上线后第四次复发，证明防不住，已删。blur 变种没有插件内预防或自愈方案，复发只能重启；**文字变种除外——v0.1.50 的重绘清扫实测有效（上行）**；`_material` 24px 仅作为降载优化保留。
 - **设计层免疫：composer 摘除 blur、固定 0.85 纯 tint（v0.1.49，现行方案）**：当天累计六起复发、且后两起在重启后约 1 分钟内即丢——"健康态"实际上住不进去，决策按丢层态做。真机六格对比（同段正文压卡后）结论：0.85 纯 tint 下残影是常驻淡影几乎无感，0.92 几乎无痕但卡读成实心板，0.40 无 blur 是正文清晰穿透的事故。故 composer 不再挂 backdrop-filter、不走任何曲线，`background` 固定 `color-mix(input-major 85%, transparent)`——blur 死活与它无关，观感恒定。**唯一为此放弃霜感的表面**；窗体其余玻璃（柱子、岛屿、侧栏）从未丢层，不动。注意实验仪器坑：composer 规则带 `!important`，CDP 验证 tint 变体必须 `style.setProperty(..., "important")`，普通 inline 赋值会被压住（曾据此误判"0.92 纯 tint 藏不住残影"）。
 - **toast 仍然不动**：透底的 toast 读不清。
 - 浮层不进曲线表 — 它们的霜是壳自带的，插件只拆垫底。
@@ -241,3 +243,4 @@ const ws = new WebSocket(list.find(p => p.type === 'page').webSocketDebuggerUrl)
 | 审计凑数 | 为过审计把曲线调坏是本末倒置，改审计模型 | §6 |
 | 侧栏强调过头 | 强调口径是“高一线”，不是“高一档” | §4 |
 | 假像素读数 | 采到文字/跨高度采样都会骗人 | §9.3 |
+| 文字丢层可自愈 | 首绘丢正文 ≠ 不治之症：±1px 往返滚动即愈，v0.1.50 清扫已上线；blur 变种仍只能重启 | §3.4 |

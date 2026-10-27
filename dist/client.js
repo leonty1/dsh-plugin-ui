@@ -2574,6 +2574,52 @@ function QuickActionsSettings({ t, useStore, actions, ctx }) {
   )) });
 }
 
+// src/client/repaint-sweep.js
+var SCROLLER = "[data-conversation-scroll]";
+var REGION = '[class*="_regionArea"]';
+function nudge(el) {
+  if (!el) return;
+  const y = el.scrollTop;
+  el.scrollTop = y + 1;
+  if (el.scrollTop === y) el.scrollTop = Math.max(0, y - 1);
+  el.scrollTop = y;
+}
+function installRepaintSweep() {
+  const timers = [];
+  let disposed = false;
+  let pending = 0;
+  let last = 0;
+  const sweep = () => {
+    last = Date.now();
+    nudge(document.querySelector(SCROLLER));
+    nudge(document.querySelector(REGION));
+  };
+  for (const delay of [2e3, 6e3, 12e3, 25e3]) {
+    timers.push(setTimeout(() => {
+      if (!disposed) sweep();
+    }, delay));
+  }
+  const observer = new MutationObserver(() => {
+    if (disposed || Date.now() - last < 1500) return;
+    clearTimeout(pending);
+    pending = setTimeout(() => {
+      if (!disposed) sweep();
+    }, 800);
+  });
+  const attach = () => {
+    if (disposed) return;
+    if (document.body) observer.observe(document.body, { childList: true, subtree: true });
+    else timers.push(setTimeout(attach, 1e3));
+  };
+  attach();
+  return () => {
+    disposed = true;
+    for (const timer of timers) clearTimeout(timer);
+    clearTimeout(pending);
+    observer.disconnect();
+  };
+}
+
 // src/client/locales.js
 var zh = {
   "account.menu": "\u8D26\u53F7\u83DC\u5355",
@@ -2818,6 +2864,7 @@ function apply2(ctx) {
   const ground = createGroundController();
   ctx.effect(() => palette.install(), "dsh-plugin-ui: palette layer");
   ctx.effect(() => ground.install(), "dsh-plugin-ui: ground layer");
+  ctx.effect(() => installRepaintSweep(), "dsh-plugin-ui: first-paint repaint sweep");
   ctx.slots.inject("settings.general.item", () => ctx.slots.register({
     name: "settings.general.item",
     id: "plugin-ui.palette",

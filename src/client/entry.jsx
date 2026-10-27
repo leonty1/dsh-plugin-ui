@@ -8,6 +8,7 @@ import { QuickActionsSettings } from './quick-actions-settings.jsx'
 import { createQuickActionsStore, QUICK_ACTION_SLOT } from './quick-actions.js'
 import { createPaletteController, PaletteSettings } from './palette.jsx'
 import { createGroundController, GroundSettings } from './glass.jsx'
+import { installRepaintSweep } from './repaint-sweep.js'
 import { en, modelEn, modelZh, zh } from './locales.js'
 
 /** Services required for every face; account services are injected separately. */
@@ -29,6 +30,7 @@ export function apply(ctx) {
   const ground = createGroundController()
   ctx.effect(() => palette.install(), 'dsh-plugin-ui: palette layer')
   ctx.effect(() => ground.install(), 'dsh-plugin-ui: ground layer')
+  ctx.effect(() => installRepaintSweep(), 'dsh-plugin-ui: first-paint repaint sweep')
   ctx.slots.inject('settings.general.item', () => ctx.slots.register({
     name: 'settings.general.item', id: 'plugin-ui.palette', order: 10.5,
     locale: UI_NS, inject: () => ({ controller: palette, ground, ctx }),
