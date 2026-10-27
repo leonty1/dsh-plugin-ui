@@ -978,11 +978,15 @@ if (typeof document !== "undefined" && document.getElementById(styleId2) === nul
   background: rgb(0 0 0 / 0.38);
 }
 
+/* The card is as tall as the preview beside it, so it always has more room
+   than its three rows need. Spreading that room evenly (space-evenly) keeps
+   the note close to the select it describes and leaves no dead band above
+   the divider \u2014 space-between pushed the note into the middle of the card. */
 .dpui-palette-wallCard {
   display: flex;
   flex: 1;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: space-evenly;
   gap: 10px;
   min-width: 0;
   padding: 12px;
@@ -1504,7 +1508,7 @@ function GroundSettings({ controller, ctx, t }) {
           ] })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: palette_default.groundGrid, role: "radiogroup", "aria-label": t("palette.wallpaper"), children: shelf("plain").map((preset) => swatch(preset.id, preset.label, preset.css, state.wallpaper === preset.id)) }),
+      group("plain", t("palette.wallpaperGroupPlain")),
       group("gradient", t("palette.wallpaperGroupColor")),
       group("photo", t("palette.wallpaperGroupPhoto"))
     ] })
@@ -3162,6 +3166,7 @@ function QuickActionsSettings({ t, useStore, actions, ctx }) {
 // src/client/repaint-sweep.js
 var SCROLLER = "[data-conversation-scroll]";
 var REGION = '[class*="_regionArea"]';
+var WATCHED = [SCROLLER, REGION];
 function nudge(el) {
   if (!el) return;
   const y = el.scrollTop;
@@ -3171,6 +3176,7 @@ function nudge(el) {
 }
 function installRepaintSweep() {
   const timers = [];
+  let interval = 0;
   let disposed = false;
   let pending = 0;
   let last = 0;
@@ -3184,24 +3190,46 @@ function installRepaintSweep() {
       if (!disposed) sweep();
     }, delay));
   }
-  const observer = new MutationObserver(() => {
+  const onMutate = () => {
     if (disposed || Date.now() - last < 1500) return;
     clearTimeout(pending);
     pending = setTimeout(() => {
       if (!disposed) sweep();
     }, 800);
+  };
+  const watchers = WATCHED.map((selector) => {
+    const observer = new MutationObserver(onMutate);
+    let node = null;
+    return {
+      observer,
+      retarget() {
+        const found = document.querySelector(selector);
+        if (found === null || found === node) return;
+        node = found;
+        observer.observe(found, { childList: true, subtree: true, characterData: true });
+        if (Date.now() - last >= 1500) sweep();
+      }
+    };
   });
   const attach = () => {
     if (disposed) return;
-    if (document.body) observer.observe(document.body, { childList: true, subtree: true });
-    else timers.push(setTimeout(attach, 1e3));
+    if (!document.body) {
+      timers.push(setTimeout(attach, 1e3));
+      return;
+    }
+    for (const watcher of watchers) watcher.retarget();
+    interval = setInterval(() => {
+      if (disposed) return;
+      for (const watcher of watchers) watcher.retarget();
+    }, 3e3);
   };
   attach();
   return () => {
     disposed = true;
     for (const timer of timers) clearTimeout(timer);
+    clearInterval(interval);
     clearTimeout(pending);
-    observer.disconnect();
+    for (const watcher of watchers) watcher.observer.disconnect();
   };
 }
 
@@ -3279,6 +3307,7 @@ var zh = {
   "palette.rotate12h": "\u6BCF 12 \u5C0F\u65F6",
   "palette.rotate1d": "\u6BCF\u5929",
   "palette.rotate1w": "\u6BCF\u5468",
+  "palette.wallpaperGroupPlain": "\u7EAF\u8272",
   "palette.wallpaperGroupColor": "\u6E10\u53D8",
   "palette.wallpaperGroupPhoto": "\u7167\u7247",
   "account.quickActionsTitle": "\u8D26\u53F7\u884C\u5FEB\u6377\u64CD\u4F5C",
@@ -3362,6 +3391,7 @@ var en = {
   "palette.rotate12h": "Every 12 hours",
   "palette.rotate1d": "Daily",
   "palette.rotate1w": "Weekly",
+  "palette.wallpaperGroupPlain": "Plain",
   "palette.wallpaperGroupColor": "Gradients",
   "palette.wallpaperGroupPhoto": "Photos",
   "account.allSettings": "All settings\u2026",

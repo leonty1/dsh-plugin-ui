@@ -252,11 +252,15 @@
   background: rgb(0 0 0 / 0.38);
 }
 
+/* The card is as tall as the preview beside it, so it always has more room
+   than its three rows need. Spreading that room evenly (space-evenly) keeps
+   the note close to the select it describes and leaves no dead band above
+   the divider — space-between pushed the note into the middle of the card. */
 .wallCard {
   display: flex;
   flex: 1;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: space-evenly;
   gap: 10px;
   min-width: 0;
   padding: 12px;

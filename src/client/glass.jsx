@@ -301,9 +301,7 @@ export function GroundSettings({ controller, ctx, t }) {
           </div>
         </div>
       </div>
-      <div className={css.groundGrid} role="radiogroup" aria-label={t('palette.wallpaper')}>
-        {shelf('plain').map(preset => swatch(preset.id, preset.label, preset.css, state.wallpaper === preset.id))}
-      </div>
+      {group('plain', t('palette.wallpaperGroupPlain'))}
       {group('gradient', t('palette.wallpaperGroupColor'))}
       {group('photo', t('palette.wallpaperGroupPhoto'))}
     </div>

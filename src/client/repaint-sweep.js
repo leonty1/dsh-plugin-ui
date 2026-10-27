@@ -9,6 +9,7 @@
 
 const SCROLLER = '[data-conversation-scroll]'
 const REGION = '[class*="_regionArea"]'
+const WATCHED = [SCROLLER, REGION]
 
 /** Scroll an element 1px and back within one task. At the scroll edge the
  * first write clamps to no change, so fall back to the other direction to
@@ -27,6 +28,7 @@ function nudge(el) {
  */
 export function installRepaintSweep() {
   const timers = []
+  let interval = 0
   let disposed = false
   let pending = 0
   let last = 0
@@ -42,21 +44,52 @@ export function installRepaintSweep() {
   }
   // Session switches and streamed tokens can drop text again after boot;
   // debounce mutations and keep the sweep to at most one per 1.5s.
-  const observer = new MutationObserver(() => {
+  const onMutate = () => {
     if (disposed || Date.now() - last < 1500) return
     clearTimeout(pending)
     pending = setTimeout(() => { if (!disposed) sweep() }, 800)
+  }
+  // Watch the two regions that carry the plugin's text, not the whole page.
+  // The host's own churn — session list, account stream, panel state — made a
+  // record for every node it touched, and the sweep never healed any of it;
+  // characterData is included because React rewrites a text node's value in
+  // place, which a childList watch alone would miss.
+  const watchers = WATCHED.map(selector => {
+    const observer = new MutationObserver(onMutate)
+    let node = null
+    return {
+      observer,
+      retarget() {
+        const found = document.querySelector(selector)
+        if (found === null || found === node) return
+        node = found
+        observer.observe(found, { childList: true, subtree: true, characterData: true })
+        // A fresh node means the column was rebuilt; its first paint is
+        // exactly when the raster goes missing, so sweep it right away.
+        if (Date.now() - last >= 1500) sweep()
+      },
+    }
   })
   const attach = () => {
     if (disposed) return
-    if (document.body) observer.observe(document.body, { childList: true, subtree: true })
-    else timers.push(setTimeout(attach, 1000))
+    if (!document.body) {
+      timers.push(setTimeout(attach, 1000))
+      return
+    }
+    for (const watcher of watchers) watcher.retarget()
+    // The column is rebuilt on a session switch, so the node is re-pointed on
+    // a slow tick: an observer left on a detached node reports nothing.
+    interval = setInterval(() => {
+      if (disposed) return
+      for (const watcher of watchers) watcher.retarget()
+    }, 3000)
   }
   attach()
   return () => {
     disposed = true
     for (const timer of timers) clearTimeout(timer)
+    clearInterval(interval)
     clearTimeout(pending)
-    observer.disconnect()
+    for (const watcher of watchers) watcher.observer.disconnect()
   }
 }
