@@ -65,8 +65,13 @@ const { createGroundController, ROTATE_CHOICES } = module.exports
 
 // Read the generated module as text: it is ESM inside a CJS package, which Node
 // refuses to classify on a bare import from this script.
-const presets = [...readFileSync(join(root, 'src/client/generated-palettes.js'), 'utf8')
-  .matchAll(/\{"id":"([a-z0-9-]+)"/g)].map(m => m[1])
+const catalog = [...readFileSync(join(root, 'src/client/generated-palettes.js'), 'utf8')
+  .matchAll(/\{"id":"([a-z0-9-]+)","label":"[^"]*","group":"([a-z]+)"/g)]
+  .map(m => ({ id: m[1], group: m[2] }))
+const presets = catalog.map(preset => preset.id)
+// Rotation moves through pictures and gradients; the flat colours are a
+// deliberate opt-out, so they never enter the cycle.
+const rotatable = catalog.filter(preset => preset.group !== 'plain').map(preset => preset.id)
 const REALTIME = Date.now
 let clock = 1_700_000_000_000
 Date.now = () => clock
@@ -110,32 +115,32 @@ const MIN = 60_000
 {
   const ground = boot({})
   ground.setEvery(360)
-  ground.setWallpaper(presets[3])
+  ground.setWallpaper(rotatable[3])
   const stop = ground.install()
   clock += 361 * MIN
   stop()
   // install() already caught up on a later boot only; drive it through a new boot
-  const next = boot({ 'dsh-plugin-ui.wallpaper.every': 360, 'dsh-plugin-ui.wallpaper': presets[3],
+  const next = boot({ 'dsh-plugin-ui.wallpaper.every': 360, 'dsh-plugin-ui.wallpaper': rotatable[3],
     'dsh-plugin-ui.wallpaper.rotatedAt': clock - 361 * MIN })
   next.install()()
-  expect('advances to next preset', next.get().wallpaper, presets[4])
+  expect('advances to next preset', next.get().wallpaper, rotatable[4])
 }
 
 // 4. the last preset wraps to the first
 {
-  const last = presets[presets.length - 1]
+  const last = rotatable[rotatable.length - 1]
   const ground = boot({ 'dsh-plugin-ui.wallpaper.every': 1440, 'dsh-plugin-ui.wallpaper': last,
     'dsh-plugin-ui.wallpaper.rotatedAt': clock - 1441 * MIN })
   ground.install()()
-  expect('wraps to first preset', ground.get().wallpaper, presets[0])
+  expect('wraps to first preset', ground.get().wallpaper, rotatable[0])
 }
 
 // 5. time the window spent closed still counts
 {
-  const ground = boot({ 'dsh-plugin-ui.wallpaper.every': 1440, 'dsh-plugin-ui.wallpaper': presets[0],
+  const ground = boot({ 'dsh-plugin-ui.wallpaper.every': 1440, 'dsh-plugin-ui.wallpaper': rotatable[0],
     'dsh-plugin-ui.wallpaper.rotatedAt': clock - 3 * 1440 * MIN })
   ground.install()()
-  expect('catches up after downtime', ground.get().wallpaper, presets[1])
+  expect('catches up after downtime', ground.get().wallpaper, rotatable[1])
 }
 
 // 6. "none" is an opt-out, not a preset to be cycled past
@@ -163,6 +168,6 @@ const MIN = 60_000
 
 Date.now = REALTIME
 console.log(failures.length === 0
-  ? `rotate-smoke: OK (${presets.length} presets, ${ROTATE_CHOICES.length} intervals)`
+  ? `rotate-smoke: OK (${presets.length} presets, ${rotatable.length} in the rotation, ${ROTATE_CHOICES.length} intervals)`
   : `rotate-smoke: FAIL\n${failures.map(f => ' - ' + f).join('\n')}`)
 process.exit(failures.length === 0 ? 0 : 1)

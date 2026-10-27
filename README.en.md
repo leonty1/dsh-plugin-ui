@@ -16,7 +16,7 @@ A skin for DeepSeek Harness: frosted glass over a wallpaper ground, four skin pa
 
 ### Frosted glass & wallpaper
 
-The sidebar and workspace columns float on an optional wallpaper "ground", and every text-bearing surface (composer, bubbles, code cards, overlays, status chips, selected rows…) frosts in measured layers so contrast holds. Glass strength is Off / Light / Medium / Strong in the quick menu and a 0–1 slider in full settings; the ground ships gradient and photo presets, accepts a custom image, and can rotate on an interval — "None" leaves the ground clear. Glass and wallpaper are independent of the skin palette and switch off to solid at any time.
+The sidebar and workspace columns float on an optional wallpaper "ground", and every text-bearing surface (composer, bubbles, code cards, overlays, status chips, selected rows…) frosts in measured layers so contrast holds. Glass strength is Off / Light / Medium / Strong in the quick menu and a 0–1 slider in full settings; the ground ships 24 presets (3 flat colours, 8 gradients, 13 photos), accepts a custom image, rotates on an interval, and shuffles to a random picture in one click — "None" leaves the ground clear. The wallpaper panel in full settings follows the macOS Wallpaper pane: a large preview beside the shuffle, rotation interval and area switch, with one shelf per kind of ground; turning "Show on all areas" off keeps the wallpaper inside the workspace while the rail falls back to its own solid fill. Glass and wallpaper are independent of the skin palette and switch off to solid at any time.
 
 ![Frosted glass and wallpaper](docs/images/showcase-light.png)
 
@@ -40,7 +40,7 @@ One card shows the model list and reasoning effort levels (Off / Low / High / Ma
 
 ### Account row & quick settings
 
-The account row keeps the official 24px avatar / 44px height, with two configurable quick seats on the right. The gear seat opens quick settings: language, color mode, skin palette, frosted glass, text size, and All settings. The account menu matches the official items (Settings, Contact us, sign in/out).
+The account row keeps the official 24px avatar / 44px height, with two configurable quick seats on the right. The gear seat opens quick settings: All settings, language, color mode, skin palette, frosted glass, shuffle wallpaper, text size. The account menu matches the official items (Settings, Contact us, sign in/out).
 
 ![Account row and quick settings](docs/images/quick-settings.png)
 
@@ -56,9 +56,9 @@ Uninstall from the Plugins page or with `dsh plugin --profile <profile> remove d
 ## Configuration
 
 - Appearance → **Skin palette**: pick a palette from the preview cards; Forest is the default.
-- Appearance → **Frosted glass / ground wallpaper**: the glass strength slider (0–1); wallpaper presets, a custom image, and auto-rotation.
+- Appearance → **Frosted glass / ground wallpaper**: the glass strength slider (0–1); wallpaper presets, a custom image, auto-rotation, shuffle, and where the wallpaper shows.
 - General → **Quick action slot 1/2**: choose a built-in action, an action registered by another plugin, or leave it empty.
-- Storage: `dsh-plugin-ui.palette` (palette), `dsh-plugin-ui.glass` (glass strength), `dsh-plugin-ui.wallpaper` / `.custom` / `.every` (ground wallpaper and rotation), `dsh-plugin-ui.quick-actions.v1` (the two seats).
+- Storage: `dsh-plugin-ui.palette` (palette), `dsh-plugin-ui.glass` (glass strength), `dsh-plugin-ui.wallpaper` / `.custom` / `.every` / `.rotatedAt` / `.scope` (ground wallpaper, rotation and scope), `dsh-plugin-ui.quick-actions.v1` (the two seats).
 
 ## Extending quick actions
 
@@ -91,7 +91,7 @@ changes colour only, never layout" and the other rules there are enforced by
 ## Tested
 
 - Web (Chromium): four palettes, Original colors, dark mode, model list/switching, effort switching, search and empty states.
-- Desktop (official 0.2.1-rc.3): install, model/effort card, official account row and quick seats, sidebar text sizes 12/14/16px, New Session hover keycaps, settings preview cards; frosted glass and wallpaper visually verified live in light and dark mode (Strong glass over a bright wallpaper pushes dark-mode text contrast to the limit — a known tradeoff of the upper slider half); third-party action registration verified. The new rc.3 sidebar "More" row and its floating menu were live-verified to need zero changes — row styling, pinning and frost all fall out of the existing selectors and the shell's overlay primitive.
+- Desktop (official 0.2.1-rc.3): install, model/effort card, official account row and quick seats, sidebar text sizes 12/14/16px, New Session hover keycaps, settings preview cards; frosted glass and wallpaper visually verified live in light and dark mode (Strong glass over a bright wallpaper pushes dark-mode text contrast to the limit — a known tradeoff of the upper slider half); the wallpaper panel (macOS layout, flat-colour row, shuffle, rotation interval, area switch) and the quick-menu shuffle were clicked live in both Chinese and English; third-party action registration verified. The new rc.3 sidebar "More" row and its floating menu were live-verified to need zero changes — row styling, pinning and frost all fall out of the existing selectors and the shell's overlay primitive.
 - Not tested: a successful real-account sign-in and sign-out confirmation.
 
 ## Repository & license

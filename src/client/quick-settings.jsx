@@ -1,9 +1,10 @@
 /** Quick-settings rows shared by the account menu and the settings seat. */
 import {
   IconDarkOutlineMedium, IconEnhanceOutlineMedium, IconFollowsystemOutlineMedium, IconGlobeOutlineMedium,
-  IconLightOutlineMedium, IconSettingsOutlineMedium, IconSparkleMedium,
+  IconLightOutlineMedium, IconSettingsOutlineMedium, IconSlidersTwoOutlineMedium, IconSparkleMedium,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import { PALETTE_NAMES } from './generated-palettes.js'
+import { ShuffleGlyph } from './glass.jsx'
 import { PaletteIcon } from './palette-icons.jsx'
 import { paletteLabel } from './palette.jsx'
 
@@ -64,24 +65,27 @@ export function quickSettingsItems(view, t, ground) {
     icon: <PaletteIcon id={id} size={14} />,
   }))
   return [
+    {
+      id: 'all-settings',
+      label: t('account.allSettings'),
+      icon: <IconSettingsOutlineMedium size={16} />,
+    },
     { id: 'language', label: t('account.language'), icon: <IconGlobeOutlineMedium size={16} />, submenu: language },
     { id: 'mode', label: t('account.appearanceMode'), icon: <IconDarkOutlineMedium size={16} />, submenu: modes },
     ...(view.palette === undefined ? [] : [{
       id: 'palette', label: t('palette.title'), icon: <IconSparkleMedium size={16} />, submenu: palettes,
     }]),
     ...(ground === undefined || view.glass === undefined ? [] : [{
-      id: 'glass', label: t('account.glass'), icon: <IconEnhanceOutlineMedium size={16} />,
+      id: 'glass', label: t('account.glass'), icon: <IconSlidersTwoOutlineMedium size={16} />,
       submenu: GLASS_CHOICES.map(([value, key]) => ({
         id: `glass:${value}`,
         label: marked(t(key), view.glass === value),
       })),
     }]),
+    ...(ground === undefined || typeof ground.shuffle !== 'function' ? [] : [{
+      id: 'wallpaper-shuffle', label: t('account.shuffleWallpaper'), icon: <ShuffleGlyph size={16} />,
+    }]),
     { id: 'text-size', label: t('account.textSize'), icon: <IconEnhanceOutlineMedium size={16} />, submenu: sizes },
-    {
-      id: 'all-settings',
-      label: t('account.allSettings'),
-      icon: <IconSettingsOutlineMedium size={16} />,
-    },
   ]
 }
 
@@ -93,6 +97,10 @@ export function quickSettingsItems(view, t, ground) {
  * @returns whether the row named a quick setting; unowned ids stay the caller's.
  */
 export function applyQuickSetting(ctx, id, palette, ground) {
+  if (id === 'wallpaper-shuffle' && ground !== undefined && typeof ground.shuffle === 'function') {
+    ground.shuffle()
+    return true
+  }
   if (id.startsWith('mode:')) {
     ctx.theme.setTheme(id.slice('mode:'.length))
     return true

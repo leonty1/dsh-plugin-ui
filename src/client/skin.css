@@ -362,6 +362,20 @@ html:has(body[data-dsh-glass])[data-platform='darwin'] body[data-dsh-palette] [c
       color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) calc(var(--dpui-sidebar-alpha, 0.53) * 100%),
       transparent) !important;
 }
+/* Scoped to the workspace, the wallpaper stops at the rail: the sidebar falls
+   back to the app's own fill and loses its frost, because a scoped ground
+   leaves nothing behind it to blur. The mac rule above wins on specificity, so
+   the scoped variant repeats its warmth at full opacity. */
+html:has(body[data-dsh-glass][data-dsh-ground-scope='workspace']) [class*="_sidebarCol"] {
+  backdrop-filter: none !important;
+  background: var(--dsw-alias-bg-base) !important;
+}
+html:has(body[data-dsh-glass][data-dsh-ground-scope='workspace'])[data-platform='darwin'] body[data-dsh-palette] [class*="_sidebarCol"] {
+  backdrop-filter: none !important;
+  background: color-mix(in srgb,
+    color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) 100%,
+    transparent) !important;
+}
 
 /* One material system, three elevations. The ground shows through the empty
    canvas; surfaces that carry text stay surfaces, mixing toward transparent

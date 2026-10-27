@@ -12,6 +12,7 @@ const WALLPAPER_KEY = 'dsh-plugin-ui.wallpaper'
 const CUSTOM_KEY = 'dsh-plugin-ui.wallpaper.custom'
 const ROTATE_KEY = 'dsh-plugin-ui.wallpaper.every'
 const ROTATED_AT_KEY = 'dsh-plugin-ui.wallpaper.rotatedAt'
+const SCOPE_KEY = 'dsh-plugin-ui.wallpaper.scope'
 
 /** Rotation intervals in minutes: [value, locale key]. 0 turns rotation off. */
 export const ROTATE_CHOICES = [
@@ -24,6 +25,14 @@ export const ROTATE_CHOICES = [
   [10080, 'palette.rotate1w'],
 ]
 
+/** The ground reaches both floating cards by default; scoped, it stays inside
+ *  the workspace and the rail keeps its own fill. */
+const SCOPES = ['all', 'workspace']
+
+/** What the rotation and the shuffle move through: pictures and gradients,
+ *  never a flat sheet of colour. */
+const ROTATABLE = WALLPAPERS.filter(preset => preset.group !== 'plain')
+
 /** @returns the persisted ground settings, with defaults for anything absent. */
 function stored() {
   const glass = Number(localStorage.getItem(GLASS_KEY) ?? '0.5')
@@ -31,30 +40,40 @@ function stored() {
   const custom = localStorage.getItem(CUSTOM_KEY) ?? ''
   const every = Number(localStorage.getItem(ROTATE_KEY) ?? '0')
   const rotatedAt = Number(localStorage.getItem(ROTATED_AT_KEY) ?? '0')
+  const scope = localStorage.getItem(SCOPE_KEY) ?? 'all'
   return {
     glass: Number.isFinite(glass) ? Math.min(Math.max(glass, 0), 1) : 0.5,
     wallpaper,
     custom,
     every: Number.isFinite(every) && every > 0 ? every : 0,
     rotatedAt: Number.isFinite(rotatedAt) ? rotatedAt : 0,
+    scope: SCOPES.includes(scope) ? scope : 'all',
   }
 }
 
 /**
- * @returns the CSS background-image value for the active wallpaper, or none.
- * Photo presets carry a data URL; gradient presets carry the image value
- * itself, so `url()` only wraps the former.
+ * @returns the CSS background-image value for the active wallpaper, or
+ * undefined when the ground is clear. Photo presets carry a data URL; gradient
+ * and plain presets carry the image value itself, so `url()` only wraps the
+ * former.
  */
-function wallpaperUrl(state) {
+function activeImage(state) {
   if (state.wallpaper === 'custom' && state.custom !== '') return `url(${state.custom})`
+  if (state.wallpaper === 'none') return undefined
   const preset = WALLPAPERS.find(w => w.id === state.wallpaper)
-  if (preset === undefined) return 'none'
+  if (preset === undefined) return undefined
   return preset.css === undefined ? `url(${preset.dataUrl})` : preset.css
+}
+
+/** @returns the ground's background-image value, with none for a clear ground. */
+function wallpaperUrl(state) {
+  return activeImage(state) ?? 'none'
 }
 
 /** Publish the ground as body-scoped variables; skin.css consumes them. */
 function apply(state) {
   const body = document.body
+  body.setAttribute('data-dsh-ground-scope', state.scope)
   // Frosted glass needs a surface behind it: wallpaper first, else the plain
   // glass tint over the default ground.
   if (state.glass > 0 || state.wallpaper !== 'none') {
@@ -86,13 +105,14 @@ export function createGroundController() {
     if (next.every > 0) localStorage.setItem(ROTATE_KEY, String(next.every))
     else localStorage.removeItem(ROTATE_KEY)
     localStorage.setItem(ROTATED_AT_KEY, String(next.rotatedAt))
+    localStorage.setItem(SCOPE_KEY, next.scope)
     apply(next)
     notify()
   }
-  /** Step to the next built-in preset, wrapping; a custom or empty ground
+  /** Step to the next rotatable preset, wrapping; a custom or empty ground
    * starts the cycle at the first preset. */
   const advance = () => {
-    const ids = WALLPAPERS.map(preset => preset.id)
+    const ids = ROTATABLE.map(preset => preset.id)
     const at = ids.indexOf(current.wallpaper)
     write({ ...current, wallpaper: ids[(at + 1) % ids.length], rotatedAt: Date.now() })
   }
@@ -122,6 +142,19 @@ export function createGroundController() {
     setEvery(minutes) {
       write({ ...current, every: minutes, rotatedAt: Date.now() })
     },
+    setScope(scope) {
+      if (!SCOPES.includes(scope)) return
+      write({ ...current, scope })
+    },
+    /** Jump to a random picture or gradient, the way a shuffle does. */
+    shuffle() {
+      const pool = ROTATABLE.length > 1
+        ? ROTATABLE.filter(preset => preset.id !== current.wallpaper)
+        : ROTATABLE
+      const pick = pool[Math.floor(Math.random() * pool.length)]
+      if (pick === undefined) return
+      write({ ...current, wallpaper: pick.id, rotatedAt: Date.now() })
+    },
     subscribe(listener) {
       listeners.add(listener)
       return () => { listeners.delete(listener) }
@@ -133,20 +166,31 @@ export function createGroundController() {
       return () => {
         clearInterval(timer)
         document.body.removeAttribute('data-dsh-glass')
+        document.body.removeAttribute('data-dsh-ground-scope')
       }
     },
   }
 }
 
+/** Shuffle glyph: two paths crossing, the way macOS marks a random pick. */
+export function ShuffleGlyph({ size = 14 }) {
+  return <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <path d="M1.6 4.2h1.9c1 0 1.9.5 2.5 1.3l2.5 3.5c.6.8 1.5 1.3 2.5 1.3h1.4M1.6 11.8h1.9c1 0 1.9-.5 2.5-1.3M8.4 6.2c.6-.8 1.5-1.3 2.5-1.3h3.4M13.4 2.6l1.8 2.3-1.8 2.3M13.4 8.8l1.8 2.3-1.8 2.3"
+      stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+}
+
 /**
  * The Skin palette section's ground rows: a frosted-glass opacity slider and
- * the wallpaper picker (built-ins plus a custom file input). Both write
- * through the controller and re-render on its events.
+ * the wallpaper picker. The picker follows the macOS Wallpaper pane: a large
+ * preview with the rotation card beside it, then one shelf per kind of ground.
+ * Both write through the controller and re-render on its events.
  * @param props - ground controller, dictionary, and client context.
  * @returns the ground settings rows.
  */
 export function GroundSettings({ controller, ctx, t }) {
   const [state, setState] = useState(() => controller.get())
+  const [expanded, setExpanded] = useState({ gradient: false, photo: false })
   useEffect(() => {
     const update = () => { setState(controller.get()) }
     update()
@@ -161,21 +205,41 @@ export function GroundSettings({ controller, ctx, t }) {
     event.target.value = ''
   }
   const custom = state.wallpaper === 'custom' && state.custom !== ''
-  const gradients = WALLPAPERS.filter(preset => preset.css !== undefined)
-  const photos = WALLPAPERS.filter(preset => preset.css === undefined)
+  const image = activeImage(state)
+  const shelf = group => WALLPAPERS.filter(preset => preset.group === group)
   /** One swatch card: the wallpaper's own pixels as the picture, its name under. */
-  const swatch = (id, label, image, active) => <button key={id} type="button" role="radio"
+  const swatch = (id, label, picture, active) => <button key={id} type="button" role="radio"
     aria-checked={active}
     className={clsx(css.card, css.groundCard, active && css.cardActive)}
     onClick={() => { controller.setWallpaper(id) }}>
-    <span className={clsx(css.groundSwatch, image === undefined && css.groundSwatchNone)}
-      style={image === undefined ? undefined : { backgroundImage: image }} />
+    <span className={clsx(css.groundSwatch, picture === undefined && css.groundSwatchNone)}
+      style={picture === undefined ? undefined : { backgroundImage: picture }} />
     <span className={css.label}>{label}</span>
   </button>
+  /** One shelf: a caption carrying the count, and the cards it holds. */
+  const group = (key, title) => {
+    const items = shelf(key)
+    const open = expanded[key]
+    const visible = open ? items : items.slice(0, 4)
+    return <div className={css.groundShelf}>
+      <div className={css.groundShelfHead}>
+        <span className={css.groundGroupLabel}>{title}</span>
+        {items.length > 4 && <button type="button" className={css.groundMore}
+          onClick={() => { setExpanded(current => ({ ...current, [key]: !current[key] })) }}>
+          {open ? t('palette.showLess') : `${t('palette.showAll')} (${items.length})`}
+        </button>}
+      </div>
+      <div className={css.groundGrid} role="radiogroup" aria-label={title}>
+        {visible.map(preset => swatch(preset.id, preset.label,
+          preset.css === undefined ? `url(${preset.dataUrl})` : preset.css,
+          state.wallpaper === preset.id))}
+      </div>
+    </div>
+  }
   // The ground is three blocks: the frost slider keeps the section's two-column
-  // rhythm, the wallpaper picker sets its swatches in labelled groups so sixteen
-  // presets stay scannable, and the rotation row returns to the two-column
-  // rhythm because it is a single choice like the slider above it.
+  // rhythm, the wallpaper picker takes the macOS shape (preview, control card,
+  // then the shelves), and the custom picture sits in the picker's own header
+  // rather than taking a slot in the grid.
   return <div className={css.section}>
     <div className={css.row}>
       <div className={css.head}>
@@ -187,43 +251,62 @@ export function GroundSettings({ controller, ctx, t }) {
         onChange={event => { controller.setGlass(Number(event.target.value)) }} />
     </div>
     <div className={css.groundBlock}>
-      <div className={css.head}>
-        <div className={css.title}>{t('palette.wallpaper')}</div>
-        <div className={css.desc}>{t('palette.wallpaperHint')}</div>
-      </div>
-      <div className={css.groundGroups} role="radiogroup" aria-label={t('palette.wallpaper')}>
-      <div className={css.groundGrid}>
-        {swatch('none', t('palette.wallpaperNone'), undefined, state.wallpaper === 'none')}
-        <label className={clsx(css.card, css.groundCard, custom && css.cardActive)}>
-          <span className={clsx(css.groundSwatch, !custom && css.groundSwatchCustom)}
-            style={custom ? { backgroundImage: `url(${state.custom})` } : undefined}>
-            {custom ? null : '+'}
-          </span>
-          <span className={css.label}>{custom ? t('palette.wallpaperCustomSet') : t('palette.wallpaperCustom')}</span>
+      <div className={css.groundHead}>
+        <div className={css.head}>
+          <div className={css.title}>{t('palette.wallpaper')}</div>
+          <div className={css.desc}>{t('palette.wallpaperHint')}</div>
+        </div>
+        <label className={clsx(css.chip, css.customChip, custom && css.chipActive)}>
+          {custom ? t('palette.wallpaperCustomSet') : t('palette.wallpaperCustom')}
           <input type="file" accept="image/*" hidden onChange={pickCustom} />
         </label>
       </div>
-      <div className={css.groundGroupLabel}>{t('palette.wallpaperGroupColor')}</div>
-      <div className={css.groundGrid}>
-        {gradients.map(preset => swatch(preset.id, preset.label, preset.css, state.wallpaper === preset.id))}
+      <div className={css.wallHero}>
+        <div className={clsx(css.wallPreview, image === undefined && css.wallPreviewNone)}
+          style={image === undefined ? undefined : { backgroundImage: image }}>
+          <button type="button" className={css.wallShuffle} aria-label={t('palette.shuffle')}
+            onClick={() => { controller.shuffle() }}>
+            <ShuffleGlyph />
+          </button>
+        </div>
+        <div className={css.wallCard}>
+          <div className={css.wallCardTop}>
+            <div className={css.wallCardRow}>
+              <button type="button" className={clsx(css.chip, css.wallChip)}
+                onClick={() => { controller.shuffle() }}>
+                <ShuffleGlyph />
+                <span>{t('palette.shuffle')}</span>
+              </button>
+              <span className={css.wallSelectWrap}>
+                <select className={css.wallSelect} value={state.every} aria-label={t('palette.rotate')}
+                  onChange={event => { controller.setEvery(Number(event.target.value)) }}>
+                  {ROTATE_CHOICES.map(([minutes, key]) =>
+                    <option key={minutes} value={minutes}>{t(key)}</option>)}
+                </select>
+                <span className={css.wallSelectChevron} aria-hidden="true" />
+              </span>
+            </div>
+            <div className={css.wallNote}>
+              {t('palette.rotatesThrough')} {ROTATABLE.length} {t('palette.wallpaperUnit')}
+            </div>
+          </div>
+          <div className={css.wallDivider} />
+          <div className={css.wallScope}>
+            <span className={css.wallScopeLabel}>{t('palette.scopeAll')}</span>
+            <button type="button" role="switch" aria-checked={state.scope === 'all'}
+              className={clsx(css.switch, state.scope === 'all' && css.switchOn)}
+              onClick={() => { controller.setScope(state.scope === 'all' ? 'workspace' : 'all') }}>
+              <span className={css.switchKnob} />
+            </button>
+          </div>
+        </div>
       </div>
-      <div className={css.groundGroupLabel}>{t('palette.wallpaperGroupPhoto')}</div>
-      <div className={css.groundGrid}>
-        {photos.map(preset => swatch(preset.id, preset.label, `url(${preset.dataUrl})`, state.wallpaper === preset.id))}
+      <div className={css.groundGrid} role="radiogroup" aria-label={t('palette.wallpaper')}>
+        {swatch('none', t('palette.wallpaperNone'), undefined, state.wallpaper === 'none')}
+        {shelf('plain').map(preset => swatch(preset.id, preset.label, preset.css, state.wallpaper === preset.id))}
       </div>
-      </div>
-    </div>
-    <div className={css.row}>
-      <div className={css.head}>
-        <div className={css.title}>{t('palette.rotate')}</div>
-        <div className={css.desc}>{t('palette.rotateHint')}</div>
-      </div>
-      <div className={css.chipRow} role="radiogroup" aria-label={t('palette.rotate')}>
-        {ROTATE_CHOICES.map(([minutes, key]) => <button key={minutes} type="button" role="radio"
-          aria-checked={state.every === minutes}
-          className={clsx(css.chip, state.every === minutes && css.chipActive)}
-          onClick={() => { controller.setEvery(minutes) }}>{t(key)}</button>)}
-      </div>
+      {group('gradient', t('palette.wallpaperGroupColor'))}
+      {group('photo', t('palette.wallpaperGroupPhoto'))}
     </div>
   </div>
 }

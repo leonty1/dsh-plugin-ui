@@ -80,10 +80,11 @@ const fontFace = ['400', '500', '600'].map(weight => `@font-face{font-family:Int
  * (plugin files are not served), gradients carried as plain CSS. */
 const WALLPAPER_DIR = join(root, 'assets', 'wallpapers')
 const wallpapers = WALLPAPER_PRESETS.map(preset => preset.file === undefined
-  ? { id: preset.id, label: preset.label, css: preset.css }
+  ? { id: preset.id, label: preset.label, group: preset.group, css: preset.css }
   : {
       id: preset.id,
       label: preset.label,
+      group: preset.group,
       dataUrl: `data:image/jpeg;base64,${readFileSync(join(WALLPAPER_DIR, preset.file)).toString('base64')}`,
     })
 

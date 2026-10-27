@@ -52,6 +52,7 @@ docs/design-invariants.md  设计不变量（为什么这么设计）；本文�
 - `data-dsh-glass`（存在即开启；`glass=0` 且壁纸 `none` 时移除，所有玻璃规则随之失效）
 - `--dpui-glass-opacity`：滑杆值 0–1，**越大越透**。全部曲线的输入。
 - `--dpui-ground-image`：壁纸 URL 或 `none`（`none` 时清除壁纸层，不涂色）
+- `data-dsh-ground-scope`：`all`（默认，壁纸连侧栏一起铺）| `workspace`（壁纸只铺工作区，侧栏退回自己的实色并摘掉 blur）
 
 skin.css 里所有玻璃规则都挂在 `html:has(body[data-dsh-glass])` 下 —— 选择器不命中就整体回到官方样式，这是“原色”模式的实现方式。
 
@@ -193,12 +194,18 @@ composer        无 blur（v0.1.49 摘除，固定 0.85 tint——丢层免疫�
 - 设置入口纪律（用户明确要求过）：官方入口（General 设置等）保持官方行为；插件自己的外观设置放 **Appearance 分区**并给**真实预览卡**（palette.module.css 里的预览卡直接消费 PALETTE_LAYERS token，不是贴图）。
 - “原色”选项 = 卸掉配色层只留布局，由 palette 控制器摘 body 属性实现。
 - 壁纸轮换：`glass.jsx` 的 `advance/tick`，按**存储时间戳**比较（关窗的时间也计入），选 `none` 是轮换开启时的明确退出（不循环跳过它）。
+- 壁纸库在 `scripts/wallpapers.mjs`，三个货架（plain / gradient / photo），build 时把照片读成 data URL 写进 `generated-palettes.js`（**只读生成物**）。加图改这个脚本再 build。
+- **轮换只走照片与渐变**（`group !== 'plain'`）：纯色地每几小时换一次是坏结果，所以 White / Off White / Graphite 只能手动选。卡片上写的「轮换 N 张壁纸」就是这个数；`rotate-smoke.mjs` 按 `group` 断言，别改回全量。
+- 壁纸面板版式抄 macOS 系统设置的形状（`GroundSettings`）：标题右侧放 Custom、首行是 300px 预览 + 右侧卡片（Shuffle / 轮换间隔 / N 张 / 分隔线 / 显示范围开关），下面按货架分列。抄形状不抄颜色：只用本插件的 token 与圆角。
+- 「无」格与预览的棋盘格必须显式写 `background-repeat: repeat` —— 父级是 `no-repeat`，继承下来会只画中间一小块。
+- 显示范围开关（`data-dsh-ground-scope`）改的只是**侧栏自己**：摘 blur、退回实色。工作区那侧不动。skin.css 里两条规则，darwin 那条必须重复 `body[data-dsh-palette]` 再多加一个属性，否则压不过 (0,4,3) 的侧栏规则。
 
 ## 8. 账号与快捷设置（仅桌面版）
 
 - `entry.jsx` 用 `'dshDesktop' in globalThis` 分流：Web 壳走自己的登录流，不注入账号座。
 - 账号行/菜单对齐官方规格（24px 头像 / 44px 行高），未登录显示 ⋯ + “更多”。
-- 快捷设置由齿轮座位打开（语言、颜色模式、皮肤配色、文字大小、完整设置入口）；快捷操作两个座位（General → 快捷操作位置 1/2）可选内置/其他插件动作或留空。
+- 快捷设置由齿轮座位打开（全部设置、语言、颜色模式、皮肤配色、毛玻璃、随机换一张壁纸、文字大小；顺序是用户定的，别自己重排）；快捷操作两个座位（General → 快捷操作位置 1/2）可选内置/其他插件动作或留空。
+- **同一份菜单里不同行的图标不能重样**（用户提过：毛玻璃和文字大小曾共用同一个图标，看起来像重复项）。毛玻璃用滑杆图标、文字大小用横线图标，别再换回去。
 - 非必要不弹模态（用户原则）：只读/可逆动作直接执行并留日志，只有清空/删除类才提示。
 
 ---
