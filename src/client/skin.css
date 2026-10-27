@@ -530,15 +530,18 @@ html:has(body[data-dsh-glass]) .md-code-block [class*="_bannerWrap"] {
 }
 /* Inline code chips ride the decoration curve, not the card curve: at the
    card's alpha the near-white token turned every chip into a stark white
-   tile pasted on the wash. They are the smallest emphasized islands, so
-   they also take the lightest blur in the material — a breath of frost,
-   not a pane. Block code is excluded here because it frosts through the
-   token above; this rule would double-mix its background. */
+   tile pasted on the wash. They take no backdrop-filter of their own — a
+   chip's backdrop is clipped to the column (the nearest backdrop root), so
+   each chip allocates a full-column-size backdrop surface: 142 extra layers
+   and ~242M layer-pixels for a screenful (67% of the whole tree, CDP
+   layer-tree A/B, 2026-10-27). That pile-up is what pushed the compositor
+   into dropping layers; the 12px blur over flat text was invisible anyway
+   (pixel A/B: only chip edges moved). Tint alone carries the chip. Block
+   code is excluded because it frosts through the card rule above. */
 html:has(body[data-dsh-glass]) [class*="_markdown"] code:not([data-code-block-content] code) {
   background-color: color-mix(in srgb,
     var(--dsw-alias-markdown-inline-code) calc(var(--dpui-inline-alpha, 0.26) * 100%),
     transparent) !important;
-  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 12px + 4px)) saturate(1.4);
 }
 /* The special-field bodies — tool IO cards, terminal, web and search blocks —
    frost through the token above; blur lifts them onto the island tier with

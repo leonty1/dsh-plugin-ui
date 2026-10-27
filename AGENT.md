@@ -115,6 +115,7 @@ composer        无 blur（v0.1.49 摘除，固定 0.85 tint——丢层免疫�
 - `:not([data-code-block-content] code)` 排除块代码 —— 块代码已通过 3.1 的 token 霜化，这里再刷会双重混合。
 - 芯片文字色不改：token `--dsw-alias-markdown-inline-code` 的文字配对由配色层负责，玻璃层只动背景。
 - **排障经验**：截图里芯片像“空白瓷砖”时，先用 CDP 查 computed `color`（§9.2），确认是文字色问题还是底色问题；像素采样必须选**芯片内无文字的 padding 区**，采到文字上会得假读数（L 109 vs 实际 26 那次）。
+- **芯片曾是合成器层内存的最大放大器，blur 已摘除（v0.1.51，2026-10-27 CDP 层树实测）**：后代的 backdrop-filter 会被裁到最近的 backdrop root，而中央列本身就是 backdrop root——于是**每个芯片申请一张整列大小（1984×1624 设备像素）的离屏 surface**，不是一层薄雾。旧版一屏 73–92 张，芯片共 142 层 / 约 242M 层像素 = 全树 67%。摘除后同屏 221→79 层、362.9M→120.8M 像素（−68%），芯片 computed `backdrop-filter: none`；全页像素 A/B 仅芯片边缘变化（0.61%），并排裁剪图无法分辨——12px blur 糊在平铺正文上本来就不可见，tint 才是芯片本体。**别再给芯片（或任何对话列内小件）加 blur**，除非确认它不在带 backdrop-filter 的祖先里。
 
 ### 3.2b 微型状态件（v0.1.45）
 
@@ -133,6 +134,7 @@ composer        无 blur（v0.1.49 摘除，固定 0.85 tint——丢层免疫�
 - **修法（v0.1.39）**：玻璃模式下 `_backing` 置透明（`[class*="_backing"] { background-color: transparent !important }`），让 `_material` 自己的涂层干活；非玻璃模式垫底保留，"原色"模式仍是实心浮层。规则已登记进 verify-skin 的 GLASS_SURFACES 例外名单。
 - **`_material` 的 blur 玻璃门下降到 24px（v0.1.47）**：40px 是全窗最重的一层 backdrop，也是合成器内存压力下**最先整批丢弃**的那类层（2026-10-26 事故：所有 blur 层同时消失、tint 还在，浮层后面内容清晰透出；重启即愈）。玻璃门下 24px 在已糊的地面上读不出差别，纯省成本；"原色"模式保留壳的 40px。规则同为 glass-gated，已登记 GLASS_SURFACES。
 - **合成器静默丢 blur 是不治之症（2026-10-26 六起定论）**：中央列两个 fixed 元素（顶栏、composer）的 backdrop-filter 会单独死亡——采样的是滚动中的对话内容，滚动流内元素和侧栏都无恙。**页面内一切手段救不回**（真机逐一试过并全部失败）：inline blur 切换、transform/display 层重建、`data-dsh-glass` 总闸重开、根 zoom 重排、真实输入、微滚动。GPU 正常无崩溃，唯一疗法是重启。曾试过 inline 轻推自愈守护（v0.1.47 一度上线）——对重症无效，且窗口被遮挡时 rAF 停摆会让 inline `none` 卡住不还原、全窗无霜，已撤。
+- **结构性放大器：后代 backdrop-filter = 复制一张祖先尺寸的 backdrop surface（2026-10-27 层树实测）**：Chromium 把后代 backdrop-filter 裁到最近的 backdrop root，而 root（中央列）铺满整个滚动列，所以"给每个小件加 blur"实际是给每个小件配一张整列大小的离屏 surface。插件旧版行内 chip 正是如此（§3.2），一屏 73–92 张、占全树 67% 层像素；v0.1.51 摘除后层内存降 68%。**这也解释了"rc.2 时代不出问题"**：rc.3 与 rc.2 的渲染代码逐文件比对（asar 全量 hash + 归一化 diff）没有 backdrop/will-change/contain/filter 改动，变量是重启 + 更长的会话把层内存推过 macOS Metal/vibrancy 的阈值（Windows 走 D3D/acrylic，不在此阈值内）。剩余可降载项：代码卡 26 层 / 20.7M、气泡 9 层 / 19.8M，各有一张整列 surface，属可选优化。
 - **同族变种：滚动容器的文字栅格层整批丢失（2026-10-26，重启对照实锤与插件无关）**：症状是中央对话列的普通正文/标题整体不可见，而自带合成层的元素（行内 chip 药丸、代码 token、自带底色的小件）照常渲染；侧栏、顶栏、弹窗文字全部正常。鉴别法：这份 dist 重启后同会话一切正常 → DOM 与 CSS 均无恙，纯合成器丢文字层，与丢 blur 同族同疗法（重启即愈）。见到"chips 在、正文没了"先重启再排查样式，别往 token/文字色方向查。
 - **文字丢层可治（2026-10-27 CDP 实锤，推翻"文字变种只能重启"）**：普通重载后 22s，正文两段中文与 `build_indexes.py` 芯片文字整批未上屏（同段 `check_refs.py` 芯片正常、KaTeX 斜体正常——computed style 完全一致、DOM 完整，纯首绘丢栅格），静置不自愈；**对 `[data-conversation-scroll]` 做一次 ±1px 同步往返滚动即全部恢复**，治愈后静置 30s 稳定。侧栏启动期变种（logo/Workspaces/底组在 DOM 但不 paint，约 30s–3min 自愈或被任意强制出帧治愈）疑为同族，清扫对它顺带覆盖（`_regionArea` 同款 nudge），未单独立案。**"页面内一切手段救不回"仅适用于 fixed 元素丢 blur 变种**——当时清单里的"微滚动"救的是 blur，救不了 blur 但救得了文字。
 - **插件自愈已上线（v0.1.50）**：`src/client/repaint-sweep.js` 在 boot 2/6/12/25s 各做一次清扫，之后挂 body 级 MutationObserver（防抖 800ms、限频 1.5s）在会话切换/流式输出后再清扫；nudge 是单任务内 ±1px 往返，不产生中间帧、不跳屏、无 inline 样式残留（吸取 v0.1.47 watchdog 卡 `none` 的教训，不用 rAF、不挂 inline）。清扫与被删的 blur watchdog 无关：那个治 blur（无效已撤），这个治文字丢层（实测有效）。
@@ -244,3 +246,4 @@ const ws = new WebSocket(list.find(p => p.type === 'page').webSocketDebuggerUrl)
 | 侧栏强调过头 | 强调口径是“高一线”，不是“高一档” | §4 |
 | 假像素读数 | 采到文字/跨高度采样都会骗人 | §9.3 |
 | 文字丢层可自愈 | 首绘丢正文 ≠ 不治之症：±1px 往返滚动即愈，v0.1.50 清扫已上线；blur 变种仍只能重启 | §3.4 |
+| 小件 blur 的层内存杠杆 | 后代 backdrop-filter 被裁到列级 backdrop root：一个 chip = 一张整列 surface；芯片曾占全树 67% 层像素，v0.1.51 摘除 | §3.2 §3.4 |
