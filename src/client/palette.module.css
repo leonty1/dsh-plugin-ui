@@ -216,8 +216,8 @@
   background-repeat: no-repeat;
 }
 
-/* A clear ground reads as the same checkerboard the none swatch uses, so the
-   two never disagree about what "no picture" looks like. */
+/* A ground with no picture keeps the checkerboard the none tile used to draw,
+   so the preview still says "nothing is laid here". */
 .wallPreviewNone {
   background-image: repeating-conic-gradient(
     var(--dsw-alias-border-l3) 0% 25%,
@@ -436,19 +436,6 @@
 .card:focus-visible .groundSwatch {
   outline: 2px solid var(--dsw-alias-brand-primary);
   outline-offset: 1px;
-}
-
-/* No wallpaper: a quiet empty plate, not a colour the eye mistakes for a preset. */
-/* A checkerboard, not a flat fill: the old tile read as a white swatch sitting
-   among the pictures, which is the opposite of what it does — picking it
-   clears the plate to transparent. */
-.groundSwatchNone {
-  background-color: var(--dsw-alias-bg-base);
-  background-image: repeating-conic-gradient(
-    var(--dsw-alias-border-l3) 0% 25%,
-    transparent 0% 50%);
-  background-size: 12px 12px;
-  background-repeat: repeat;
 }
 
 /* Group captions: the shelf names. They sit a step under the block titles

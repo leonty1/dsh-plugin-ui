@@ -92,6 +92,7 @@ export const WALLPAPER_GRADIENTS = [
 export const WALLPAPER_PLAINS = [
   { id: 'white', label: 'White', css: 'linear-gradient(180deg, #ffffff 0%, #ffffff 100%)' },
   { id: 'off-white', label: 'Off White', css: 'linear-gradient(180deg, #f5f2ea 0%, #f5f2ea 100%)' },
+  { id: 'light-gray', label: 'Light Gray', css: 'linear-gradient(180deg, #d9d9dc 0%, #d9d9dc 100%)' },
   {
     id: 'graphite',
     label: 'Graphite',

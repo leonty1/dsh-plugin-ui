@@ -96,7 +96,7 @@ const MIN = 60_000
   const stop = ground.install()
   expect('default rotation', ground.get().every, 0)
   clock += 90 * MIN
-  expect('no rotation while off', ground.get().wallpaper, 'none')
+  expect('no rotation while off', ground.get().wallpaper, 'white')
   stop()
 }
 
@@ -107,7 +107,7 @@ const MIN = 60_000
   ground.setEvery(30)
   expect('interval stored', ground.get().every, 30)
   clock += 29 * MIN
-  expect('not yet due', ground.get().wallpaper, 'none')
+  expect('not yet due', ground.get().wallpaper, 'white')
   stop()
 }
 
@@ -143,12 +143,13 @@ const MIN = 60_000
   expect('catches up after downtime', ground.get().wallpaper, rotatable[1])
 }
 
-// 6. "none" is an opt-out, not a preset to be cycled past
+// 6. a ground with no picture — a store from before the picker dropped the
+// none tile — stays put rather than being cycled past
 {
   const ground = boot({ 'dsh-plugin-ui.wallpaper.every': 60, 'dsh-plugin-ui.wallpaper': 'none',
     'dsh-plugin-ui.wallpaper.rotatedAt': clock - 120 * MIN })
   ground.install()()
-  expect('none stays put', ground.get().wallpaper, 'none')
+  expect('an empty ground stays put', ground.get().wallpaper, 'none')
 }
 
 // 7. picking a wallpaper by hand restarts the interval

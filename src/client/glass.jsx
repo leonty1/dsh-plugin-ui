@@ -36,7 +36,7 @@ const ROTATABLE = WALLPAPERS.filter(preset => preset.group !== 'plain')
 /** @returns the persisted ground settings, with defaults for anything absent. */
 function stored() {
   const glass = Number(localStorage.getItem(GLASS_KEY) ?? '0.5')
-  const wallpaper = localStorage.getItem(WALLPAPER_KEY) ?? 'none'
+  const wallpaper = localStorage.getItem(WALLPAPER_KEY) ?? 'white'
   const custom = localStorage.getItem(CUSTOM_KEY) ?? ''
   const every = Number(localStorage.getItem(ROTATE_KEY) ?? '0')
   const rotatedAt = Number(localStorage.getItem(ROTATED_AT_KEY) ?? '0')
@@ -121,8 +121,9 @@ export function createGroundController() {
    * a new wallpaper instead of restarting the interval. */
   const tick = () => {
     if (current.every <= 0) return
-    // Picking "none" while rotation is on is a deliberate opt-out; cycling
-    // straight past it would make that choice impossible to keep.
+    // A ground with no picture — a store from before the picker dropped the
+    // none tile, or a cleared custom picture — stays put under rotation:
+    // cycling past it would replace a ground the user emptied on purpose.
     if (current.wallpaper === 'none') return
     if (Date.now() - current.rotatedAt < current.every * 60000) return
     advance()
@@ -212,8 +213,7 @@ export function GroundSettings({ controller, ctx, t }) {
     aria-checked={active}
     className={clsx(css.card, css.groundCard, active && css.cardActive)}
     onClick={() => { controller.setWallpaper(id) }}>
-    <span className={clsx(css.groundSwatch, picture === undefined && css.groundSwatchNone)}
-      style={picture === undefined ? undefined : { backgroundImage: picture }} />
+    <span className={css.groundSwatch} style={{ backgroundImage: picture }} />
     <span className={css.label}>{label}</span>
   </button>
   /** One shelf: a caption carrying the count, and the cards it holds. */
@@ -302,7 +302,6 @@ export function GroundSettings({ controller, ctx, t }) {
         </div>
       </div>
       <div className={css.groundGrid} role="radiogroup" aria-label={t('palette.wallpaper')}>
-        {swatch('none', t('palette.wallpaperNone'), undefined, state.wallpaper === 'none')}
         {shelf('plain').map(preset => swatch(preset.id, preset.label, preset.css, state.wallpaper === preset.id))}
       </div>
       {group('gradient', t('palette.wallpaperGroupColor'))}
