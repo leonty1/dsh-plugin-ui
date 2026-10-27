@@ -216,11 +216,29 @@ export function GroundSettings({ controller, ctx, t }) {
     <span className={css.groundSwatch} style={{ backgroundImage: picture }} />
     <span className={css.label}>{label}</span>
   </button>
+  /** One thumbnail in a folded shelf: the picture only, the name on hover. */
+  const stripThumb = (id, label, picture, active) => <button key={id} type="button" role="radio"
+    aria-checked={active}
+    aria-label={label}
+    title={label}
+    className={clsx(css.groundStripThumb, active && css.groundStripThumbActive)}
+    style={{ backgroundImage: picture }}
+    onClick={() => { controller.setWallpaper(id) }} />
+  /** The thumbnails a folded shelf shows: the group's first four, plus the
+   *  wallpaper in use when it sits beyond them, so the choice in hand is
+   *  never off screen. */
+  const stripOf = items => {
+    const head = items.slice(0, 4)
+    const active = items.find(preset => preset.id === state.wallpaper)
+    if (active === undefined || head.includes(active)) return head
+    return [...head, active]
+  }
   /** One shelf: a caption carrying the count, and the cards it holds. */
   const group = (key, title) => {
     const items = shelf(key)
     const open = expanded[key]
-    const visible = open ? items : items.slice(0, 4)
+    const folded = items.length > 4 && !open
+    const visible = folded ? stripOf(items) : items
     return <div className={css.groundShelf}>
       <div className={css.groundShelfHead}>
         <span className={css.groundGroupLabel}>{title}</span>
@@ -229,10 +247,14 @@ export function GroundSettings({ controller, ctx, t }) {
           {open ? t('palette.showLess') : `${t('palette.showAll')} (${items.length})`}
         </button>}
       </div>
-      <div className={css.groundGrid} role="radiogroup" aria-label={title}>
-        {visible.map(preset => swatch(preset.id, preset.label,
-          preset.css === undefined ? `url(${preset.dataUrl})` : preset.css,
-          state.wallpaper === preset.id))}
+      <div className={folded ? css.groundStrip : css.groundGrid} role="radiogroup" aria-label={title}>
+        {visible.map(preset => folded
+          ? stripThumb(preset.id, preset.label,
+            preset.css === undefined ? `url(${preset.dataUrl})` : preset.css,
+            state.wallpaper === preset.id)
+          : swatch(preset.id, preset.label,
+            preset.css === undefined ? `url(${preset.dataUrl})` : preset.css,
+            state.wallpaper === preset.id))}
       </div>
     </div>
   }

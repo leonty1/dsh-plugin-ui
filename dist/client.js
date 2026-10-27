@@ -1141,6 +1141,36 @@ if (typeof document !== "undefined" && document.getElementById(styleId2) === nul
   gap: 8px;
 }
 
+/* A folded shelf: the group's first few wallpapers as a strip of thumbnails.
+   The colours stay on screen without the row of full cards, which is what
+   keeps the whole block inside the settings panel's visible height. */
+.dpui-palette-groundStrip {
+  display: flex;
+  gap: 6px;
+}
+
+.dpui-palette-groundStripThumb {
+  width: 56px;
+  height: 35px;
+  padding: 0;
+  border: 0.5px solid var(--dsw-alias-border-l3);
+  border-radius: 4px;
+  background-color: var(--dsw-alias-bg-base);
+  background-position: center;
+  background-size: cover;
+  cursor: pointer;
+}
+
+.dpui-palette-groundStripThumb:hover {
+  border-color: var(--dsw-alias-border-l4);
+}
+
+.dpui-palette-groundStripThumbActive,
+.dpui-palette-groundStripThumb:focus-visible {
+  outline: 2px solid var(--dsw-alias-brand-primary);
+  outline-offset: 1px;
+}
+
 .dpui-palette-groundCard {
   flex: 1 1 108px;
   min-width: 108px;
@@ -1368,10 +1398,33 @@ function GroundSettings({ controller, ctx, t }) {
     },
     id
   );
+  const stripThumb = (id, label, picture, active) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+    "button",
+    {
+      type: "button",
+      role: "radio",
+      "aria-checked": active,
+      "aria-label": label,
+      title: label,
+      className: clsx(palette_default.groundStripThumb, active && palette_default.groundStripThumbActive),
+      style: { backgroundImage: picture },
+      onClick: () => {
+        controller.setWallpaper(id);
+      }
+    },
+    id
+  );
+  const stripOf = (items) => {
+    const head = items.slice(0, 4);
+    const active = items.find((preset) => preset.id === state.wallpaper);
+    if (active === void 0 || head.includes(active)) return head;
+    return [...head, active];
+  };
   const group = (key, title) => {
     const items = shelf(key);
     const open = expanded[key];
-    const visible = open ? items : items.slice(0, 4);
+    const folded = items.length > 4 && !open;
+    const visible = folded ? stripOf(items) : items;
     return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: palette_default.groundShelf, children: [
       /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: palette_default.groundShelfHead, children: [
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: palette_default.groundGroupLabel, children: title }),
@@ -1387,7 +1440,12 @@ function GroundSettings({ controller, ctx, t }) {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: palette_default.groundGrid, role: "radiogroup", "aria-label": title, children: visible.map((preset) => swatch(
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: folded ? palette_default.groundStrip : palette_default.groundGrid, role: "radiogroup", "aria-label": title, children: visible.map((preset) => folded ? stripThumb(
+        preset.id,
+        preset.label,
+        preset.css === void 0 ? `url(${preset.dataUrl})` : preset.css,
+        state.wallpaper === preset.id
+      ) : swatch(
         preset.id,
         preset.label,
         preset.css === void 0 ? `url(${preset.dataUrl})` : preset.css,

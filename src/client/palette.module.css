@@ -415,6 +415,36 @@
   gap: 8px;
 }
 
+/* A folded shelf: the group's first few wallpapers as a strip of thumbnails.
+   The colours stay on screen without the row of full cards, which is what
+   keeps the whole block inside the settings panel's visible height. */
+.groundStrip {
+  display: flex;
+  gap: 6px;
+}
+
+.groundStripThumb {
+  width: 56px;
+  height: 35px;
+  padding: 0;
+  border: 0.5px solid var(--dsw-alias-border-l3);
+  border-radius: 4px;
+  background-color: var(--dsw-alias-bg-base);
+  background-position: center;
+  background-size: cover;
+  cursor: pointer;
+}
+
+.groundStripThumb:hover {
+  border-color: var(--dsw-alias-border-l4);
+}
+
+.groundStripThumbActive,
+.groundStripThumb:focus-visible {
+  outline: 2px solid var(--dsw-alias-brand-primary);
+  outline-offset: 1px;
+}
+
 .groundCard {
   flex: 1 1 108px;
   min-width: 108px;
