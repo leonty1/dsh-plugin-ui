@@ -900,6 +900,16 @@ if (typeof document !== "undefined" && document.getElementById(styleId2) === nul
   border-bottom: 0.5px solid var(--dsw-alias-border-l2);
 }
 
+/* Why the last custom picture did not stick: storage can refuse a picture
+   too large to keep, and the panel says so instead of dropping the pick
+   without a trace. */
+.dpui-palette-groundError {
+  font-size: 12px;
+  line-height: 18px;
+  color: color-mix(in srgb, var(--dsw-alias-state-error-primary, #c0392b) 80%,
+    var(--dsw-alias-label-primary));
+}
+
 .dpui-palette-groundHead {
   display: flex;
   align-items: flex-start;
@@ -1270,21 +1280,48 @@ function apply(state) {
 function createGroundController() {
   let current = stored();
   let timer;
+  let error = null;
   const listeners = /* @__PURE__ */ new Set();
   const notify = () => {
     for (const listener of listeners) listener();
   };
+  const put = (key, value) => {
+    try {
+      localStorage.setItem(key, value);
+      return null;
+    } catch (err) {
+      return err;
+    }
+  };
+  const drop = (key) => {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+    }
+  };
   const write = (next) => {
+    const previous = current;
     current = next;
-    localStorage.setItem(GLASS_KEY, String(next.glass));
-    localStorage.setItem(WALLPAPER_KEY, next.wallpaper);
-    if (next.custom === "") localStorage.removeItem(CUSTOM_KEY);
-    else localStorage.setItem(CUSTOM_KEY, next.custom);
-    if (next.every > 0) localStorage.setItem(ROTATE_KEY, String(next.every));
-    else localStorage.removeItem(ROTATE_KEY);
-    localStorage.setItem(ROTATED_AT_KEY, String(next.rotatedAt));
-    localStorage.setItem(SCOPE_KEY, next.scope);
-    apply(next);
+    error = null;
+    if (next.custom === "") {
+      drop(CUSTOM_KEY);
+    } else {
+      const failure = put(CUSTOM_KEY, next.custom);
+      if (failure !== null) {
+        error = /quota/i.test(String(failure?.name ?? "")) ? "palette.customTooLarge" : "palette.customNotSaved";
+        current = previous;
+        apply(current);
+        notify();
+        return;
+      }
+    }
+    put(GLASS_KEY, String(next.glass));
+    put(WALLPAPER_KEY, next.wallpaper);
+    if (next.every > 0) put(ROTATE_KEY, String(next.every));
+    else drop(ROTATE_KEY);
+    put(ROTATED_AT_KEY, String(next.rotatedAt));
+    put(SCOPE_KEY, next.scope);
+    apply(current);
     notify();
   };
   const advance = () => {
@@ -1299,7 +1336,10 @@ function createGroundController() {
     advance();
   };
   return {
-    get: () => current,
+    // The error rides along with the state, so a refused write always brings
+    // a fresh object: React skips a re-render when the state is the same
+    // reference, and a declined pick would otherwise stay invisible.
+    get: () => ({ ...current, error }),
     setGlass(opacity) {
       write({ ...current, glass: opacity });
     },
@@ -1379,6 +1419,7 @@ function GroundSettings({ controller, ctx, t }) {
     event.target.value = "";
   };
   const custom = state.wallpaper === "custom" && state.custom !== "";
+  const error = state.error ?? null;
   const image = activeImage(state);
   const shelf = (group2) => WALLPAPERS.filter((preset) => preset.group === group2);
   const swatch = (id, label, picture, active) => /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
@@ -1486,6 +1527,7 @@ function GroundSettings({ controller, ctx, t }) {
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("input", { type: "file", accept: "image/*", hidden: true, onChange: pickCustom })
         ] })
       ] }),
+      error !== null && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: palette_default.groundError, children: t(error) }),
       /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: palette_default.wallHero, children: [
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
           "div",
@@ -3368,6 +3410,8 @@ var zh = {
   "palette.wallpaperGroupPlain": "\u7EAF\u8272",
   "palette.wallpaperGroupColor": "\u6E10\u53D8",
   "palette.wallpaperGroupPhoto": "\u7167\u7247",
+  "palette.customTooLarge": "\u8FD9\u5F20\u56FE\u592A\u5927\u4E86\uFF0C\u6D4F\u89C8\u5668\u5B58\u4E0D\u4E0B\u3002\u6362\u4E00\u5F20\u5C0F\u4E00\u70B9\u7684\u8BD5\u8BD5\u3002",
+  "palette.customNotSaved": "\u8FD9\u5F20\u56FE\u6CA1\u80FD\u5B58\u4E0B\u6765\u3002\u6362\u4E00\u5F20\u8BD5\u8BD5\u3002",
   "account.quickActionsTitle": "\u8D26\u53F7\u884C\u5FEB\u6377\u64CD\u4F5C",
   "palette.title": "\u76AE\u80A4\u914D\u8272",
   "palette.hint": "\u53EA\u66FF\u6362\u989C\u8272\uFF1B\u5E03\u5C40\u4E0E\u7EC4\u4EF6\u4FDD\u6301\u63D2\u4EF6\u8BBE\u8BA1\uFF0C\u660E\u6697\u4ECD\u8DDF\u968F\u5E94\u7528\u5F53\u524D\u7684\u6D45\u8272/\u6DF1\u8272",
@@ -3452,6 +3496,8 @@ var en = {
   "palette.wallpaperGroupPlain": "Plain",
   "palette.wallpaperGroupColor": "Gradients",
   "palette.wallpaperGroupPhoto": "Photos",
+  "palette.customTooLarge": "This picture is too large to save. Try a smaller one.",
+  "palette.customNotSaved": "This picture could not be saved. Try another one.",
   "account.allSettings": "All settings\u2026",
   "account.quickActionsTitle": "Account row quick actions",
   "palette.title": "Skin palette",

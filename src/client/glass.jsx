@@ -94,19 +94,50 @@ function apply(state) {
 export function createGroundController() {
   let current = stored()
   let timer
+  let error = null
   const listeners = new Set()
   const notify = () => { for (const listener of listeners) listener() }
+  /** Store one value; @returns the error when storage refused it. */
+  const put = (key, value) => {
+    try {
+      localStorage.setItem(key, value)
+      return null
+    } catch (err) {
+      return err
+    }
+  }
+  const drop = key => {
+    try { localStorage.removeItem(key) } catch { /* nothing to remove */ }
+  }
   const write = next => {
+    const previous = current
     current = next
-    localStorage.setItem(GLASS_KEY, String(next.glass))
-    localStorage.setItem(WALLPAPER_KEY, next.wallpaper)
-    if (next.custom === '') localStorage.removeItem(CUSTOM_KEY)
-    else localStorage.setItem(CUSTOM_KEY, next.custom)
-    if (next.every > 0) localStorage.setItem(ROTATE_KEY, String(next.every))
-    else localStorage.removeItem(ROTATE_KEY)
-    localStorage.setItem(ROTATED_AT_KEY, String(next.rotatedAt))
-    localStorage.setItem(SCOPE_KEY, next.scope)
-    apply(next)
+    error = null
+    if (next.custom === '') {
+      drop(CUSTOM_KEY)
+    } else {
+      const failure = put(CUSTOM_KEY, next.custom)
+      if (failure !== null) {
+        // A custom picture is the one value big enough for storage to refuse,
+        // because it is kept as a data URL. The pick is declined and the ground
+        // stays where it was, rather than pointing at a picture that was never
+        // stored.
+        error = /quota/i.test(String(failure?.name ?? ''))
+          ? 'palette.customTooLarge'
+          : 'palette.customNotSaved'
+        current = previous
+        apply(current)
+        notify()
+        return
+      }
+    }
+    put(GLASS_KEY, String(next.glass))
+    put(WALLPAPER_KEY, next.wallpaper)
+    if (next.every > 0) put(ROTATE_KEY, String(next.every))
+    else drop(ROTATE_KEY)
+    put(ROTATED_AT_KEY, String(next.rotatedAt))
+    put(SCOPE_KEY, next.scope)
+    apply(current)
     notify()
   }
   /** Step to the next rotatable preset, wrapping; a custom or empty ground
@@ -129,7 +160,10 @@ export function createGroundController() {
     advance()
   }
   return {
-    get: () => current,
+    // The error rides along with the state, so a refused write always brings
+    // a fresh object: React skips a re-render when the state is the same
+    // reference, and a declined pick would otherwise stay invisible.
+    get: () => ({ ...current, error }),
     setGlass(opacity) { write({ ...current, glass: opacity }) },
     setWallpaper(id) { write({ ...current, wallpaper: id, rotatedAt: Date.now() }) },
     setCustom(dataUrl) {
@@ -206,6 +240,7 @@ export function GroundSettings({ controller, ctx, t }) {
     event.target.value = ''
   }
   const custom = state.wallpaper === 'custom' && state.custom !== ''
+  const error = state.error ?? null
   const image = activeImage(state)
   const shelf = group => WALLPAPERS.filter(preset => preset.group === group)
   /** One swatch card: the wallpaper's own pixels as the picture, its name under. */
@@ -283,6 +318,7 @@ export function GroundSettings({ controller, ctx, t }) {
           <input type="file" accept="image/*" hidden onChange={pickCustom} />
         </label>
       </div>
+      {error !== null && <div className={css.groundError}>{t(error)}</div>}
       <div className={css.wallHero}>
         <div className={clsx(css.wallPreview, image === undefined && css.wallPreviewNone)}
           style={image === undefined ? undefined : { backgroundImage: image }}>
