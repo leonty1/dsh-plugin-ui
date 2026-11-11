@@ -1932,7 +1932,7 @@ html:not([data-platform='darwin']) [class*="_sidebarCol"] [class*="_panelRow"][c
    stat line, and the card is pinned by its own statCounts class, which only
    this module ships. */
 html:not([data-platform='darwin']) [class*="_card"]:has([class*="_statCounts"]) {
-  --changes-fill: var(--dsw-alias-bg-layout);
+  --changes-fill: var(--dsw-alias-bg-base);
   --changes-hover: var(--dsw-alias-interactive-bg-hover);
 }
 html:not([data-platform='darwin']) [class*="_card"]:has([class*="_statCounts"]) [class*="_title"] {
