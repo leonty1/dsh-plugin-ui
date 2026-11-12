@@ -2321,6 +2321,25 @@ html:has(body[data-dsh-glass]) [class*="_material"] {
 html:has(body[data-dsh-glass]) [class*="_centerCol"] [class*="_page"] {
   background-color: transparent !important;
 }
+/* The plugin page's sticky header paints its own backing with bg-base \u2014 an
+   opaque slab across the top of the workspace the moment the page sits on
+   the wash. The shell already tells us which state the bar is in: at rest the
+   header is in flow on the page's own ground (data-natural alone), and only
+   once the page scrolls does it pin and collapse to the compact bar
+   (data-compact). So the backing follows the native large-title pattern \u2014
+   fully clear at rest, and on the compact bar the panel tier plus the
+   workspace's own blur curve, enough to keep rows dissolving under the
+   title from colliding with it without inventing a second material. Both
+   rules stay under glass: Original colors keeps the shell's opaque bar. */
+html:has(body[data-dsh-glass]) [class*="_centerCol"] [class*="_pageBar"][data-natural]:not([data-compact])::before {
+  background: transparent !important;
+}
+html:has(body[data-dsh-glass]) [class*="_centerCol"] [class*="_pageBar"][data-natural][data-compact]::before {
+  background: color-mix(in srgb,
+    var(--dsw-alias-bg-base) calc(var(--dpui-panel-alpha, 0.4) * 100%),
+    transparent) !important;
+  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 22px)) saturate(1.4);
+}
 /* Micro status chips. The status tag component itself is translucent by
    design \u2014 success/info/warning/danger tones all paint 10-12% tints \u2014 but
    the neutral tone ("exit code 1") paints bg-module-platform opaque, and

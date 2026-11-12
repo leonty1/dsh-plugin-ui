@@ -147,6 +147,7 @@ composer        无 blur（v0.1.49 摘除，固定 0.85 tint——丢层免疫�
 - 浮层不进曲线表 — 它们的霜是壳自带的，插件只拆垫底。
 - **整页视图的白色页板**（v0.1.44）：自动化任务页（及同组件族的设置页）的 section 根刷纯白（990×810 大板），玻璃门下置透明露出柱子的霜——Plugins 页的 page 根本来就没刷白，所以原本只有自动化页是一块板。页面上的控件（主按钮、开关、激活筛选 tab）保留各自填充。钩子 `[class*="_centerCol"] [class*="_page"]`。
 - **dock 空面板宿主**（v0.1.46）：`[data-dockkit-empty]`（分屏/右栏没有 tab 时的 "Empty pane" 宿主）刷纯白 576×810，玻璃门下置透明（data-* 钩子稳定）。当前窗口宽度刚好把它卡在屏幕外（x=innerWidth），属潜伏项——已登记 GLASS_SURFACES。
+- **插件页 sticky 页头刷不透明底色**（v0.1.62）：Plugins 页（插件管理器组件族，Automation tasks 不走这套，实测无 pageBar）的 `_pageBar[data-natural]::before` 用 `--dsw-alias-bg-base` 刷 128px 高的底色（页头吸顶后防止滚动内容压住标题），玻璃门下就是在彩色壁纸上钉一块纯白。壳的状态属性可直接借用：静止页头在流内只有 `data-natural`，起滚吸顶压缩后才加 `data-compact data-scrolled`（paint 高度 128→64px）。故玻璃门下按原生大标题栏处理——静止时 `::before` 全透明，`[data-compact]` 时才用 panel 档（`--dpui-panel-alpha`）+ 工作区自己的 blur 曲线（`--dpui-glass-opacity × 22px`）出磨砂条，正好盖住压缩条、滚动行在标题下化成淡影。非玻璃模式两条规则都不生效，壳保持原样。选择器钩子 `[class*="_centerCol"] [class*="_pageBar"][data-natural]`。真机 A/B 另试过全透明（滚动时标题直接压列表文字）与渐隐渐变（标题仍被穿透），均不可取；`data-compact` 随滚动即时增删已用 CDP 实测（scrollTop 0→356→0 三态属性与 paint 高度同步切换），可放心当状态钩子用。
 
 ---
 
