@@ -156,11 +156,12 @@ composer        无 blur（v0.1.49 摘除，固定 0.85 tint——丢层免疫�
 - **New Session 芯片的填充必须用同一合成**：`color-mix(in srgb, color-mix(in srgb, sidebar-fill 88%, brand-primary) chip-alpha, transparent)`。直接用 raw sidebar-fill 会比侧栏深两档（CDP 实测暗色薄荷 (10,15,13) vs (21,38,33)）。
 - 用户对强调的口径（多次修正后的最终版）：**芯片只需比侧栏高一线，侧栏只需比工作区高一线，甚至持平也行**。别再加码。
 - hover 态用 `max(0.72, chip-alpha)` 保住可发现性。
-- **选中的行全部同芯片材质**（v0.1.41 会话行，v0.1.43 扩到搜索结果行与面板行）：`_sessionRow_selected`、`_searchResultRow_selected`、`_panelRow_panelActive` 三者原本共用同一条 structural 规则（同吃 active fill），语义同为"你在哪"，玻璃门下统一复用芯片曲线（同合成填充 + `34px+12px` blur），替代不透明的 `interactive-bg-active` 灰板。非玻璃模式三行仍走 active fill。
+- **选中的行全部同芯片材质**（v0.1.41 会话行，v0.1.43 扩到搜索结果行与面板行）：`_sessionRow_selected`、`_searchResultRow_selected`、`_panelRow_panelActive` 三者原本共用同一条 structural 规则（同吃 active fill），语义同为"你在哪"，玻璃门下统一复用芯片曲线（同合成填充 + `34px+12px` blur），替代不透明的 `interactive-bg-active` 灰板。非玻璃模式三行仍走 active fill。**rc.2 起面板行的选中/悬停类名从行本身移到外层包裹**（`div._panelEntry._panelEntryActive` > `button._panelRow`），skin.css 已同时匹配包裹 `_panelEntryActive`/`_panelEntry:hover` 与旧行名，两种壳都能吃到芯片材质。
 - **hover 也进材质**（v0.1.42）：壳在 mac 上给行刷不透明 hover 填充（实测 rgb(239,239,239)），玻璃下"扫过哪行哪行最重"。玻璃门下行 hover 改为 40% neutral-00 半透明薄纱（与 Windows 行 hover 同配方、同数值），不需要 blur —— 行下面的侧栏柱子已经模糊过。
 - **芯片与选中行的 blur 保留，别再摘（2026-10-27 真机 A/B）**：侧栏是 backdrop root，芯片/选中行的 backdrop-filter 各买一张整栏大小（544×1624 设备像素）的离屏面，摘掉两者能减 47→41 层、87.6M→84.4M（−3.7%）层像素；但像素 A/B 显示**芯片与选中行整体变色**（暖砂 → 中性灰，平均差 36/255，几乎全像素）——后代 blur 采样的是**壁纸原图**而非侧栏涂层，所以它在这两块小面上真的在出画，不是"叠在已糊表面上再糊一次"。收益 3.7%、观感可辨，放弃。
 - 侧栏字号跟随 General → Text size（12/14/16），同一设置所有界面同值（含账号行用户名）。
 - **官方往 `_panelList` 里加行不用跟改**（rc.3 实测）：新增的 More 行（`_panelRow` + `_moreAnchor`）自动吃齐行样式、字号与"钉在账号行上方"（`_panelList` 整组 order:1）；它的弹层也走壳的 `_surface`/`_material`/`_backing` 原语，玻璃门下实测 `_backing` 已被拆透明、`_material` 0.58 涂层独立干活——**零 CSS 改动跟上**。属性包含选择器（`[class*="_panelRow"]`）+ 壳浮层原语这两条设计在此兑现。
+- **rc.2 中列改 grid，插件把它拉回 flex 列（v0.1.59）**：0.2.2-rc.2 把 `_scrollRegion` 里塞了 `_scrollArea`（`display:grid`，四种轨道：8px spacer / `_panelList` / 2px gap / `_regionArea`），`order` 值对 grid 轨道无效，面板行组跳回工作区上方、footer 也被挤下去。skin.css 已用 `_scrollArea{display:flex; flex-direction:column}` 还原 rc.1 布局：`_regionArea{flex:1; min-height:0; overflow:hidden}` 内部滚动，`_panelList{order:1}` 钉在账号行上方，`_footArea{order:2}` 收尾。**壳再改中列容器时先跑 `probe-layout.js` 看 `_scrollArea` 的 display/子项**，别只盯 `_root`。rc.2 的面板包裹 `_panelEntry` 圆角壳自带 6px，插件统一提到 8px 与芯片一致。
 
 ---
 

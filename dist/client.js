@@ -1758,12 +1758,37 @@ html[data-platform='darwin'] body[data-dsh-palette][data-ds-dark-theme] [class*=
   --dsh-sidebar-inline-padding: 16px;
   padding-top: 0 !important;
 }
+/* rc.2 wrapped the middle column in a grid scroll area (spacer, panel list,
+   gap, workspaces: track rows, not flex children) and dropped the direct
+   _root flex children the order rules below were written against, so the
+   panel list jumped back above the workspaces. Turn that scroll area back
+   into the flex column the shell used through rc.1: the workspace region
+   fills and scrolls internally, the panel list pins under it, the footer
+   stays last. */
+[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) [class*="_scrollArea"] {
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: visible !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) [class*="_regionArea"] {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) [class*="_regionArea"] > [class*="_root"],
+[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) [class*="_regionArea"] > div:not([class]) > [class*="_root"] {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+}
 /* The panel list sits after the scrollable region so Plugins and Automation
    tasks rest directly above the account footer, under a solid separator.
    Expanded-only: the collapsed rail keeps the official order and 12px icon
    rhythm. */
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) [class*="_panelList"] { order: 1 !important; gap: 0 !important; margin-bottom: 4px !important; border-top: 1px solid var(--dsw-alias-border-l2) !important; padding-top: 8px !important; }
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) [class*="_footArea"] { order: 2 !important; }
+[class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) [class*="_panelEntry"] { border-radius: 8px !important; }
 [class*="_sidebarCol"] [class*="_root"]:not([class*="_collapsed"]) [class*="_panelRow"] { min-height: var(--dpui-sidebar-row-height) !important; height: var(--dpui-sidebar-row-height) !important; margin: 0 !important; padding: 4px 8px !important; border-radius: 8px !important; font-size: var(--dpui-sidebar-font-size) !important; line-height: var(--dpui-sidebar-line-height) !important; }
 [class*="_sidebarCol"] [class*="_sectionHeader"] { height: var(--dpui-sidebar-row-height) !important; margin-bottom: 2px !important; font-size: calc(var(--dpui-sidebar-font-size) - 1px) !important; }
 [class*="_sidebarCol"] [class*="_projectRow"] { height: var(--dpui-sidebar-row-height) !important; min-height: var(--dpui-sidebar-row-height) !important; font-size: var(--dpui-sidebar-font-size) !important; }
@@ -1837,6 +1862,7 @@ html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_root"]:not([clas
    fill, token, mix and curve verbatim. */
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_sessionRow"][class*="_selected"],
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_searchResultRow"][class*="_selected"],
+html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_panelEntryActive"],
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_panelRow"][class*="_panelActive"] {
   background: color-mix(in srgb,
     color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) calc(var(--dpui-chip-alpha, 0.36) * 100%),
@@ -1854,6 +1880,7 @@ html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_panelRow"][class
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_sessionRow"]:hover:not([class*="_selected"]),
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_searchResultRow"]:hover:not([class*="_selected"]),
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_projectRow"]:hover,
+html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_panelEntry"]:hover:not([class*="_panelEntryActive"]),
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_panelRow"]:hover:not([class*="_panelActive"]) {
   background: color-mix(in srgb, var(--dsw-static-neutral-00) 40%, transparent) !important;
 }
@@ -1864,6 +1891,7 @@ html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_panelRow"]:hover
    hero's release-stage badge is removed. */
 [class*="_sidebarCol"] [class*="_sessionRow"][class*="_selected"],
 [class*="_sidebarCol"] [class*="_searchResultRow"][class*="_selected"],
+[class*="_sidebarCol"] [class*="_panelEntryActive"],
 [class*="_sidebarCol"] [class*="_panelRow"][class*="_panelActive"] { background: var(--dsw-alias-interactive-bg-active) !important; }
 [class*="_previewBadge"] { display: none !important; }
 
@@ -1917,11 +1945,13 @@ html:not([data-platform='darwin']) [class*="_bottomRow"] { background: var(--dpu
    that fight the palette. */
 html:not([data-platform='darwin']) [class*="_sidebarCol"] [class*="_sessionRow"]:hover:not([class*="_selected"]),
 html:not([data-platform='darwin']) [class*="_sidebarCol"] [class*="_projectRow"]:hover,
+html:not([data-platform='darwin']) [class*="_sidebarCol"] [class*="_panelEntry"]:hover:not([class*="_panelEntryActive"]),
 html:not([data-platform='darwin']) [class*="_sidebarCol"] [class*="_panelRow"]:hover:not([class*="_panelActive"]) {
   background: color-mix(in srgb, var(--dsw-static-neutral-00) 40%, transparent) !important;
 }
 html:not([data-platform='darwin']) [class*="_sidebarCol"] [class*="_sessionRow"][class*="_selected"],
 html:not([data-platform='darwin']) [class*="_sidebarCol"] [class*="_searchResultRow"][class*="_selected"],
+html:not([data-platform='darwin']) [class*="_sidebarCol"] [class*="_panelEntryActive"],
 html:not([data-platform='darwin']) [class*="_sidebarCol"] [class*="_panelRow"][class*="_panelActive"] {
   background: color-mix(in srgb, var(--dsw-static-neutral-00) 62%, transparent) !important;
 }
