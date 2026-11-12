@@ -209,6 +209,7 @@ composer        无 blur（v0.1.49 摘除，固定 0.85 tint——丢层免疫�
 
 - `entry.jsx` 用 `'dshDesktop' in globalThis` 分流：Web 壳走自己的登录流，不注入账号座。
 - 账号行/菜单对齐官方规格（24px 头像 / 44px 行高），未登录显示 ⋯ + “更多”。
+- **rc.2 的账号流带信封（v0.1.60）**：`account.watch` 的帧值从裸 `AccountView` 变成 `{ type: 'snapshot' | 'credentials-changed', state: AccountView }`；插件在 `createAccountStore` 的 publish 处统一解包 `frame.value?.state ?? frame.value`，UI 层继续读 `view.status` / `view.attempt`。漏掉这层会让登录成功后左下角永远停在未登录（“更多”/Sign in），且登录等待弹窗不会自动关闭——2026-11-12 真机复现并修复。
 - 快捷设置由齿轮座位打开（全部设置、语言、颜色模式、皮肤配色、毛玻璃、随机换一张壁纸、文字大小；顺序是用户定的，别自己重排）；快捷操作两个座位（General → 快捷操作位置 1/2）可选内置/其他插件动作或留空。
 - **同一份菜单里不同行的图标不能重样**（用户提过：毛玻璃和文字大小曾共用同一个图标，看起来像重复项）。毛玻璃用滑杆图标、文字大小用横线图标，别再换回去。
 - 非必要不弹模态（用户原则）：只读/可逆动作直接执行并留日志，只有清空/删除类才提示。

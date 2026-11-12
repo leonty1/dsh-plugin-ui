@@ -52,7 +52,8 @@ export function createAccountStore(ctx) {
       void (async () => {
         for await (const frame of stream) {
           revision += 1
-          publish({ view: frame.value, profile: undefined, failed: false })
+          // rc.2 wraps the view in a watch envelope ({ type, state }); rc.1 sent the view itself.
+          publish({ view: frame.value?.state ?? frame.value, profile: undefined, failed: false })
           frame.accept()
           void refresh()
         }
