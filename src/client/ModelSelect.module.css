@@ -5,7 +5,8 @@
 
 /* Figma 313:14108 ToggleButton: 13/20 regular secondary label, 4px gap,
    12px caption chevron; 28px chip height matches the sibling Plan /
-   Read-only selects in the same tool row. */
+   Read-only selects in the same tool row. The label follows the app's Text
+   size setting (13px is only the fallback). */
 .trigger {
   display: flex;
   align-items: center;
@@ -23,8 +24,8 @@
   outline: none;
   background: transparent;
   color: var(--dsw-alias-label-secondary);
-  font-size: 13px;
-  line-height: 20px;
+  font-size: var(--dsh-content-font-size, 13px);
+  line-height: calc(var(--dsh-content-font-size, 13px) + 7px);
   font-weight: 400;
   cursor: pointer;
 }

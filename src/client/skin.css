@@ -224,6 +224,18 @@ html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_panelRow"]:hover
    circle. The theme's own superellipse corner shape stays in effect. */
 [class*="_composerStack"] button[class$="_primary"] { border-radius: var(--dsw-radius-sm) !important; }
 
+/* Composer control labels follow the Text size setting. The shell pins the
+   permission select to 13px and the plugin's model trigger carries the same
+   13px fallback, so at Small they stayed bigger than the 12px input text and
+   at Large they never grew. Both sit beside pills that already scale; bind
+   them to the published content size. The `_triggerIcon` span narrows the
+   hook to the composer's selects (the official model trigger shares it and
+   wants the same size), not every `_trigger` button in the shell. */
+[class*="_composerStack"] button[class*="_trigger"]:has([class*="_triggerIcon"]) {
+  font-size: var(--dsh-content-font-size, 13px) !important;
+  line-height: calc(var(--dsh-content-font-size, 13px) + 7px) !important;
+}
+
 /* Windows only: macOS reads its depth from vibrancy behind translucent fills,
    which Windows has not, so the palette has to carry the contrast itself.
    Every surface that forms the left column and the caption strip on this
