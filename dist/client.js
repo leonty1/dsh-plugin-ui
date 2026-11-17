@@ -2292,6 +2292,32 @@ html:has(body[data-dsh-glass]) [data-web],
 html:has(body[data-dsh-glass]) [data-search] {
   backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 30px + 8px)) saturate(1.4);
 }
+/* The right sidebar's Start tab (the guide) was the last solid-white panel:
+   the compass hero sat on the rail's wash but every action card painted
+   bg-layer-1 flat, so a column of white slabs floated on the glass. The
+   cards carry text, but at eye level in a transient tab they read as panels
+   like the bubble and the code card, so they ride the same panel curve \u2014
+   tint only, no backdrop-filter: the column's own frost already blurs the
+   wallpaper behind them, and a descendant blur here is clipped to the
+   rightbar's backdrop root exactly like the conversation's chips were.
+   Hover keeps the shell's interactive-bg token at panel alpha, so the
+   hover state survives as a denser tint rather than a different material.
+   Both hooks are data-* attributes the shell ships (stable like
+   data-composer-card); the guide container also exposes them for the
+   docked-tab and floating variants, which render the same component. */
+html:has(body[data-dsh-glass]) [data-sidebar-right-guide] {
+  background: transparent !important;
+}
+html:has(body[data-dsh-glass]) [data-sidebar-right-guide-entry] {
+  background: color-mix(in srgb,
+    var(--dsw-alias-bg-layer-1) calc(var(--dpui-panel-alpha, 0.4) * 100%),
+    transparent) !important;
+}
+html:has(body[data-dsh-glass]) [data-sidebar-right-guide-entry]:hover {
+  background: color-mix(in srgb,
+    var(--dsw-alias-interactive-bg-hover) calc(var(--dpui-panel-alpha, 0.4) * 100%),
+    transparent) !important;
+}
 /* Dialogs, menus and popovers were the fixed-white boxes: the shell's
    floating primitive is a frosted material (\`_material\`, its own 0.58 coat
    and 40px blur, theme-aware) sitting on a \`_backing\` that paints solid
