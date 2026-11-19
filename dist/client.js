@@ -1733,19 +1733,7 @@ html[data-platform='darwin'] body[data-dsh-palette][data-ds-dark-theme] [class*=
       color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, black) 72%,
       transparent) !important;
 }
-/* The rightbar joins the floating-card family: the same 5px gutter and 16px
-   radius as the centre card, over the transparent frame. Geometry is layout,
-   so it stays on under Original colors too \u2014 the shell's dockkit tab host
-   keeps painting its own fill there, clipped to the card's corners.
-   Collapsed and fullscreen are excluded: a margin on the zero-width track
-   would paint a 10px sliver, and the fullscreen rightbar owns the whole
-   window on purpose. */
-[class*="_frame"]:not([data-rightbar-collapsed]):not([data-rightbar-fullscreen]) > [class*="_rightbarCol"] {
-  margin: 5px !important;
-  border-radius: 16px !important;
-  overflow: hidden;
-  background: transparent !important;
-}
+[class*="_frame"] > [class*="_rightbarCol"] { background: transparent !important; }
 /* Sidebar geometry and text size follow the app's text-size setting: General
    and the quick menu both write theme.fontSizes.text, which the theme presenter
    publishes as --dsh-content-font-size. Row height and line box derive from the
@@ -2401,37 +2389,26 @@ html:has(body[data-dsh-glass]) [class*="_centerCol"] [class*="_stopped"] {
 html:has(body[data-dsh-glass]) [data-dockkit-empty] {
   background-color: transparent !important;
 }
-/* The occupied docked host is the third floating card: Start and every
-   right-column session tab lives on this element, and its solid bg-base
-   fill was the very white that made the whole right column read as a
-   board. Under glass it takes the centre column's exact recipe \u2014 same
-   blur curve, same tint \u2014 because it hosts the same kind of content, long
-   text read at eye level. The frost lives HERE, not on the column: a
-   backdrop-filter on the column would make it the containing block for
-   the dockkit floats (position:fixed, viewport coordinates) and tear-off
-   tabs would land in the wrong place. Three hooks cover the same host \u2014
-   the hashed _tabHost suffix plus the stable data-dockkit-pane and
-   data-dockkit-content attributes. A straight-transparent probe on
-   2026-11-19 proved the hooks land: the board cleared at once, so the
-   white had been this element's bg-base all along. The recipe is the
-   centre column's, verbatim. Floats keep their own material: the shell
-   paints none on them, and the rule below clears whatever a docked host
-   carries, so a torn-off tab still reads as a window. The _emptyTabHost
-   variant has a capital T and is matched by the attribute rule above,
-   not by this substring. */
+/* The docked host keeps the shell's solid board \u2014 the user prefers the
+   right column as it shipped (an opaque white panel, unlike the floating
+   left cards); only its transparency follows the glass slider. The
+   2026-11-19 probe proved these hooks land on the host, so the tint
+   below is the whole glass treatment: no blur, no margin, no rounding \u2014
+   the panel fills the column exactly as the shell lays it out. At the
+   default slider it composites to ~83 percent white; at the top of the
+   track 68, still a panel, just lighter. The _emptyTabHost variant has
+   a capital T and is matched by the attribute rule above, not by this
+   substring. */
 html:has(body[data-dsh-glass]) [class*="_tabHost"]:not([class*="_float"]),
 html:has(body[data-dsh-glass]) [data-dockkit-pane],
 html:has(body[data-dsh-glass]) [data-dockkit-content] {
-  background-color: transparent !important;
-  background-image: none !important;
-  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 22px)) saturate(1.4) !important;
+  background-color: color-mix(in srgb,
+    var(--dsw-alias-bg-base) calc(min(1, 0.98 - var(--dpui-glass-opacity, 0.5) * 0.3) * 100%),
+    transparent) !important;
 }
-/* Floats keep their window material: the shell paints no fill on them and
-   their blur is their own, so whatever these attributes ride in a docked
-   host (the pane section also matches [data-dockkit-pane] when docked) is
-   excluded the moment the same element carries the float attribute. */
+/* A torn-off tab gains data-dockkit-float; it keeps its own window
+   material, so nothing here touches it. */
 html:has(body[data-dsh-glass]) [data-dockkit-float] {
-  backdrop-filter: none !important;
   background-color: transparent !important;
 }
 `;
