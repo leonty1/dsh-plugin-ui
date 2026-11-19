@@ -58,7 +58,19 @@ html[data-platform='darwin'] body[data-dsh-palette][data-ds-dark-theme] [class*=
       color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, black) 72%,
       transparent) !important;
 }
-[class*="_frame"] > [class*="_rightbarCol"] { background: transparent !important; }
+/* The rightbar joins the floating-card family: the same 5px gutter and 16px
+   radius as the centre card, over the transparent frame. Geometry is layout,
+   so it stays on under Original colors too — the shell's dockkit tab host
+   keeps painting its own fill there, clipped to the card's corners.
+   Collapsed and fullscreen are excluded: a margin on the zero-width track
+   would paint a 10px sliver, and the fullscreen rightbar owns the whole
+   window on purpose. */
+[class*="_frame"]:not([data-rightbar-collapsed]):not([data-rightbar-fullscreen]) > [class*="_rightbarCol"] {
+  margin: 5px !important;
+  border-radius: 16px !important;
+  overflow: hidden;
+  background: transparent !important;
+}
 /* Sidebar geometry and text size follow the app's text-size setting: General
    and the quick menu both write theme.fontSizes.text, which the theme presenter
    publishes as --dsh-content-font-size. Row height and line box derive from the
@@ -622,9 +634,10 @@ html:has(body[data-dsh-glass]) [data-search] {
    bg-layer-1 flat, so a column of white slabs floated on the glass. The
    cards carry text, but at eye level in a transient tab they read as panels
    like the bubble and the code card, so they ride the same panel curve —
-   tint only, no backdrop-filter: the column's own frost already blurs the
-   wallpaper behind them, and a descendant blur here is clipped to the
-   rightbar's backdrop root exactly like the conversation's chips were.
+   tint only, no backdrop-filter: the docked host below now carries the
+   column's frost and already blurs the wallpaper behind them, and a
+   descendant blur here is clipped to that backdrop root exactly like the
+   conversation's chips were.
    Hover keeps the shell's interactive-bg token at panel alpha, so the
    hover state survives as a denser tint rather than a different material.
    Both hooks are data-* attributes the shell ships (stable like
@@ -713,15 +726,21 @@ html:has(body[data-dsh-glass]) [class*="_centerCol"] [class*="_stopped"] {
 html:has(body[data-dsh-glass]) [data-dockkit-empty] {
   background-color: transparent !important;
 }
-/* The occupied docked host is the same slab with a tab in it: Start and every
-   right-column session tab lives on this element, and its fill is the very
-   white that made the whole right column read as a board — the guide-card
-   tint above composited onto it and changed nothing visible. It stands down
-   like its empty sibling; the wallpaper and the column wash carry the area.
-   Floats keep their own material (the :not excludes them, and the shell
-   paints none there), so a torn-off tab still reads as a window. The
-   _emptyTabHost variant has a capital T and is matched by the attribute
-   rule above, not by this substring. */
+/* The occupied docked host is the third floating card: Start and every
+   right-column session tab lives on this element, and its solid bg-base
+   fill was the very white that made the whole right column read as a
+   board. Under glass it takes the centre column's exact recipe — same
+   blur curve, same tint — because it hosts the same kind of content, long
+   text read at eye level. The frost lives HERE, not on the column: a
+   backdrop-filter on the column would make it the containing block for
+   the dockkit floats (position:fixed, viewport coordinates) and tear-off
+   tabs would land in the wrong place. Floats keep their own material (the
+   :not excludes them, and the shell paints none there), so a torn-off tab
+   still reads as a window. The _emptyTabHost variant has a capital T and
+   is matched by the attribute rule above, not by this substring. */
 html:has(body[data-dsh-glass]) [class*="_tabHost"]:not([class*="_float"]) {
-  background-color: transparent !important;
+  backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 22px)) saturate(1.4) !important;
+  background: color-mix(in srgb,
+    var(--dsw-alias-bg-base) calc((1 - var(--dpui-glass-opacity, 0.5)) * 100%),
+    transparent) !important;
 }
