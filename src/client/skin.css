@@ -713,3 +713,15 @@ html:has(body[data-dsh-glass]) [class*="_centerCol"] [class*="_stopped"] {
 html:has(body[data-dsh-glass]) [data-dockkit-empty] {
   background-color: transparent !important;
 }
+/* The occupied docked host is the same slab with a tab in it: Start and every
+   right-column session tab lives on this element, and its fill is the very
+   white that made the whole right column read as a board — the guide-card
+   tint above composited onto it and changed nothing visible. It stands down
+   like its empty sibling; the wallpaper and the column wash carry the area.
+   Floats keep their own material (the :not excludes them, and the shell
+   paints none there), so a torn-off tab still reads as a window. The
+   _emptyTabHost variant has a capital T and is matched by the attribute
+   rule above, not by this substring. */
+html:has(body[data-dsh-glass]) [class*="_tabHost"]:not([class*="_float"]) {
+  background-color: transparent !important;
+}
