@@ -134,7 +134,7 @@ const PLUGIN_SURFACES = [
  *  the status tag component — only its neutral tone is touched, dropping to
  *  the 12% tint its sibling tones already use. data-dockkit-empty is the
  *  dock's empty tab host, a solid-white slab cleared like the page shell. */
-const GLASS_SURFACES = ['[data-composer-card]', '[class*="_bubble"]', '[class*="_fileCard"]', '[class*="_markdown"]', '.md-code-block', '[class*="_composerSeat"]', '[data-tool]', '[data-terminal]', '[data-web]', '[data-search]', '[class*="_backing"]', '[class*="_material"]', '[class*="_tag"]', '[data-dockkit-empty]', '[data-sidebar-right-guide]', '[data-sidebar-right-guide-entry]', '[class*="_tabHost"]']
+const GLASS_SURFACES = ['[data-composer-card]', '[class*="_bubble"]', '[class*="_fileCard"]', '[class*="_markdown"]', '.md-code-block', '[class*="_composerSeat"]', '[data-tool]', '[data-terminal]', '[data-web]', '[data-search]', '[class*="_backing"]', '[class*="_material"]', '[class*="_tag"]', '[data-dockkit-empty]', '[data-sidebar-right-guide]', '[data-sidebar-right-guide-entry]', '[class*="_tabHost"]', '[data-dockkit-pane]', '[data-dockkit-content]', '[data-dockkit-float]']
 const GROUND_GUARD = 'data-dsh-glass'
 const owned = rule =>
   PLUGIN_SURFACES.some(name => rule.includes(`[class*="${name}"]`))
