@@ -1733,6 +1733,21 @@ html[data-platform='darwin'] body[data-dsh-palette][data-ds-dark-theme] [class*=
       color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, black) 72%,
       transparent) !important;
 }
+/* The rightbar is a rounded board (user decision 2026-11-19): the shell keeps
+   painting its own fill \u2014 no glass, no tint, no frost \u2014 and this skin only
+   rounds the geometry: the same 5px gutter and 16px radius as the other
+   cards. Static, so the shape holds under Original colors too. Collapsed
+   and fullscreen are excluded: a margin on the zero-width track would paint
+   a 10px sliver, and the fullscreen rightbar owns the whole window on
+   purpose. overflow:hidden clips the dock panel's square corners into the
+   radius; the column must never carry a backdrop-filter, which would make
+   it the containing block for the position:fixed dockkit floats and land
+   tear-off tabs in the wrong place. */
+[class*="_frame"]:not([data-rightbar-collapsed]):not([data-rightbar-fullscreen]) > [class*="_rightbarCol"] {
+  margin: 5px !important;
+  border-radius: 16px !important;
+  overflow: hidden;
+}
 /* Sidebar geometry and text size follow the app's text-size setting: General
    and the quick menu both write theme.fontSizes.text, which the theme presenter
    publishes as --dsh-content-font-size. Row height and line box derive from the
