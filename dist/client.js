@@ -1733,7 +1733,6 @@ html[data-platform='darwin'] body[data-dsh-palette][data-ds-dark-theme] [class*=
       color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, black) 72%,
       transparent) !important;
 }
-[class*="_frame"] > [class*="_rightbarCol"] { background: transparent !important; }
 /* Sidebar geometry and text size follow the app's text-size setting: General
    and the quick menu both write theme.fontSizes.text, which the theme presenter
    publishes as --dsh-content-font-size. Row height and line box derive from the
@@ -2001,8 +2000,8 @@ html:not([data-platform='darwin']) [class*="_card"]:has([class*="_statCounts"]) 
 }
 /* The content column goes back to the shared floating card: 5px gutter and the
    16px radius on all four corners instead of the shell's single top-left one.
-   No right margin: the rightbar column is transparent and shows the same rail,
-   so the card floats on one continuous frame surface. */
+   No right margin: the right sidebar is the shell's own native column, so the
+   card butts against it exactly as the shell laid the two out. */
 html:not([data-platform='darwin']) [class*="_frame"] > [class*="_centerCol"] {
   margin: 5px 0 5px 5px !important;
   border-radius: var(--dsw-radius-panel) !important;
@@ -2057,7 +2056,6 @@ html:has(body[data-dsh-glass]) [class*="_sidebarCol"] {
    opaque block (measured 255,255,255). Under glass the card's own frost and
    blur are the legibility device, so the seat clears too. */
 html:has(body[data-dsh-glass]) [class*="_centerCol"] [class*="_root"],
-html:has(body[data-dsh-glass]) [class*="_rightbarCol"] [class*="_root"],
 html:has(body[data-dsh-glass]) [class*="_bottomRow"],
 html:has(body[data-dsh-glass]) [class*="_composerSeat"] {
   background: transparent !important;
@@ -2292,33 +2290,6 @@ html:has(body[data-dsh-glass]) [data-web],
 html:has(body[data-dsh-glass]) [data-search] {
   backdrop-filter: blur(calc(var(--dpui-glass-opacity, 0.5) * 30px + 8px)) saturate(1.4);
 }
-/* The right sidebar's Start tab (the guide) was the last solid-white panel:
-   the compass hero sat on the rail's wash but every action card painted
-   bg-layer-1 flat, so a column of white slabs floated on the glass. The
-   cards carry text, but at eye level in a transient tab they read as panels
-   like the bubble and the code card, so they ride the same panel curve \u2014
-   tint only, no backdrop-filter: the docked host below now carries the
-   column's frost and already blurs the wallpaper behind them, and a
-   descendant blur here is clipped to that backdrop root exactly like the
-   conversation's chips were.
-   Hover keeps the shell's interactive-bg token at panel alpha, so the
-   hover state survives as a denser tint rather than a different material.
-   Both hooks are data-* attributes the shell ships (stable like
-   data-composer-card); the guide container also exposes them for the
-   docked-tab and floating variants, which render the same component. */
-html:has(body[data-dsh-glass]) [data-sidebar-right-guide] {
-  background: transparent !important;
-}
-html:has(body[data-dsh-glass]) [data-sidebar-right-guide-entry] {
-  background: color-mix(in srgb,
-    var(--dsw-alias-bg-layer-1) calc(var(--dpui-panel-alpha, 0.4) * 100%),
-    transparent) !important;
-}
-html:has(body[data-dsh-glass]) [data-sidebar-right-guide-entry]:hover {
-  background: color-mix(in srgb,
-    var(--dsw-alias-interactive-bg-hover) calc(var(--dpui-panel-alpha, 0.4) * 100%),
-    transparent) !important;
-}
 /* Dialogs, menus and popovers were the fixed-white boxes: the shell's
    floating primitive is a frosted material (\`_material\`, its own 0.58 coat
    and 40px blur, theme-aware) sitting on a \`_backing\` that paints solid
@@ -2381,36 +2352,14 @@ html:has(body[data-dsh-glass]) [class*="_tag"][data-tone='neutral'] {
 html:has(body[data-dsh-glass]) [class*="_centerCol"] [class*="_stopped"] {
   background: color-mix(in srgb, var(--dsw-static-neutral-00) 40%, transparent) !important;
 }
-/* The dock's empty tab host (data-dockkit-empty, the "Empty pane" slab in a
-   split or the right column when no tab fills it) paints solid white \u2014 a
-   576x810 board that would float on the wallpaper the moment the window is
-   wide enough to show it. Under glass it stands down like the page shell
-   above; its "Empty pane" label is tertiary ink and reads fine on the wash. */
-html:has(body[data-dsh-glass]) [data-dockkit-empty] {
-  background-color: transparent !important;
-}
-/* The docked host keeps the shell's solid board \u2014 the user prefers the
-   right column as it shipped (an opaque white panel, unlike the floating
-   left cards); only its transparency follows the glass slider. The
-   2026-11-19 probe proved these hooks land on the host, so the tint
-   below is the whole glass treatment: no blur, no margin, no rounding \u2014
-   the panel fills the column exactly as the shell lays it out. At the
-   default slider it composites to ~83 percent white; at the top of the
-   track 68, still a panel, just lighter. The _emptyTabHost variant has
-   a capital T and is matched by the attribute rule above, not by this
-   substring. */
-html:has(body[data-dsh-glass]) [class*="_tabHost"]:not([class*="_float"]),
-html:has(body[data-dsh-glass]) [data-dockkit-pane],
-html:has(body[data-dsh-glass]) [data-dockkit-content] {
-  background-color: color-mix(in srgb,
-    var(--dsw-alias-bg-base) calc(min(1, 0.98 - var(--dpui-glass-opacity, 0.5) * 0.3) * 100%),
-    transparent) !important;
-}
-/* A torn-off tab gains data-dockkit-float; it keeps its own window
-   material, so nothing here touches it. */
-html:has(body[data-dsh-glass]) [data-dockkit-float] {
-  background-color: transparent !important;
-}
+/* The right sidebar is native again (user decision 2026-11-19): every hook
+   this skin once used there \u2014 the column geometry, the dockkit tab-host
+   frost, the empty-pane slab, the guide-card tints \u2014 has been removed, and
+   the shell paints the dock the way it shipped. The dockkit floats carry
+   their own window material, so they need no reset either. Do not re-add
+   column-level backdrop-filters: a backdrop-filter on _rightbarCol would
+   make it the containing block for the position:fixed dockkit floats and
+   tear-off tabs would land in the wrong place. */
 `;
 
 // src/client/palette.jsx

@@ -139,7 +139,7 @@ pnpm check          # 构建 + 语法 + 皮肤契约 + 类型检查
 | 层 | 处理 | 位置 |
 |---|---|---|
 | 底板 / 会话根 | 完全透出（滑条控制） | `_frame`、`_centerCol`、`_root` |
-| 右栏（第三块悬浮卡，v0.1.63） | 几何对齐中栏：5px 边距 + 16px 圆角（静态规则，原色态同样生效；collapsed/fullscreen 除外——零宽轨道加边距会画出 10px 细条）。磨砂骑中栏同配方（blur 22px × 滑条 + bg-base tint），但**刷在 `_tabHost`（非 float）上而不是列上**：列上加 backdrop-filter 会让它成为 dockkit 悬浮 tab（position:fixed、视口坐标）的包含块，撕出来的 tab 全部落错位 | `[class*="_frame"] > [class*="_rightbarCol"]`；`[class*="_tabHost"]:not([class*="_float"])` |
+| 右栏 | **原生（v0.1.70 定稿；用户决定 2026-11-19）**：插件不做任何处理，dock 面板（`_rightbarCol` → `.Dv5QdW_panel` → `_tabHost`）由壳按发行样式自绘。此前 v0.1.63–0.1.69 的悬浮磨砂卡方案（列几何 + `_tabHost` 中栏配方磨砂 + guide 卡 tint + 空面板清白）被用户否决——磨砂 alpha 始终无法与左两块协调（实测右板 ~244-253 vs 中栏 ~150-186），遂整体回退。教训留给未来：列上挂 backdrop-filter 会成为 dockkit 悬浮 tab（position:fixed、视口坐标）的包含块，撕出的 tab 全部落错位；dockkit 面板内的白色来自壳的级联，插件侧 tint 无法稳定压过 | 无钩子（右栏不出现在本皮肤任何规则里） |
 | 侧栏 | 同配方，**高一线**（`--dpui-sidebar-elevation` 0.03，blur 30px；v0.1.38 从 0.12 降下——用户要求侧栏只比工作区稍重甚至持平，强调只留给 New Session 芯片） | `_sidebarCol` |
 | 承载文字的表面 | 卡片海拔：底板 + 0.10，夹在 [0.46, 0.96] | `_fileCard`；`_bubble` 与 `.md-code-block` v0.1.39/40 起改走面板曲线（见下），v0.1.52 起 tint-only、无 blur；composer v0.1.49 起退出曲线体系（见下） |
 | 模糊的轻重排序（v0.1.37 定序；v0.1.49 composer、v0.1.51 行内 chip、v0.1.52 气泡与代码卡相继摘除；侧栏芯片/选中行 A/B 后保留——摘掉只省 3.7% 层像素却让两块小面整体变色，见 AGENT.md §4） | `_newSession` 最重（`滑条 × 34px + 12px`）＞ 特殊字段体（`[data-tool]` 的 ioCard、`[data-terminal]`、`[data-web]`、`[data-search]`，30px + 8px）与 `_fileCard`（30px + 8px）——列内最后两个仍有 blur 的岛屿（工具体按需挂载，尚未真机 A/B）＞ 两列（30px / 22px × 滑条，无地板）；`.md-code-block`、`_bubble`、行内 chip **均无 blur**（层内存免疫，见下）；`[data-composer-card]` **无 blur**（v0.1.49）；alpha 曲线按表面各归各：芯片曲线见下，其余在卡片/侧栏曲线上 | 各表面的 `backdrop-filter` |
