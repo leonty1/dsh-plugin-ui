@@ -2411,13 +2411,14 @@ html:has(body[data-dsh-glass]) [data-dockkit-empty] {
    the dockkit floats (position:fixed, viewport coordinates) and tear-off
    tabs would land in the wrong place. Three hooks cover the same host \u2014
    the hashed _tabHost suffix plus the stable data-dockkit-pane and
-   data-dockkit-content attributes \u2014 because a first live check on
-   2026-11-19 showed the tint rule not landing while the board was still
-   white; redundancy across hooks is cheaper than a blind spot. Floats
-   keep their own material: the shell paints none on them, and the rule
-   below clears whatever a docked host carries, so a torn-off tab still
-   reads as a window. The _emptyTabHost variant has a capital T and is
-   matched by the attribute rule above, not by this substring. */
+   data-dockkit-content attributes. A straight-transparent probe on
+   2026-11-19 proved the hooks land: the board cleared at once, so the
+   white had been this element's bg-base all along. The recipe is the
+   centre column's, verbatim. Floats keep their own material: the shell
+   paints none on them, and the rule below clears whatever a docked host
+   carries, so a torn-off tab still reads as a window. The _emptyTabHost
+   variant has a capital T and is matched by the attribute rule above,
+   not by this substring. */
 html:has(body[data-dsh-glass]) [class*="_tabHost"]:not([class*="_float"]),
 html:has(body[data-dsh-glass]) [data-dockkit-pane],
 html:has(body[data-dsh-glass]) [data-dockkit-content] {
