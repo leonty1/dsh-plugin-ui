@@ -44,6 +44,27 @@ function clsx(...parts) {
 // src/client/ModelSelect.tsx
 var import_dsh_client_ui_primitives2 = require("@deepseek-ai/dsh-client-ui-primitives");
 
+// src/client/rank-by-name.ts
+function rankByName(items, query) {
+  const needle = query.trim().toLowerCase();
+  if (needle === "") return [...items];
+  const scored = [];
+  for (let index = 0; index < items.length; index++) {
+    const item = items[index];
+    const name = (item.name ?? item.id).toLowerCase();
+    const rank = matchRank(name, needle);
+    if (rank !== null) scored.push({ item, rank, index });
+  }
+  return scored.toSorted((left, right) => left.rank - right.rank || left.index - right.index).map((entry) => entry.item);
+}
+function matchRank(name, needle) {
+  const at = name.indexOf(needle);
+  if (at === -1) return null;
+  if (at === 0) return 0;
+  if (/[\s\-_./·]/.test(name[at - 1] ?? "")) return 1;
+  return 2;
+}
+
 // plugin-ui-css-module:/Users/tongyi/dsh-plugin-ui/src/client/ModelSelect.module.css
 var styleId = "dsh-plugin-ui-ModelSelect";
 if (typeof document !== "undefined" && document.getElementById(styleId) === null) {
@@ -189,7 +210,7 @@ function ModelSelect({ locked, available, directory, load, select, t }) {
   const showSearch = choices.length > 4;
   const filteredGroups = (0, import_react.useMemo)(() => groups.map((group) => ({
     ...group,
-    models: (0, import_dsh_client_ui_primitives2.rankByName)(group.models, showSearch ? query.trim() : "")
+    models: rankByName(group.models, showSearch ? query.trim() : "")
   })).filter((group) => group.models.length > 0), [groups, query, showSearch]);
   const visibleModels = (0, import_react.useMemo)(() => filteredGroups.flatMap((group) => group.models.map((model) => ({
     provider: group.id,
