@@ -52,6 +52,14 @@
 不在清单里的表面视为壳自有渲染，**写规则会被 `verify-skin` 拒绝**。
 确有必要新增表面时，先在 `PLUGIN_SURFACES` 里显式登记并说明理由。
 
+0.2.3 适配（v0.1.72）：类名哈希从前缀后缀 `_name_hash` 改为前缀 `hash_name`
+（如 `PIRFFq_sidebarCol`），后缀匹配 `[class*="_name"]` 依旧命中，选择器方向
+无需翻转。激活面板行不再有 `_panelActive` 类——壳改用稳定无障碍属性标记
+（`[class*="_panelRow"][aria-current='page']`，属性契约跨构建存活）；hero 的
+发布阶段徽章整个移除（阶段信息并入 brand mark 的版本徽标），对应隐藏规则与
+登记随之删除。`_backing`/`_material`/`_bannerWrap`/`_markdown` 在主 bundle
+中仍然存活，规则原样保留。
+
 承载文字的工作区表面（输入框卡片、用户气泡、文件卡片）不在 `PLUGIN_SURFACES`
 里，而是登记在 `GLASS_SURFACES`——它们必须同时带 `data-dsh-glass` 门槛才放行，
 因为底板关掉时这些规则一经生效就等于重绘了壳自己的界面。

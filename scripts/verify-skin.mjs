@@ -115,7 +115,7 @@ const SKIN_GUARDS = ['data-dsh-palette', "html:not([data-platform='darwin'])"]
 const PLUGIN_SURFACES = [
   '_frame', '_sidebarCol', '_centerCol', '_rightbarCol', '_bottomRow',
   '_composerStack', '_panelRow', '_panelList', '_footArea', '_sectionHeader',
-  '_projectRow', '_sessionRow', '_searchResultRow', '_newSession', '_previewBadge',
+  '_projectRow', '_sessionRow', '_searchResultRow', '_newSession',
   '_header', '_root', '_card', '_genieSlice',
 ]
 /** Surfaces inside the workspace that carry text and are allowed to frost: the

@@ -1877,7 +1877,7 @@ html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_root"]:not([clas
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_sessionRow"][class*="_selected"],
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_searchResultRow"][class*="_selected"],
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_panelEntryActive"],
-html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_panelRow"][class*="_panelActive"] {
+html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_panelRow"][aria-current='page'] {
   background: color-mix(in srgb,
     color-mix(in srgb, var(--dsw-specific-sidebar-fill) 88%, var(--dsw-alias-brand-primary)) calc(var(--dpui-chip-alpha, 0.36) * 100%),
     transparent) !important;
@@ -1895,19 +1895,21 @@ html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_sessionRow"]:hov
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_searchResultRow"]:hover:not([class*="_selected"]),
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_projectRow"]:hover,
 html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_panelEntry"]:hover:not([class*="_panelEntryActive"]),
-html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_panelRow"]:hover:not([class*="_panelActive"]) {
+html:has(body[data-dsh-glass]) [class*="_sidebarCol"] [class*="_panelRow"]:hover:not([aria-current='page']) {
   background: color-mix(in srgb, var(--dsw-static-neutral-00) 40%, transparent) !important;
 }
 [class*="_centerCol"] header[class*="_header"] { padding-left: 24px !important; padding-right: 24px !important; border-bottom: none !important; }
 [class*="_composerStack"] [class*="_card"] { background: var(--dsw-alias-bg-layer-1) !important; border-radius: 16px !important; }
 
-/* A-list structural corrections: selected rows use the active fill, and the
-   hero's release-stage badge is removed. */
+/* A-list structural corrections, adapted to the 0.2.3 alpha: selected rows use
+   the active fill; the active panel row lost its _panelActive class (the shell
+   now marks it aria-current="page" \u2014 a stable accessibility contract, not a
+   hashed name); the hero's release-stage badge no longer exists at all (the
+   stage moved into the brand mark's version chip), so its hiding rule is gone. */
 [class*="_sidebarCol"] [class*="_sessionRow"][class*="_selected"],
 [class*="_sidebarCol"] [class*="_searchResultRow"][class*="_selected"],
 [class*="_sidebarCol"] [class*="_panelEntryActive"],
-[class*="_sidebarCol"] [class*="_panelRow"][class*="_panelActive"] { background: var(--dsw-alias-interactive-bg-active) !important; }
-[class*="_previewBadge"] { display: none !important; }
+[class*="_sidebarCol"] [class*="_panelRow"][aria-current='page'] { background: var(--dsw-alias-interactive-bg-active) !important; }
 
 /* A-list composer controls: the send/stop control is a rounded square, not a
    circle. The theme's own superellipse corner shape stays in effect. */
@@ -1972,13 +1974,13 @@ html:not([data-platform='darwin']) [class*="_bottomRow"] { background: var(--dpu
 html:not([data-platform='darwin']) [class*="_sidebarCol"] [class*="_sessionRow"]:hover:not([class*="_selected"]),
 html:not([data-platform='darwin']) [class*="_sidebarCol"] [class*="_projectRow"]:hover,
 html:not([data-platform='darwin']) [class*="_sidebarCol"] [class*="_panelEntry"]:hover:not([class*="_panelEntryActive"]),
-html:not([data-platform='darwin']) [class*="_sidebarCol"] [class*="_panelRow"]:hover:not([class*="_panelActive"]) {
+html:not([data-platform='darwin']) [class*="_sidebarCol"] [class*="_panelRow"]:hover:not([aria-current='page']) {
   background: color-mix(in srgb, var(--dsw-static-neutral-00) 40%, transparent) !important;
 }
 html:not([data-platform='darwin']) [class*="_sidebarCol"] [class*="_sessionRow"][class*="_selected"],
 html:not([data-platform='darwin']) [class*="_sidebarCol"] [class*="_searchResultRow"][class*="_selected"],
 html:not([data-platform='darwin']) [class*="_sidebarCol"] [class*="_panelEntryActive"],
-html:not([data-platform='darwin']) [class*="_sidebarCol"] [class*="_panelRow"][class*="_panelActive"] {
+html:not([data-platform='darwin']) [class*="_sidebarCol"] [class*="_panelRow"][aria-current='page'] {
   background: color-mix(in srgb, var(--dsw-static-neutral-00) 62%, transparent) !important;
 }
 /* The changed-files card. Its header fill is a static cool neutral and its inner
